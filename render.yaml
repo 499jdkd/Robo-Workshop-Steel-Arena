@@ -1,0 +1,16 @@
+# Render Free + external Neon Free PostgreSQL. No paid resources or disks.
+# Paste the private Neon connection URL into the Render dashboard, not Git.
+services:
+  - type: web
+    name: robo-workshop-arena
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./server/Dockerfile
+    dockerContext: .
+    autoDeployTrigger: "off"
+    numInstances: 1
+    healthCheckPath: /health
+    envVars:
+      - key: CLICKER_ARENA_DATABASE_URL
+        sync: false

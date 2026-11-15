@@ -1,8 +1,4 @@
-"""Authoritative human PvP/clans. SQLite transactions; no seeded/fake players.
-
-Run one process with a persistent disk. Shared SQL/Postgres is the upgrade path
-for multiple workers; never put a separate SQLite file on each replica.
-"""
+"""Authoritative human PvP/clans with transactional SQLite or PostgreSQL."""
 
 import hashlib
 import json
@@ -13,8 +9,18 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 
-from server.rules import ACTIONS, ROBOTS, WEAPONS, arena_actor, combat_power, league, resolve_action
+from server.database import is_postgres, transaction
+from server.rules import (
+    ACTIONS,
+    ROBOTS,
+    WEAPONS,
+    arena_actor,
+    combat_power,
+    league,
+    resolve_action,
+)
 from server.social import SocialService
+
 
 class RuleError(ValueError):
     pass
@@ -23,26 +29,36 @@ class RuleError(ValueError):
 class ArenaService(SocialService):
     def __init__(self, path, clock=time.time):
         self.path, self.clock = str(path), clock
-        Path(path).parent.mkdir(parents=True, exist_ok=True)
-        if Path(path).exists():
+        if not is_postgres(path) and any(
+            key in self.path for key in ("dbname=", "password=", "host=")
+        ):
+            raise ValueError(
+                "Use a postgresql:// URL, not a libpq keyword connection string"
+            )
+        if not is_postgres(path):
+            Path(path).parent.mkdir(parents=True, exist_ok=True)
+        if not is_postgres(path) and Path(path).exists():
             # SQLite backup includes WAL; preserve the pre-social schema once.
-            original=sqlite3.connect(self.path)
+            original = sqlite3.connect(self.path)
             try:
-                version=original.execute('PRAGMA user_version').fetchone()[0]
-                archive=Path(self.path+'.before-social-v2.backup')
-                if version<2 and not archive.exists():
-                    target=sqlite3.connect(str(archive))
-                    try:original.backup(target)
-                    finally:target.close()
-            finally:original.close()
+                version = original.execute("PRAGMA user_version").fetchone()[0]
+                archive = Path(self.path + ".before-social-v2.backup")
+                if version < 2 and not archive.exists():
+                    target = sqlite3.connect(str(archive))
+                    try:
+                        original.backup(target)
+                    finally:
+                        target.close()
+            finally:
+                original.close()
         with self.tx() as db:
             db.executescript("""
             CREATE TABLE IF NOT EXISTS players(id TEXT PRIMARY KEY, token_hash TEXT UNIQUE NOT NULL,
               name TEXT NOT NULL, rating INTEGER NOT NULL DEFAULT 1000, coins INTEGER NOT NULL DEFAULT 100,
-              wins INTEGER NOT NULL DEFAULT 0, clan TEXT, created REAL NOT NULL);
-            CREATE TABLE IF NOT EXISTS queue(player TEXT PRIMARY KEY, robot TEXT NOT NULL, weapon TEXT NOT NULL, joined REAL NOT NULL);
+              wins INTEGER NOT NULL DEFAULT 0, clan TEXT, created DOUBLE PRECISION NOT NULL);
+            CREATE TABLE IF NOT EXISTS queue(player TEXT PRIMARY KEY, robot TEXT NOT NULL, weapon TEXT NOT NULL, joined DOUBLE PRECISION NOT NULL);
             CREATE TABLE IF NOT EXISTS matches(id TEXT PRIMARY KEY, a TEXT NOT NULL, b TEXT NOT NULL,
-              state TEXT NOT NULL, revision INTEGER NOT NULL DEFAULT 0, result TEXT NOT NULL DEFAULT 'active', updated REAL NOT NULL);
+              state TEXT NOT NULL, revision INTEGER NOT NULL DEFAULT 0, result TEXT NOT NULL DEFAULT 'active', updated DOUBLE PRECISION NOT NULL);
             CREATE TABLE IF NOT EXISTS commands(match_id TEXT, command TEXT, player TEXT, response TEXT,
               PRIMARY KEY(match_id, command, player));
             CREATE TABLE IF NOT EXISTS clans(id TEXT PRIMARY KEY, name TEXT UNIQUE NOT NULL, owner TEXT NOT NULL,
@@ -58,22 +74,15 @@ class ArenaService(SocialService):
 
     @contextmanager
     def tx(self):
-        db = sqlite3.connect(self.path, timeout=10)
-        db.row_factory = sqlite3.Row
-        db.execute("PRAGMA journal_mode=WAL")
-        db.execute("PRAGMA foreign_keys=ON")
-        try:
-            db.execute("BEGIN IMMEDIATE")
+        with transaction(self.path) as db:
             yield db
-            db.commit()
-        except BaseException:
-            db.rollback()
-            raise
-        finally:
-            db.close()
 
     def week(self):
         return int((self.clock() + 259200) // 604800)
+
+    def ready(self):
+        with self.tx() as db:
+            return db.execute("SELECT 1").fetchone()[0] == 1
 
     def register(self, name):
         name = str(name).strip()[:24]
@@ -110,7 +119,9 @@ class ArenaService(SocialService):
             ).fetchone()
             if not row:
                 raise RuleError("Профиль не найден")
-            result=dict(row);result['league']=league(row['rating']);result['friend_code']=row['id']
+            result = dict(row)
+            result["league"] = league(row["rating"])
+            result["friend_code"] = row["id"]
             return result
 
     def ranking(self):
@@ -125,7 +136,7 @@ class ArenaService(SocialService):
     def _public(self, db, row, player):
         state = json.loads(row["state"])
         if row["result"] == "active" and self.clock() - row["updated"] > 45:
-            state['finish_reason']='disconnect-timeout'
+            state["finish_reason"] = "disconnect-timeout"
             self._finish(db, row, state, "b" if state["turn"] == "a" else "a")
             row = db.execute(
                 "SELECT * FROM matches WHERE id=?", (row["id"],)
@@ -160,35 +171,74 @@ class ArenaService(SocialService):
                 return self._public(db, row, player)
             return None
 
-    def _create_match(self,db,a,b,robot_a,weapon_a,robot_b,weapon_b,mode):
-        identity=secrets.token_hex(12)
-        state=dict(turn='a',winner=None,a=arena_actor(robot_a,weapon_a),b=arena_actor(robot_b,weapon_b),
-                   last={},rules_version=3,mode=mode)
-        db.execute("INSERT INTO matches VALUES(?,?,?,?,0,'active',?)",(identity,a,b,json.dumps(state),self.clock()))
-        db.execute('DELETE FROM queue WHERE player IN (?,?)',(a,b))
-        return db.execute('SELECT * FROM matches WHERE id=?',(identity,)).fetchone()
+    def _create_match(self, db, a, b, robot_a, weapon_a, robot_b, weapon_b, mode):
+        identity = secrets.token_hex(12)
+        state = dict(
+            turn="a",
+            winner=None,
+            a=arena_actor(robot_a, weapon_a),
+            b=arena_actor(robot_b, weapon_b),
+            last={},
+            rules_version=3,
+            mode=mode,
+        )
+        db.execute(
+            "INSERT INTO matches VALUES(?,?,?,?,0,'active',?)",
+            (identity, a, b, json.dumps(state), self.clock()),
+        )
+        db.execute("DELETE FROM queue WHERE player IN (?,?)", (a, b))
+        return db.execute("SELECT * FROM matches WHERE id=?", (identity,)).fetchone()
 
-    def enqueue(self, player, robot, weapon, mode='ranked'):
-        if robot not in ROBOTS or weapon not in WEAPONS or mode not in {'ranked','balanced'}:
-            raise RuleError('??????????? ?????, ?????? ??? ?????')
-        power=combat_power(robot,weapon)
+    def enqueue(self, player, robot, weapon, mode="ranked"):
+        if (
+            robot not in ROBOTS
+            or weapon not in WEAPONS
+            or mode not in {"ranked", "balanced"}
+        ):
+            raise RuleError("Недопустимый робот, оружие или режим")
+        power = combat_power(robot, weapon)
         with self.tx() as db:
-            active=db.execute("SELECT * FROM matches WHERE (a=? OR b=?) AND result='active' LIMIT 1",(player,player)).fetchone()
+            active = db.execute(
+                "SELECT * FROM matches WHERE (a=? OR b=?) AND result='active' LIMIT 1",
+                (player, player),
+            ).fetchone()
             if active:
-                value=self._public(db,active,player)
-                if value['result']=='active':return {'match':value}
-            db.execute('DELETE FROM queue WHERE joined<?',(self.clock()-65,))
-            me=db.execute('SELECT rating FROM players WHERE id=?',(player,)).fetchone()
-            if not me:raise RuleError('??????? ?? ??????')
-            opponent=db.execute("""SELECT q.*,p.rating FROM queue q JOIN players p ON p.id=q.player
-                WHERE q.player!=? AND q.mode=? AND ABS(p.rating-?)<=400 AND ABS(q.power-?)<=100 ORDER BY joined LIMIT 1""",(player,mode,me['rating'],power)).fetchone()
+                value = self._public(db, active, player)
+                if value["result"] == "active":
+                    return {"match": value}
+            db.execute("DELETE FROM queue WHERE joined<?", (self.clock() - 65,))
+            me = db.execute(
+                "SELECT rating FROM players WHERE id=?", (player,)
+            ).fetchone()
+            if not me:
+                raise RuleError("Профиль не найден")
+            opponent = db.execute(
+                """SELECT q.*,p.rating FROM queue q JOIN players p ON p.id=q.player
+                WHERE q.player!=? AND q.mode=? AND ABS(p.rating-?)<=400 AND ABS(q.power-?)<=100 ORDER BY joined LIMIT 1""",
+                (player, mode, me["rating"], power),
+            ).fetchone()
             if not opponent:
-                db.execute("""INSERT INTO queue(player,robot,weapon,joined,mode,power) VALUES(?,?,?,?,?,?)
+                db.execute(
+                    """INSERT INTO queue(player,robot,weapon,joined,mode,power) VALUES(?,?,?,?,?,?)
                     ON CONFLICT(player) DO UPDATE SET robot=excluded.robot,weapon=excluded.weapon,
-                    joined=excluded.joined,mode=excluded.mode,power=excluded.power""",(player,robot,weapon,self.clock(),mode,power))
-                return {'waiting':True,'message':'???? ????????? ??????. ???? ?? ????????? ? PvP'}
-            row=self._create_match(db,opponent['player'],player,opponent['robot'],opponent['weapon'],robot,weapon,mode)
-            return {'match':self._public(db,row,player)}
+                    joined=excluded.joined,mode=excluded.mode,power=excluded.power""",
+                    (player, robot, weapon, self.clock(), mode, power),
+                )
+                return {
+                    "waiting": True,
+                    "message": "Ищем настоящего игрока. Боты не участвуют в PvP",
+                }
+            row = self._create_match(
+                db,
+                opponent["player"],
+                player,
+                opponent["robot"],
+                opponent["weapon"],
+                robot,
+                weapon,
+                mode,
+            )
+            return {"match": self._public(db, row, player)}
 
     def cancel_queue(self, player):
         with self.tx() as db:
@@ -200,13 +250,13 @@ class ArenaService(SocialService):
             return
         loser = "b" if winner == "a" else "a"
         state["winner"] = winner
-        if winner is not None and state.get('mode','ranked')=='ranked':
+        if winner is not None and state.get("mode", "ranked") == "ranked":
             db.execute(
                 "UPDATE players SET rating=rating+16,coins=coins+25,wins=wins+1 WHERE id=?",
                 (row[winner],),
             )
             db.execute(
-                "UPDATE players SET rating=MAX(100,rating-16),coins=coins+5 WHERE id=?",
+                "UPDATE players SET rating=CASE WHEN rating-16<100 THEN 100 ELSE rating-16 END,coins=coins+5 WHERE id=?",
                 (row[loser],),
             )
             clans = {
@@ -219,7 +269,7 @@ class ArenaService(SocialService):
             if clan:
                 db.execute("UPDATE clans SET xp=xp+20 WHERE id=?", (clan,))
                 db.execute(
-                    "INSERT INTO contributions VALUES(?,?,?,1) ON CONFLICT(clan,player,week) DO UPDATE SET wins=wins+1",
+                    "INSERT INTO contributions VALUES(?,?,?,1) ON CONFLICT(clan,player,week) DO UPDATE SET wins=contributions.wins+1",
                     (clan, row[winner], self.week()),
                 )
             if clan and clans[loser] and clan != clans[loser]:
@@ -235,10 +285,7 @@ class ArenaService(SocialService):
         )
 
     def turn(self, player, identity, revision, command, action):
-        if (
-            action not in ACTIONS|{"resign"}
-            or not 8 <= len(command) <= 80
-        ):
+        if action not in ACTIONS | {"resign"} or not 8 <= len(command) <= 80:
             raise RuleError("Некорректная команда")
         with self.tx() as db:
             row = db.execute(
@@ -261,27 +308,44 @@ class ArenaService(SocialService):
             other = "b" if side == "a" else "a"
             if action != "resign" and state["turn"] != side:
                 raise RuleError("Сейчас ход соперника")
-            actor,target=state[side],state[other]
+            actor, target = state[side], state[other]
             # Upgrade an in-progress legacy match without touching its HP/energy.
-            if state.get('rules_version')!=3:
-                for key in ('a','b'):
-                    previous=state[key];fresh=arena_actor(previous['robot'],previous['weapon'])
-                    fresh.update({k:v for k,v in previous.items() if k in fresh});state[key]=fresh
-                state['rules_version']=3
-                actor,target=state[side],state[other]
-            if action!='resign':
-                event=resolve_action(actor,target,action,seed=int(identity[:8],16)+revision)
-                if not event['ok']:raise RuleError(event['error'])
-                state['last']={**event,'actor':side}
-            else:state['last']=dict(actor=side,action=action,damage=0,heal=0,weapon=actor['weapon'])
-            state['turn']=other
-            if action=='resign':state['finish_reason']='resign'
+            if state.get("rules_version") != 3:
+                for key in ("a", "b"):
+                    previous = state[key]
+                    fresh = arena_actor(previous["robot"], previous["weapon"])
+                    fresh["max_hp"] = 120  # Existing v1 matches used fixed 120 HP.
+                    fresh.update({k: v for k, v in previous.items() if k in fresh})
+                    state[key] = fresh
+                state["rules_version"] = 3
+                actor, target = state[side], state[other]
+            if action != "resign":
+                event = resolve_action(
+                    actor, target, action, seed=int(identity[:8], 16) + revision
+                )
+                if not event["ok"]:
+                    raise RuleError(event["error"])
+                state["last"] = {**event, "actor": side}
+            else:
+                state["last"] = dict(
+                    actor=side, action=action, damage=0, heal=0, weapon=actor["weapon"]
+                )
+            state["turn"] = other
+            if action == "resign":
+                state["finish_reason"] = "resign"
             if action == "resign" or not target["hp"]:
                 self._finish(db, row, state, other if action == "resign" else side)
-            elif revision>=119:
-                state['finish_reason']='turn-limit'
-                score={key:state[key]['hp']/state[key]['max_hp'] for key in ('a','b')}
-                self._finish(db,row,state,None if score['a']==score['b'] else max(score,key=score.get))
+            elif revision >= 119:
+                state["finish_reason"] = "turn-limit"
+                score = {
+                    key: state[key]["hp"] / state[key]["max_hp"] for key in ("a", "b")
+                }
+                self._finish(
+                    db,
+                    row,
+                    state,
+                    None if score["a"] == score["b"] else max(score, key=score.get),
+                )
             else:
                 db.execute(
                     "UPDATE matches SET state=?,revision=revision+1,updated=? WHERE id=?",
@@ -306,7 +370,7 @@ class ArenaService(SocialService):
             result = []
             for row in db.execute(
                 "SELECT c.*,COUNT(p.id) members FROM clans c LEFT JOIN players p ON p.clan=c.id WHERE c.name LIKE ? GROUP BY c.id ORDER BY c.rating DESC,c.xp DESC,c.id LIMIT 50",
-                ("%"+search[:24]+"%",)
+                ("%" + search[:24] + "%",),
             ):
                 entry = dict(row)
                 entry["level"] = 1 + math.isqrt(entry["xp"] // 50)
@@ -314,8 +378,22 @@ class ArenaService(SocialService):
                     "SELECT COALESCE(SUM(wins),0) FROM contributions WHERE clan=? AND week=?",
                     (entry["id"], self.week()),
                 ).fetchone()[0]
-                entry['roster']=[{**dict(member),'role':'owner' if member['id']==entry['owner'] else member['clan_role']}
-                    for member in db.execute('SELECT id,name,rating,clan_role FROM players WHERE clan=? ORDER BY rating DESC',(entry['id'],))] if entry['id']==profile[0] else []
+                entry["roster"] = (
+                    [
+                        {
+                            **dict(member),
+                            "role": "owner"
+                            if member["id"] == entry["owner"]
+                            else member["clan_role"],
+                        }
+                        for member in db.execute(
+                            "SELECT id,name,rating,clan_role FROM players WHERE clan=? ORDER BY rating DESC",
+                            (entry["id"],),
+                        )
+                    ]
+                    if entry["id"] == profile[0]
+                    else []
+                )
                 result.append(entry)
             wars = [
                 dict(row)
@@ -332,7 +410,8 @@ class ArenaService(SocialService):
             }
 
     def clan_action(self, player, action, value=""):
-        if action in {'edit','promote','demote','kick'}:return self.clan_edit(player,action,value)
+        if action in {"edit", "promote", "demote", "kick"}:
+            return self.clan_edit(player, action, value)
         with self.tx() as db:
             me = db.execute("SELECT * FROM players WHERE id=?", (player,)).fetchone()
             clan = me["clan"]
@@ -387,7 +466,10 @@ class ArenaService(SocialService):
                         )
                     else:
                         db.execute("DELETE FROM clans WHERE id=?", (clan,))
-                db.execute("UPDATE players SET clan=NULL,clan_role='member' WHERE id=?", (player,))
+                db.execute(
+                    "UPDATE players SET clan=NULL,clan_role='member' WHERE id=?",
+                    (player,),
+                )
             elif action == "donate":
                 if not clan or me["coins"] < 10:
                     raise RuleError("Нужно 10 PvP-жетонов и членство в клане")
@@ -437,7 +519,7 @@ class ArenaService(SocialService):
                     raise RuleError("Награда войны уже получена") from None
                 db.execute("UPDATE players SET coins=coins+40 WHERE id=?", (player,))
                 settled = db.execute(
-                    "INSERT OR IGNORE INTO claims VALUES(?,?)",
+                    "INSERT INTO claims VALUES(?,?) ON CONFLICT DO NOTHING",
                     ("clan:" + winner, "war:" + value),
                 ).rowcount
                 if settled:
@@ -463,7 +545,7 @@ class ArenaService(SocialService):
                     raise RuleError("Войну объявляет глава клана")
                 a, b = sorted((clan, value))
                 db.execute(
-                    "INSERT OR IGNORE INTO wars(id,a,b,week) VALUES(?,?,?,?)",
+                    "INSERT INTO wars(id,a,b,week) VALUES(?,?,?,?) ON CONFLICT DO NOTHING",
                     (secrets.token_hex(8), a, b, self.week()),
                 )
             else:

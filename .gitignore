@@ -180,13 +180,6 @@ workshop-save*.json
 arena-identity-*.json
 arena-server.json
 
-# Personal / temp files
-leaderboard.json
-python
-uv
-src/tempCodeRunnerFile.py
-*.rar
-Microservice/
 
 # Personal / temp files
 leaderboard.json
@@ -195,3 +188,7 @@ uv
 src/tempCodeRunnerFile.py
 *.rar
 Microservice/
+
+# Pre-migration database backups
+*.sqlite.before-*.backup
+*.sqlite3.before-*.backup

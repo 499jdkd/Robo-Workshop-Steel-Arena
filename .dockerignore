@@ -1,0 +1,11 @@
+*
+!server/
+server/*
+!server/*.py
+!server/requirements.txt
+!server/Dockerfile
+!src/
+src/*
+!src/armory.py
+!src/combat_rules.py
+!src/robot_designs.py

@@ -9,6 +9,8 @@
 *.toml text eol=lf
 *.json text eol=lf
 *.sh text eol=lf
+Dockerfile text eol=lf
+requirements.txt text eol=lf
 *.cmd text eol=crlf
 *.bat text eol=crlf
 *.png binary
