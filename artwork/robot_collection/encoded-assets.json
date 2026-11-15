@@ -1,0 +1,142 @@
+[
+  {
+    "asset": "art/room_0.webp",
+    "dimensions": [
+      1536,
+      1024
+    ],
+    "bytes": 287694,
+    "sha256": "fdb6daa90e8ba87e2f94d0887017e87fdf9791d7575cb5fb724831ca79d5ef51",
+    "alpha_preserved": false
+  },
+  {
+    "asset": "art/room_1.webp",
+    "dimensions": [
+      1536,
+      1024
+    ],
+    "bytes": 400436,
+    "sha256": "f87b530c17693ff1f1854ddde30503eb8ac912dc965181c0ad540ff637246fbb",
+    "alpha_preserved": false
+  },
+  {
+    "asset": "art/room_2.webp",
+    "dimensions": [
+      1536,
+      1024
+    ],
+    "bytes": 206954,
+    "sha256": "465f44ab2f84e7b4396ea2c8d85c97530ea29384ace9ea28a151907a3d25c1fa",
+    "alpha_preserved": false
+  },
+  {
+    "asset": "art/room_3.webp",
+    "dimensions": [
+      1536,
+      1024
+    ],
+    "bytes": 188356,
+    "sha256": "1726048a50b98fec32134d2c2661877c0c0e8354a20d9f1c489056be0544bdce",
+    "alpha_preserved": false
+  },
+  {
+    "asset": "art/room_4.webp",
+    "dimensions": [
+      1536,
+      1024
+    ],
+    "bytes": 321880,
+    "sha256": "ce5c747e2f7e5775d6362a87788f390cca16bb99c2e3ae268318d0bd7501f666",
+    "alpha_preserved": false
+  },
+  {
+    "asset": "art/room_5.webp",
+    "dimensions": [
+      1536,
+      1024
+    ],
+    "bytes": 276678,
+    "sha256": "46ed2dadfb6c34b316bbbb687cc3049806ad2c189625296eef2ddbf3e6b14e00",
+    "alpha_preserved": false
+  },
+  {
+    "asset": "art/robot_spark.webp",
+    "dimensions": [
+      1254,
+      1254
+    ],
+    "bytes": 158870,
+    "sha256": "35cb7cbef098e87a7cfc40e70267602635abc56b1c8ab33ac4e32bedb58bb8ef",
+    "alpha_preserved": true
+  },
+  {
+    "asset": "art/robot_volt.webp",
+    "dimensions": [
+      1254,
+      1254
+    ],
+    "bytes": 144350,
+    "sha256": "e163875578e19ff7145eb3c01ceb5d230ab580a29c425f37e371f63c5c892ee0",
+    "alpha_preserved": true
+  },
+  {
+    "asset": "art/robot_flora.webp",
+    "dimensions": [
+      1254,
+      1254
+    ],
+    "bytes": 160728,
+    "sha256": "f6dd637cd0cb4ac1d5a08b59f94fcf4e8da6325ac50f056e40c8e8f3555a1cec",
+    "alpha_preserved": true
+  },
+  {
+    "asset": "art/robot_forge.webp",
+    "dimensions": [
+      1254,
+      1254
+    ],
+    "bytes": 243808,
+    "sha256": "f746002cfe77e655f8ef17d07f5aba62d7b5da60b4bebceee658eeffe544054d",
+    "alpha_preserved": true
+  },
+  {
+    "asset": "art/robot_nova.webp",
+    "dimensions": [
+      1254,
+      1254
+    ],
+    "bytes": 255586,
+    "sha256": "7939243ec87f4f0d9c52c674c89430da752e45e62f19394ac269ebb326621617",
+    "alpha_preserved": true
+  },
+  {
+    "asset": "art/egg_starter.webp",
+    "dimensions": [
+      1254,
+      1254
+    ],
+    "bytes": 102646,
+    "sha256": "c1b893c8147400f8f1a566146ffde676312dd80013292bcb2181a0547f6164e4",
+    "alpha_preserved": true
+  },
+  {
+    "asset": "art/egg_tech.webp",
+    "dimensions": [
+      1254,
+      1254
+    ],
+    "bytes": 122732,
+    "sha256": "1e4430ce9d3807ab84a407acd78817cc72c87e88f3db450adca21ed557c342bc",
+    "alpha_preserved": true
+  },
+  {
+    "asset": "art/egg_cosmic.webp",
+    "dimensions": [
+      1254,
+      1254
+    ],
+    "bytes": 203052,
+    "sha256": "d3c55b66e0ca47d712bdb9fe3a70db18d0d85bb6d5e08eb8384e4af9c3e420fd",
+    "alpha_preserved": true
+  }
+]

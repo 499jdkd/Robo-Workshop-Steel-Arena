@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="66" height="66" viewBox="0 0 66 66"><defs>
+    <linearGradient id="avatars_champion_svg_metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".45" stop-color="#EAF0F8"/><stop offset="1" stop-color="#8496B3"/></linearGradient>
+    <linearGradient id="avatars_champion_svg_paint" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".15" stop-color="#B28AE2"/><stop offset="1" stop-color="#B28AE2" stop-opacity=".7"/></linearGradient>
+    <linearGradient id="avatars_champion_svg_glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#354F6A"/><stop offset=".45" stop-color="#101E34"/><stop offset="1" stop-color="#071125"/></linearGradient>
+    <radialGradient id="avatars_champion_svg_glow"><stop stop-color="#B1F6FF"/><stop offset="1" stop-color="#27B9E0" stop-opacity="0"/></radialGradient>
+    </defs><circle cx="33" cy="33" r="30" fill="url(#avatars_champion_svg_paint)" stroke="#FFFFFF" stroke-width="4"/><circle cx="33" cy="33" r="25" fill="none" stroke="#FFFFFF" stroke-opacity=".45" stroke-width="2"/><path d="M21 19 H45 V33 Q43 45 33 47 Q23 45 21 33 Z M22 23 H12 V31 Q14 40 25 38 M45 23 H54 V31 Q51 40 42 38 M33 47 V55 M23 56 H43" stroke="#FFF5D8" stroke-width="4" fill="none"/></svg>

@@ -1,0 +1,6 @@
+.venv/
+build/
+__pycache__/
+flutter/.dart_tool/
+flutter/build/
+flutter/.flutter-plugins-dependencies

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="80" viewBox="0 0 160 80"><defs>
+    <linearGradient id="effects_pulse_svg_metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".45" stop-color="#EAF0F8"/><stop offset="1" stop-color="#8496B3"/></linearGradient>
+    <linearGradient id="effects_pulse_svg_paint" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".15" stop-color="#6BDFFF"/><stop offset="1" stop-color="#6BDFFF" stop-opacity=".7"/></linearGradient>
+    <linearGradient id="effects_pulse_svg_glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#354F6A"/><stop offset=".45" stop-color="#101E34"/><stop offset="1" stop-color="#071125"/></linearGradient>
+    <radialGradient id="effects_pulse_svg_glow"><stop stop-color="#B1F6FF"/><stop offset="1" stop-color="#27B9E0" stop-opacity="0"/></radialGradient>
+    </defs><ellipse cx="99" cy="43" rx="57" ry="35" fill="url(#effects_pulse_svg_glow)" opacity=".55"/><path d="M5 53 L43 39 L58 60 L76 25 L89 48 L139 37" fill="none" stroke="#D2FFFF" stroke-width="6" stroke-linejoin="round"/><ellipse cx="122" cy="42" rx="25" ry="24" fill="none" stroke="#7EEAFF" stroke-width="4"/></svg>

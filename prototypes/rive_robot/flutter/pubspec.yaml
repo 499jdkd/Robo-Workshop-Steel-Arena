@@ -1,0 +1,23 @@
+name: clicker_rive_lab
+description: Isolated robot animation lab; never opens the player's save.
+publish_to: none
+version: 0.1.0+1
+environment:
+  sdk: '>=3.12.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  flet: 1.0.4
+  rive: 0.14.11
+  http: 1.6.0
+  flet_rive:
+    path: ../../../extensions/flet_rive
+  provider: ^6.1.5
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/

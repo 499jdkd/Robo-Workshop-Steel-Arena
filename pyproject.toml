@@ -1,0 +1,81 @@
+[project]
+name = "clicker"
+version = "0.1.0"
+description = ""
+
+requires-python = ">=3.10"
+
+
+dependencies = [
+    "flet==1.0.4",
+    "flet-ads==1.0.4",
+    "flet-rive==1.0.4",
+    "httpx==0.28.1",
+]
+
+[dependency-groups]
+dev = [
+    "fastapi==0.135.1",
+    "flet-cli==1.0.4",
+    "flet-desktop==1.0.4",
+    "flet-web==1.0.4",
+    "pyinstaller>=6.22.3",
+    "pywebview>=6.2.1",
+    "uvicorn==0.41.0",
+]
+
+[tool.flet]
+org = "com.mycompany"
+product = "Clicker"
+company = "Flet"
+copyright = "Copyright (C) 2023-2026 by Flet"
+
+[tool.flet.app]
+path = "src"
+exclude = [
+    "assets/tap.png",
+    "assets/image3.png",
+    'assets\tap.png',
+    'assets\image3.png',
+    "assets/boost.png",
+    "assets/image4.png",
+    "assets/image5.png",
+    "assets/robot2.png",
+    'assets\boost.png',
+    'assets\image4.png',
+    'assets\image5.png',
+    'assets\robot2.png',
+    "assets/workshop_0.svg",
+    "assets/workshop_1.svg",
+    "assets/workshop_2.svg",
+    "assets/workshop_3.svg",
+    "assets/workshop_4.svg",
+    "assets/workshop_5.svg",
+    'assets\workshop_0.svg',
+    'assets\workshop_1.svg',
+    'assets\workshop_2.svg',
+    'assets\workshop_3.svg',
+    'assets\workshop_4.svg',
+    'assets\workshop_5.svg',
+    "fix.py",
+    "some.py",
+    "tempCodeRunnerFile.py",
+]
+
+[tool.flet.android.meta_data]
+"com.google.android.gms.ads.APPLICATION_ID" = "ca-app-pub-4765036354233528~4390830168"
+"com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT" = "true"
+
+[tool.flet.android.permission]
+"com.google.android.gms.permission.AD_ID" = false
+"android.permission.ACCESS_ADSERVICES_AD_ID" = false
+"android.permission.ACCESS_ADSERVICES_ATTRIBUTION" = false
+"android.permission.ACCESS_ADSERVICES_TOPICS" = false
+
+[tool.flet.android.gradle_properties]
+"org.gradle.jvmargs" = "-Xmx3G -XX:MaxMetaspaceSize=1G -XX:ReservedCodeCacheSize=256m -XX:+HeapDumpOnOutOfMemoryError"
+"org.gradle.workers.max" = "2"
+
+[tool.flet.flutter.pubspec.dependency_overrides]
+flet_ads = { path = "../../extensions/flet_ads" }
+flet_rive = { path = "../../extensions/flet_rive" }

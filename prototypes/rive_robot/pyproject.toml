@@ -1,0 +1,19 @@
+[project]
+name = "clicker-rive-prototype"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = ["flet==1.0.4", "flet-rive==1.0.4"]
+
+[dependency-groups]
+dev = ["flet-cli==1.0.4", "flet-desktop==1.0.4", "flet-web==1.0.4"]
+
+[tool.flet]
+org = "com.mycompany"
+product = "Clicker Rive Lab"
+
+[tool.flet.app]
+path = "."
+exclude = ["flutter", ".venv", "build", "tests", "__pycache__"]
+
+[tool.flet.flutter.pubspec.dependency_overrides]
+flet_rive = { path = "../../../../extensions/flet_rive" }

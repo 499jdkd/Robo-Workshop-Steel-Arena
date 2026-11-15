@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="240" viewBox="0 0 220 240"><defs>
+    <linearGradient id="portraits_aegis_svg_metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".45" stop-color="#EAF0F8"/><stop offset="1" stop-color="#8496B3"/></linearGradient>
+    <linearGradient id="portraits_aegis_svg_paint" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".15" stop-color="#F3AC49"/><stop offset="1" stop-color="#F3AC49" stop-opacity=".7"/></linearGradient>
+    <linearGradient id="portraits_aegis_svg_glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#354F6A"/><stop offset=".45" stop-color="#101E34"/><stop offset="1" stop-color="#071125"/></linearGradient>
+    <radialGradient id="portraits_aegis_svg_glow"><stop stop-color="#B1F6FF"/><stop offset="1" stop-color="#27B9E0" stop-opacity="0"/></radialGradient>
+    </defs><g transform="translate(24 110) scale(1 1)"><defs>
+    <linearGradient id="a_rig_aegis_arm_svg_metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".45" stop-color="#EAF0F8"/><stop offset="1" stop-color="#8496B3"/></linearGradient>
+    <linearGradient id="a_rig_aegis_arm_svg_paint" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".15" stop-color="#D77566"/><stop offset="1" stop-color="#D77566" stop-opacity=".7"/></linearGradient>
+    <linearGradient id="a_rig_aegis_arm_svg_glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#354F6A"/><stop offset=".45" stop-color="#101E34"/><stop offset="1" stop-color="#071125"/></linearGradient>
+    <radialGradient id="a_rig_aegis_arm_svg_glow"><stop stop-color="#B1F6FF"/><stop offset="1" stop-color="#27B9E0" stop-opacity="0"/></radialGradient>
+    </defs><circle cx="25" cy="15" r="13" fill="#30445E" stroke="#8D9DB1" stroke-width="3"/>
+        <rect x="13" y="23" width="24" height="40" rx="11" fill="url(#a_rig_aegis_arm_svg_metal)" stroke="#657A95" stroke-width="2"/>
+        <rect x="13" y="40" width="24" height="10" rx="4" fill="url(#a_rig_aegis_arm_svg_paint)"/>
+        <rect x="10" y="61" width="31" height="23" rx="10" fill="#405777" stroke="#91A4BE" stroke-width="2"/>
+        <path d="M20 67 V77 M29 67 V78" stroke="#A0B1C7" stroke-width="2"/></g><g transform="translate(149 110) scale(1 1)"><defs>
+    <linearGradient id="b_rig_aegis_arm_svg_metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".45" stop-color="#EAF0F8"/><stop offset="1" stop-color="#8496B3"/></linearGradient>
+    <linearGradient id="b_rig_aegis_arm_svg_paint" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".15" stop-color="#D77566"/><stop offset="1" stop-color="#D77566" stop-opacity=".7"/></linearGradient>
+    <linearGradient id="b_rig_aegis_arm_svg_glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#354F6A"/><stop offset=".45" stop-color="#101E34"/><stop offset="1" stop-color="#071125"/></linearGradient>
+    <radialGradient id="b_rig_aegis_arm_svg_glow"><stop stop-color="#B1F6FF"/><stop offset="1" stop-color="#27B9E0" stop-opacity="0"/></radialGradient>
+    </defs><circle cx="25" cy="15" r="13" fill="#30445E" stroke="#8D9DB1" stroke-width="3"/>
+        <rect x="13" y="23" width="24" height="40" rx="11" fill="url(#b_rig_aegis_arm_svg_metal)" stroke="#657A95" stroke-width="2"/>
+        <rect x="13" y="40" width="24" height="10" rx="4" fill="url(#b_rig_aegis_arm_svg_paint)"/>
+        <rect x="10" y="61" width="31" height="23" rx="10" fill="#405777" stroke="#91A4BE" stroke-width="2"/>
+        <path d="M20 67 V77 M29 67 V78" stroke="#A0B1C7" stroke-width="2"/></g><g transform="translate(0 90) scale(1 1)"><defs>
+    <linearGradient id="c_rig_aegis_body_svg_metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".45" stop-color="#EAF0F8"/><stop offset="1" stop-color="#8496B3"/></linearGradient>
+    <linearGradient id="c_rig_aegis_body_svg_paint" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".15" stop-color="#D77566"/><stop offset="1" stop-color="#D77566" stop-opacity=".7"/></linearGradient>
+    <linearGradient id="c_rig_aegis_body_svg_glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#354F6A"/><stop offset=".45" stop-color="#101E34"/><stop offset="1" stop-color="#071125"/></linearGradient>
+    <radialGradient id="c_rig_aegis_body_svg_glow"><stop stop-color="#B1F6FF"/><stop offset="1" stop-color="#27B9E0" stop-opacity="0"/></radialGradient>
+    </defs><rect x="27" y="98" width="164" height="40" rx="20" fill="#26364C" stroke="#6C7D96" stroke-width="4"/><path d="M49 101 H170 M49 134 H170" stroke="#8594AD" stroke-width="3"/><rect x="96" y="0" width="28" height="24" rx="9" fill="#3E526F"/>
+        <path d="M66 16 Q110 -3 154 16 L164 70 Q156 109 110 114 Q63 107 57 70 Z" fill="url(#c_rig_aegis_body_svg_metal)" stroke="#637693" stroke-width="3"/>
+        <path d="M72 19 Q109 34 149 19 L142 33 Q110 48 78 33 Z" fill="url(#c_rig_aegis_body_svg_paint)"/>
+        <rect x="88" y="47" width="45" height="17" rx="8" fill="#243E56" stroke="#8FA6BD" stroke-width="3"/>
+        <rect x="95" y="52" width="31" height="7" rx="3" fill="#73F6FF"/>
+        <path d="M78 77 Q111 65 145 77 L138 99 Q111 115 84 99 Z" fill="url(#c_rig_aegis_body_svg_paint)" stroke="#8291A9" stroke-width="2"/>
+        <path d="M99 84 H124 M101 91 H122" stroke="#34485F" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="70" cy="60" r="4" fill="#677D98"/><circle cx="151" cy="60" r="4" fill="#677D98"/><path d="M72 26 L110 15 L148 26 L140 75 L110 91 L80 75 Z" fill="url(#c_rig_aegis_body_svg_paint)" stroke="#647789" stroke-width="4"/><path d="M110 29 V73 M90 45 H131" stroke="#FFE2AF" stroke-width="6" stroke-linecap="round"/></g><g transform="translate(39 185) scale(0.671875 0.671875)"><defs>
+    <linearGradient id="d_rig_wheel_svg_metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".45" stop-color="#EAF0F8"/><stop offset="1" stop-color="#8496B3"/></linearGradient>
+    <linearGradient id="d_rig_wheel_svg_paint" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".15" stop-color="#F3AC49"/><stop offset="1" stop-color="#F3AC49" stop-opacity=".7"/></linearGradient>
+    <linearGradient id="d_rig_wheel_svg_glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#354F6A"/><stop offset=".45" stop-color="#101E34"/><stop offset="1" stop-color="#071125"/></linearGradient>
+    <radialGradient id="d_rig_wheel_svg_glow"><stop stop-color="#B1F6FF"/><stop offset="1" stop-color="#27B9E0" stop-opacity="0"/></radialGradient>
+    </defs><circle cx="32" cy="32" r="30" fill="#182A41" stroke="#7186A2" stroke-width="4"/><circle cx="32" cy="32" r="24" fill="url(#d_rig_wheel_svg_glass)"/><path d="M32 32 L55.00 32.00" stroke="#BAC7DA" stroke-width="3"/><path d="M32 32 L48.26 48.26" stroke="#BAC7DA" stroke-width="3"/><path d="M32 32 L32.00 55.00" stroke="#BAC7DA" stroke-width="3"/><path d="M32 32 L15.74 48.26" stroke="#BAC7DA" stroke-width="3"/><path d="M32 32 L9.00 32.00" stroke="#BAC7DA" stroke-width="3"/><path d="M32 32 L15.74 15.74" stroke="#BAC7DA" stroke-width="3"/><path d="M32 32 L32.00 9.00" stroke="#BAC7DA" stroke-width="3"/><path d="M32 32 L48.26 15.74" stroke="#BAC7DA" stroke-width="3"/><circle cx="32" cy="32" r="14" fill="url(#d_rig_wheel_svg_paint)" stroke="#E8D0A1" stroke-width="2"/><circle cx="32" cy="32" r="5" fill="#455C76"/></g><g transform="translate(137 185) scale(0.671875 0.671875)"><defs>
+    <linearGradient id="e_rig_wheel_svg_metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".45" stop-color="#EAF0F8"/><stop offset="1" stop-color="#8496B3"/></linearGradient>
+    <linearGradient id="e_rig_wheel_svg_paint" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".15" stop-color="#F3AC49"/><stop offset="1" stop-color="#F3AC49" stop-opacity=".7"/></linearGradient>
+    <linearGradient id="e_rig_wheel_svg_glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#354F6A"/><stop offset=".45" stop-color="#101E34"/><stop offset="1" stop-color="#071125"/></linearGradient>
+    <radialGradient id="e_rig_wheel_svg_glow"><stop stop-color="#B1F6FF"/><stop offset="1" stop-color="#27B9E0" stop-opacity="0"/></radialGradient>
+    </defs><circle cx="32" cy="32" r="30" fill="#182A41" stroke="#7186A2" stroke-width="4"/><circle cx="32" cy="32" r="24" fill="url(#e_rig_wheel_svg_glass)"/><path d="M32 32 L55.00 32.00" stroke="#BAC7DA" stroke-width="3"/><path d="M32 32 L48.26 48.26" stroke="#BAC7DA" stroke-width="3"/><path d="M32 32 L32.00 55.00" stroke="#BAC7DA" stroke-width="3"/><path d="M32 32 L15.74 48.26" stroke="#BAC7DA" stroke-width="3"/><path d="M32 32 L9.00 32.00" stroke="#BAC7DA" stroke-width="3"/><path d="M32 32 L15.74 15.74" stroke="#BAC7DA" stroke-width="3"/><path d="M32 32 L32.00 9.00" stroke="#BAC7DA" stroke-width="3"/><path d="M32 32 L48.26 15.74" stroke="#BAC7DA" stroke-width="3"/><circle cx="32" cy="32" r="14" fill="url(#e_rig_wheel_svg_paint)" stroke="#E8D0A1" stroke-width="2"/><circle cx="32" cy="32" r="5" fill="#455C76"/></g><g transform="translate(0 0) scale(1 1)"><defs>
+    <linearGradient id="f_rig_aegis_head_svg_metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".45" stop-color="#EAF0F8"/><stop offset="1" stop-color="#8496B3"/></linearGradient>
+    <linearGradient id="f_rig_aegis_head_svg_paint" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".15" stop-color="#D77566"/><stop offset="1" stop-color="#D77566" stop-opacity=".7"/></linearGradient>
+    <linearGradient id="f_rig_aegis_head_svg_glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#354F6A"/><stop offset=".45" stop-color="#101E34"/><stop offset="1" stop-color="#071125"/></linearGradient>
+    <radialGradient id="f_rig_aegis_head_svg_glow"><stop stop-color="#B1F6FF"/><stop offset="1" stop-color="#27B9E0" stop-opacity="0"/></radialGradient>
+    </defs><path d="M60 28 L72 7 H149 L164 29" fill="#687C91" stroke="#B4C8D4" stroke-width="4"/><path d="M109 7 V29" stroke="#F2B06A" stroke-width="6"/><rect x="23" y="35" width="29" height="43" rx="14" fill="url(#f_rig_aegis_head_svg_paint)" stroke="#5D6C88" stroke-width="3"/>
+        <rect x="166" y="35" width="29" height="43" rx="14" fill="url(#f_rig_aegis_head_svg_paint)" stroke="#5D6C88" stroke-width="3"/>
+        <rect x="34" y="14" width="151" height="88" rx="16" fill="url(#f_rig_aegis_head_svg_metal)" stroke="#637693" stroke-width="3"/>
+        <rect x="43" y="23" width="134" height="71" rx="10" fill="url(#f_rig_aegis_head_svg_glass)" stroke="#8095AD" stroke-width="3"/>
+        <path d="M56 38 Q96 21 143 31" fill="none" stroke="#94C8E5" stroke-opacity=".25" stroke-width="5" stroke-linecap="round"/>
+        <rect x="84" y="14" width="51" height="9" rx="4" fill="url(#f_rig_aegis_head_svg_paint)"/>
+        <circle cx="39" cy="56" r="7" fill="#6D7D99"/><circle cx="178" cy="56" r="7" fill="#6D7D99"/></g><rect x="77" y="49" width="14" height="16" rx="7" fill="#74F3FF"/><rect x="127" y="49" width="14" height="16" rx="7" fill="#74F3FF"/><g transform="translate(97 69) scale(0.892857 0.833333)"><defs>
+    <linearGradient id="g_rig_mouth_smile_svg_metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".45" stop-color="#EAF0F8"/><stop offset="1" stop-color="#8496B3"/></linearGradient>
+    <linearGradient id="g_rig_mouth_smile_svg_paint" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".15" stop-color="#F3AC49"/><stop offset="1" stop-color="#F3AC49" stop-opacity=".7"/></linearGradient>
+    <linearGradient id="g_rig_mouth_smile_svg_glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#354F6A"/><stop offset=".45" stop-color="#101E34"/><stop offset="1" stop-color="#071125"/></linearGradient>
+    <radialGradient id="g_rig_mouth_smile_svg_glow"><stop stop-color="#B1F6FF"/><stop offset="1" stop-color="#27B9E0" stop-opacity="0"/></radialGradient>
+    </defs><path d="M4 3 Q14 18 24 3" fill="none" stroke="#6AF5FF" stroke-width="3" stroke-linecap="round"/></g></svg>

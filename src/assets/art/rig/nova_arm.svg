@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="50" height="90" viewBox="0 0 50 90"><defs>
+    <linearGradient id="rig_nova_arm_svg_metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".45" stop-color="#EAF0F8"/><stop offset="1" stop-color="#8496B3"/></linearGradient>
+    <linearGradient id="rig_nova_arm_svg_paint" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".15" stop-color="#B696EF"/><stop offset="1" stop-color="#B696EF" stop-opacity=".7"/></linearGradient>
+    <linearGradient id="rig_nova_arm_svg_glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#354F6A"/><stop offset=".45" stop-color="#101E34"/><stop offset="1" stop-color="#071125"/></linearGradient>
+    <radialGradient id="rig_nova_arm_svg_glow"><stop stop-color="#B1F6FF"/><stop offset="1" stop-color="#27B9E0" stop-opacity="0"/></radialGradient>
+    </defs><circle cx="25" cy="15" r="13" fill="#30445E" stroke="#8D9DB1" stroke-width="3"/>
+        <rect x="13" y="23" width="24" height="40" rx="11" fill="url(#rig_nova_arm_svg_metal)" stroke="#657A95" stroke-width="2"/>
+        <rect x="13" y="40" width="24" height="10" rx="4" fill="url(#rig_nova_arm_svg_paint)"/>
+        <rect x="10" y="61" width="31" height="23" rx="10" fill="#405777" stroke="#91A4BE" stroke-width="2"/>
+        <path d="M20 67 V77 M29 67 V78" stroke="#A0B1C7" stroke-width="2"/></svg>

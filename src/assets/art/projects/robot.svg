@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="140" viewBox="0 0 200 140"><defs>
+    <linearGradient id="projects_robot_svg_metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".45" stop-color="#EAF0F8"/><stop offset="1" stop-color="#8496B3"/></linearGradient>
+    <linearGradient id="projects_robot_svg_paint" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".15" stop-color="#A793E8"/><stop offset="1" stop-color="#A793E8" stop-opacity=".7"/></linearGradient>
+    <linearGradient id="projects_robot_svg_glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#354F6A"/><stop offset=".45" stop-color="#101E34"/><stop offset="1" stop-color="#071125"/></linearGradient>
+    <radialGradient id="projects_robot_svg_glow"><stop stop-color="#B1F6FF"/><stop offset="1" stop-color="#27B9E0" stop-opacity="0"/></radialGradient>
+    </defs><rect x="44" y="22" width="112" height="73" rx="24" fill="url(#projects_robot_svg_metal)" stroke="#718CA8" stroke-width="4"/><rect x="55" y="33" width="90" height="49" rx="19" fill="url(#projects_robot_svg_glass)"/><circle cx="79" cy="57" r="8" fill="#86F5FF"/><circle cx="122" cy="57" r="8" fill="#86F5FF"/><path d="M75 99 V121 M128 99 V121 M30 50 L20 79 M170 50 L181 79" stroke="#9A85D4" stroke-width="12" stroke-linecap="round"/></svg>

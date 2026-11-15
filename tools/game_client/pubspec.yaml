@@ -1,0 +1,30 @@
+name: clicker_game_client
+publish_to: none
+environment:
+  sdk: ">=3.12.0 <4.0.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  flet: 1.0.4
+  http: 1.6.0
+  rive: 0.14.11
+  flet_rive:
+    path: ../../extensions/flet_rive
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+flutter:
+  uses-material-design: true
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/roboto-regular.ttf
+        - asset: assets/fonts/roboto-medium.ttf
+          weight: 500
+        - asset: assets/fonts/roboto-bold.ttf
+          weight: 700
+        - asset: assets/fonts/roboto-italic.ttf
+          style: italic
+  assets:
+    - assets/fonts/roboto_license.txt

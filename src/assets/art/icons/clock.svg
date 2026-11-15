@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><defs>
+    <linearGradient id="icons_clock_svg_metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".45" stop-color="#EAF0F8"/><stop offset="1" stop-color="#8496B3"/></linearGradient>
+    <linearGradient id="icons_clock_svg_paint" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".15" stop-color="#A48BD8"/><stop offset="1" stop-color="#A48BD8" stop-opacity=".7"/></linearGradient>
+    <linearGradient id="icons_clock_svg_glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#354F6A"/><stop offset=".45" stop-color="#101E34"/><stop offset="1" stop-color="#071125"/></linearGradient>
+    <radialGradient id="icons_clock_svg_glow"><stop stop-color="#B1F6FF"/><stop offset="1" stop-color="#27B9E0" stop-opacity="0"/></radialGradient>
+    </defs><path d="M32 3 L57 17 V46 L32 61 L7 46 V17 Z" fill="url(#icons_clock_svg_paint)" stroke="#A48BD8" stroke-width="2"/><path d="M12 19 L32 8 L51 19" fill="none" stroke="#FFFFFF" stroke-opacity=".45" stroke-width="3"/><circle cx="32" cy="32" r="16" fill="#F8F4FF"/><path d="M32 21 V32 L40 37" stroke="#8B70C5" stroke-width="4" fill="none" stroke-linecap="round"/></svg>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="140" viewBox="0 0 200 140"><defs>
+    <linearGradient id="projects_beacon_svg_metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".45" stop-color="#EAF0F8"/><stop offset="1" stop-color="#8496B3"/></linearGradient>
+    <linearGradient id="projects_beacon_svg_paint" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".15" stop-color="#5DC5CC"/><stop offset="1" stop-color="#5DC5CC" stop-opacity=".7"/></linearGradient>
+    <linearGradient id="projects_beacon_svg_glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#354F6A"/><stop offset=".45" stop-color="#101E34"/><stop offset="1" stop-color="#071125"/></linearGradient>
+    <radialGradient id="projects_beacon_svg_glow"><stop stop-color="#B1F6FF"/><stop offset="1" stop-color="#27B9E0" stop-opacity="0"/></radialGradient>
+    </defs><path d="M54 125 L77 45 H123 L147 125 Z" fill="url(#projects_beacon_svg_metal)" stroke="#667F9B" stroke-width="4"/><ellipse cx="100" cy="42" rx="48" ry="24" fill="url(#projects_beacon_svg_paint)" stroke="#D5F7FF" stroke-width="5"/><path d="M100 11 V0 M39 24 L22 13 M161 24 L178 13" stroke="#8FEFFF" stroke-width="5" stroke-linecap="round"/><path d="M87 70 H115 V103 H87 Z" fill="#65E8F0"/></svg>

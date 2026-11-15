@@ -1,0 +1,17 @@
+name: flet_rive
+description: Articulated Rive robot scenes for Clicker's workshop and arena.
+version: 0.1.0
+publish_to: none
+environment:
+  sdk: '>=3.12.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  collection: ^1.16.0
+  rive: 0.14.11
+  flet: 1.0.4
+  audioplayers: 6.8.1
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

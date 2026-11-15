@@ -1,0 +1,222 @@
+[
+  {
+    "asset": "art/rig/spark_head.svg",
+    "sha256": "01cad9e3ce9d5763a056fcd81820926fcce3f9e0f4ff440a734c08e276e33b74"
+  },
+  {
+    "asset": "art/rig/spark_body.svg",
+    "sha256": "d3d49fbe169b44ea566941a0a9d43cea82e857974b151eb0ff4028fe4018fc9b"
+  },
+  {
+    "asset": "art/rig/spark_arm.svg",
+    "sha256": "a54e25f8fff0c15a8fc7fa6b9c2b203e365dd535e0bc8ac942853534cb48a19d"
+  },
+  {
+    "asset": "art/rig/volt_head.svg",
+    "sha256": "60bcac34aead2628e01330b0a3be4425c81f5b4567637d8b5ff71df33ff7c0ba"
+  },
+  {
+    "asset": "art/rig/volt_body.svg",
+    "sha256": "50c5908ba063201ac6d43e6e57cd5323a8f4cb384d85eb75d9ec55ac791dffe0"
+  },
+  {
+    "asset": "art/rig/volt_arm.svg",
+    "sha256": "2652000b525107bf72378a2560738b2f0dbab3a777608c762c36715a348aa629"
+  },
+  {
+    "asset": "art/rig/flora_head.svg",
+    "sha256": "d56503f40c9ccd77affeef109eeed82bd3b36b6baa7e9499253da17416543321"
+  },
+  {
+    "asset": "art/rig/flora_body.svg",
+    "sha256": "cdbf256a1ea13c04c9201baa31a5a6d347083d44a2ee744e2ecb06cfcc1bbafa"
+  },
+  {
+    "asset": "art/rig/flora_arm.svg",
+    "sha256": "69c0570aefc4a14d93af2665acae4f37ee7ee82818742efda61821e634715d43"
+  },
+  {
+    "asset": "art/rig/forge_head.svg",
+    "sha256": "878a81f73309c980e152f25fc47bf9ce24e5a764070eaf1b4e321928ee59f9f7"
+  },
+  {
+    "asset": "art/rig/forge_body.svg",
+    "sha256": "d63e42fe7474378c55d5be70f159a54d3859dc113c92ead33c203542c93852ae"
+  },
+  {
+    "asset": "art/rig/forge_arm.svg",
+    "sha256": "928533940acc5df7e052173c5f2bba8aa3fd42e2cf3e3a01556318b99cbdc674"
+  },
+  {
+    "asset": "art/rig/nova_head.svg",
+    "sha256": "9155bda7eba168d03a131cb33ba64e34b7af0e4467c1f746bf08c237ef7db248"
+  },
+  {
+    "asset": "art/rig/nova_body.svg",
+    "sha256": "4bebd740a7852c9eaea02a179026fcfc9f075ddea4b9e696662e4cb39d7a75a8"
+  },
+  {
+    "asset": "art/rig/nova_arm.svg",
+    "sha256": "e4cb0d266cb0794c2deaeb54f432498d7d536f6d5aba470172cafca46fc6c82d"
+  },
+  {
+    "asset": "art/rig/glacier_head.svg",
+    "sha256": "3f7c3170d2e0d9f62d9fa3fa7173bd6b4f394a523d48ba1ff567088044c68631"
+  },
+  {
+    "asset": "art/rig/glacier_body.svg",
+    "sha256": "3ed8b6ce844151cec94eb72de5574793c934abcc46a1385908b17becb1ea11bc"
+  },
+  {
+    "asset": "art/rig/glacier_arm.svg",
+    "sha256": "94f23fdd577044fc1f00f6a85503f60a6666afc431faa037bf46bae18bbad166"
+  },
+  {
+    "asset": "art/rig/aegis_head.svg",
+    "sha256": "197c65589e9b597cc17fee23270a108da6c10790b9f1b19282716316d6ef35a2"
+  },
+  {
+    "asset": "art/rig/aegis_body.svg",
+    "sha256": "ba682c067bb5f5a4f3b03451e1ae118d27dba3464bf2e40db855af79fe898c0c"
+  },
+  {
+    "asset": "art/rig/aegis_arm.svg",
+    "sha256": "78dba20e60e4e614c7bdc327208b3288dd88b5864ad51bf411ab5a8454c3875b"
+  },
+  {
+    "asset": "art/rig/solar_head.svg",
+    "sha256": "a707b8837e31014297e68e7c079403c4baf494c7976780180cec9a100d8cbf8f"
+  },
+  {
+    "asset": "art/rig/solar_body.svg",
+    "sha256": "59cd796d205cd64783bec8988b15cd9833585c3dc7a54dd9a0b5f123f7c7a638"
+  },
+  {
+    "asset": "art/rig/solar_arm.svg",
+    "sha256": "31451e522c9cb690aff89118030b484121f0b403e244105251e5b8b3bdc1be74"
+  },
+  {
+    "asset": "art/rig/wheel.svg",
+    "sha256": "4cec110b3ff167a1280372b994420f9ab8dbff8aef0b7dd8ae6e2c51ee68de8f"
+  },
+  {
+    "asset": "art/rig/mouth_smile.svg",
+    "sha256": "79ef65760290b49714a91314d0701f04d6378f5874383815b45bc443b69068df"
+  },
+  {
+    "asset": "art/rig/mouth_focus.svg",
+    "sha256": "df9f911a3598365dba3237bdeb19a7c6b680106a5e8a7607aa09838792e748c5"
+  },
+  {
+    "asset": "art/rig/mouth_oh.svg",
+    "sha256": "d1ec545d8c353ef0e4c9f39505ae55c36cd4c4fb51afd374162974fb42f5802b"
+  },
+  {
+    "asset": "art/portraits/glacier.svg",
+    "sha256": "792840db831c2bc1c8ac9049b13d244ad0266a53de4ec719beff717ceb7d6545"
+  },
+  {
+    "asset": "art/portraits/aegis.svg",
+    "sha256": "8e1be0e454e398f79f166fc808102fae09f1f8d61d97bfcce91b3da014d8bae0"
+  },
+  {
+    "asset": "art/portraits/solar.svg",
+    "sha256": "bf45ebb27de3ccd3b8f0e152914a7dea20561f33222713129a8864cb2e7b4664"
+  },
+  {
+    "asset": "art/arena/stage_0.svg",
+    "sha256": "14f25277e63d17f9304bc543f78817622ce041923134262bbb91ce183d602492"
+  },
+  {
+    "asset": "art/arena/stage_1.svg",
+    "sha256": "3df36c64d8eef42e1268d22d2c2efce70bb95a43a10a3f0ac18ac967c5991429"
+  },
+  {
+    "asset": "art/arena/stage_2.svg",
+    "sha256": "643240c3768b051371cdd94389393901a57d96dc4d9c512a5bb04395571a5ad0"
+  },
+  {
+    "asset": "art/icons/credits.svg",
+    "sha256": "22ac8b5ce9289c7a1daad9f158ed792206170dd854dc078a5b647f284d4c7eeb"
+  },
+  {
+    "asset": "art/icons/food.svg",
+    "sha256": "1c49ae614035e3284665b5e287c5b98ad2c9eb17aa89066db2ab4585a5b61bdf"
+  },
+  {
+    "asset": "art/icons/arena.svg",
+    "sha256": "3cca24c1758e0aa91508bd6b64087a7121cd33a9c4422485a6e892f05020b5f6"
+  },
+  {
+    "asset": "art/icons/clock.svg",
+    "sha256": "a28746066f80b296f16cde1bf45cbe924908d694a09b0784a5b8446bb7d770aa"
+  },
+  {
+    "asset": "art/icons/profile.svg",
+    "sha256": "e93c32aa1b21ba175e56b925ec45fc10d4f191662fa13390e6db550941ea942a"
+  },
+  {
+    "asset": "art/icons/parts.svg",
+    "sha256": "3d51bbafcf15bedc720e42e06811f4948b5b4350132c8f23af66ccd452be244d"
+  },
+  {
+    "asset": "art/avatars/builder.svg",
+    "sha256": "92dec4aeaa6a57cf778fe68cc2be4c5dd3ae32ad2162dca46723a2088f6bb665"
+  },
+  {
+    "asset": "art/avatars/champion.svg",
+    "sha256": "ce1503388c43cb69547da0778da05e57b19494609ad40bf37827b876a8a86084"
+  },
+  {
+    "asset": "art/avatars/explorer.svg",
+    "sha256": "a8664d0e82f98b8fc920d62bc7b7018ef99c5ddcbe7f5c4ca16fa9f1f2276cdc"
+  },
+  {
+    "asset": "art/avatars/collector.svg",
+    "sha256": "e0eba17778ad0c0446ef3c83db2cf17410b363f8390b924661786dde1ff5930c"
+  },
+  {
+    "asset": "art/avatars/master.svg",
+    "sha256": "3c2981d7c293a0b67c12d6fa8d554997c8a00ecb914d9eda1134725c15ac801c"
+  },
+  {
+    "asset": "art/effects/steel.svg",
+    "sha256": "6941813c07bab9e4afa5b09e9dfb284ee8df583d89c02d6bb059510d378a3d03"
+  },
+  {
+    "asset": "art/effects/pulse.svg",
+    "sha256": "8d282cb393a83fad8e2418f2bc1e4a3a4b67b5b81529670ae99726fe13eb9a3a"
+  },
+  {
+    "asset": "art/effects/nature.svg",
+    "sha256": "37c68c4047cdb775b789afbb6391508e5d130ead7f3df45688db65b8c3f14d42"
+  },
+  {
+    "asset": "art/effects/cosmic.svg",
+    "sha256": "29954812b69cdd275c63846004098b8633d616bdaad6cff5825e69359e8e40eb"
+  },
+  {
+    "asset": "art/projects/lamp.svg",
+    "sha256": "31a282b37d9f3ab78a68cf735c37ecf2a858fd3d01476f50daea8c3026e37bf2"
+  },
+  {
+    "asset": "art/projects/scooter.svg",
+    "sha256": "97d364e3664d1922ef8d1da2b71d95afa6e272deb3b31d1041d2cf0724a428c3"
+  },
+  {
+    "asset": "art/projects/robot.svg",
+    "sha256": "df40e6bf8420e83dd773690b1ab1d232bb9781baab5c4b4f6c45275264868b25"
+  },
+  {
+    "asset": "art/projects/beacon.svg",
+    "sha256": "d78ff862f818389f32d47f3696f617d82b937b7c0008c5f1fa7492268feb755a"
+  },
+  {
+    "asset": "art/projects/solar.svg",
+    "sha256": "ef023095f8580bb789831cf3532ddd7a6123c0788cd448dbec63e757b7b35767"
+  },
+  {
+    "asset": "art/icons/crate.svg",
+    "sha256": "8f4eb1547bacf9709e0f1da6b5ca8e89cf63d67955007b713e8a8cabfcc8086e"
+  }
+]

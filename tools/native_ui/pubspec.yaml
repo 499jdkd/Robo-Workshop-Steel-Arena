@@ -1,0 +1,16 @@
+name: clicker_native_ui_checks
+publish_to: none
+environment:
+  sdk: '>=3.12.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  flet: 1.0.4
+  provider: ^6.1.5
+  flet_rive:
+    path: ../../extensions/flet_rive
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+flutter:
+  uses-material-design: true

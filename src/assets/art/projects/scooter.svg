@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="140" viewBox="0 0 200 140"><defs>
+    <linearGradient id="projects_scooter_svg_metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".45" stop-color="#EAF0F8"/><stop offset="1" stop-color="#8496B3"/></linearGradient>
+    <linearGradient id="projects_scooter_svg_paint" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".15" stop-color="#60C6D9"/><stop offset="1" stop-color="#60C6D9" stop-opacity=".7"/></linearGradient>
+    <linearGradient id="projects_scooter_svg_glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#354F6A"/><stop offset=".45" stop-color="#101E34"/><stop offset="1" stop-color="#071125"/></linearGradient>
+    <radialGradient id="projects_scooter_svg_glow"><stop stop-color="#B1F6FF"/><stop offset="1" stop-color="#27B9E0" stop-opacity="0"/></radialGradient>
+    </defs><circle cx="45" cy="108" r="22" fill="#2E4863" stroke="#7B9DB6" stroke-width="5"/><circle cx="157" cy="108" r="22" fill="#2E4863" stroke="#7B9DB6" stroke-width="5"/><path d="M44 98 H132 L147 39 H168 M145 39 L152 106" stroke="#53C7D2" stroke-width="11" fill="none" stroke-linecap="round"/><path d="M138 32 H169" stroke="#435D78" stroke-width="9" stroke-linecap="round"/></svg>
