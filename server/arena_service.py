@@ -13,29 +13,28 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 
-WEAPONS = {
-    "plasma": (15, 2),
-    "sniper": (23, 4),
-    "rocket": (26, 5),
-    "laser": (17, 4),
-    "electric": (16, 3),
-    "machinegun": (16, 2),
-    "sword": (20, 3),
-    "shield": (9, 2),
-    "flame": (18, 4),
-    "drone": (14, 3),
-}
-ROBOTS = {"spark", "volt", "flora", "forge", "nova", "glacier", "aegis", "solar"}
-
+from server.rules import ACTIONS, ROBOTS, WEAPONS, arena_actor, combat_power, league, resolve_action
+from server.social import SocialService
 
 class RuleError(ValueError):
     pass
 
 
-class ArenaService:
+class ArenaService(SocialService):
     def __init__(self, path, clock=time.time):
         self.path, self.clock = str(path), clock
         Path(path).parent.mkdir(parents=True, exist_ok=True)
+        if Path(path).exists():
+            # SQLite backup includes WAL; preserve the pre-social schema once.
+            original=sqlite3.connect(self.path)
+            try:
+                version=original.execute('PRAGMA user_version').fetchone()[0]
+                archive=Path(self.path+'.before-social-v2.backup')
+                if version<2 and not archive.exists():
+                    target=sqlite3.connect(str(archive))
+                    try:original.backup(target)
+                    finally:target.close()
+            finally:original.close()
         with self.tx() as db:
             db.executescript("""
             CREATE TABLE IF NOT EXISTS players(id TEXT PRIMARY KEY, token_hash TEXT UNIQUE NOT NULL,
@@ -55,6 +54,7 @@ class ArenaService:
               score_a INTEGER NOT NULL DEFAULT 0, score_b INTEGER NOT NULL DEFAULT 0,
               UNIQUE(a,b,week));
             """)
+            self.social_schema(db)
 
     @contextmanager
     def tx(self):
@@ -105,12 +105,13 @@ class ArenaService:
     def profile(self, player):
         with self.tx() as db:
             row = db.execute(
-                "SELECT id,name,rating,coins,wins,clan FROM players WHERE id=?",
+                "SELECT id,name,rating,coins,wins,clan,clan_role FROM players WHERE id=?",
                 (player,),
             ).fetchone()
             if not row:
                 raise RuleError("Профиль не найден")
-            return dict(row)
+            result=dict(row);result['league']=league(row['rating']);result['friend_code']=row['id']
+            return result
 
     def ranking(self):
         with self.tx() as db:
@@ -124,6 +125,7 @@ class ArenaService:
     def _public(self, db, row, player):
         state = json.loads(row["state"])
         if row["result"] == "active" and self.clock() - row["updated"] > 45:
+            state['finish_reason']='disconnect-timeout'
             self._finish(db, row, state, "b" if state["turn"] == "a" else "a")
             row = db.execute(
                 "SELECT * FROM matches WHERE id=?", (row["id"],)
@@ -158,67 +160,35 @@ class ArenaService:
                 return self._public(db, row, player)
             return None
 
-    def enqueue(self, player, robot, weapon):
-        if robot not in ROBOTS or weapon not in WEAPONS:
-            raise RuleError("Неизвестный робот или оружие")
+    def _create_match(self,db,a,b,robot_a,weapon_a,robot_b,weapon_b,mode):
+        identity=secrets.token_hex(12)
+        state=dict(turn='a',winner=None,a=arena_actor(robot_a,weapon_a),b=arena_actor(robot_b,weapon_b),
+                   last={},rules_version=3,mode=mode)
+        db.execute("INSERT INTO matches VALUES(?,?,?,?,0,'active',?)",(identity,a,b,json.dumps(state),self.clock()))
+        db.execute('DELETE FROM queue WHERE player IN (?,?)',(a,b))
+        return db.execute('SELECT * FROM matches WHERE id=?',(identity,)).fetchone()
+
+    def enqueue(self, player, robot, weapon, mode='ranked'):
+        if robot not in ROBOTS or weapon not in WEAPONS or mode not in {'ranked','balanced'}:
+            raise RuleError('??????????? ?????, ?????? ??? ?????')
+        power=combat_power(robot,weapon)
         with self.tx() as db:
-            active = db.execute(
-                "SELECT * FROM matches WHERE (a=? OR b=?) AND result='active' LIMIT 1",
-                (player, player),
-            ).fetchone()
+            active=db.execute("SELECT * FROM matches WHERE (a=? OR b=?) AND result='active' LIMIT 1",(player,player)).fetchone()
             if active:
-                value = self._public(db, active, player)
-                if value["result"] == "active":
-                    return {"match": value}
-            db.execute("DELETE FROM queue WHERE joined<?", (self.clock() - 65,))
-            me = db.execute(
-                "SELECT rating FROM players WHERE id=?", (player,)
-            ).fetchone()
-            opponent = db.execute(
-                "SELECT q.*,p.rating FROM queue q JOIN players p ON p.id=q.player WHERE q.player!=? AND ABS(p.rating-?)<=400 ORDER BY joined LIMIT 1",
-                (player, me["rating"]),
-            ).fetchone()
+                value=self._public(db,active,player)
+                if value['result']=='active':return {'match':value}
+            db.execute('DELETE FROM queue WHERE joined<?',(self.clock()-65,))
+            me=db.execute('SELECT rating FROM players WHERE id=?',(player,)).fetchone()
+            if not me:raise RuleError('??????? ?? ??????')
+            opponent=db.execute("""SELECT q.*,p.rating FROM queue q JOIN players p ON p.id=q.player
+                WHERE q.player!=? AND q.mode=? AND ABS(p.rating-?)<=400 AND ABS(q.power-?)<=100 ORDER BY joined LIMIT 1""",(player,mode,me['rating'],power)).fetchone()
             if not opponent:
-                db.execute(
-                    "INSERT INTO queue VALUES(?,?,?,?) ON CONFLICT(player) DO UPDATE SET robot=excluded.robot,weapon=excluded.weapon,joined=excluded.joined",
-                    (player, robot, weapon, self.clock()),
-                )
-                return {
-                    "waiting": True,
-                    "message": "Ищем реального игрока. Боты не участвуют в рейтинге PvP",
-                }
-            a, b = opponent["player"], player
-            identity = secrets.token_hex(12)
-            state = {
-                "turn": "a",
-                "winner": None,
-                "a": {
-                    "hp": 120,
-                    "energy": 8,
-                    "guard": False,
-                    "dodge": False,
-                    "cooldown": 0,
-                    "robot": opponent["robot"],
-                    "weapon": opponent["weapon"],
-                },
-                "b": {
-                    "hp": 120,
-                    "energy": 8,
-                    "guard": False,
-                    "dodge": False,
-                    "cooldown": 0,
-                    "robot": robot,
-                    "weapon": weapon,
-                },
-                "last": {},
-            }
-            db.execute(
-                "INSERT INTO matches VALUES(?,?,?,?,0,'active',?)",
-                (identity, a, b, json.dumps(state), self.clock()),
-            )
-            db.execute("DELETE FROM queue WHERE player IN (?,?)", (a, b))
-            row = db.execute("SELECT * FROM matches WHERE id=?", (identity,)).fetchone()
-            return {"match": self._public(db, row, player)}
+                db.execute("""INSERT INTO queue(player,robot,weapon,joined,mode,power) VALUES(?,?,?,?,?,?)
+                    ON CONFLICT(player) DO UPDATE SET robot=excluded.robot,weapon=excluded.weapon,
+                    joined=excluded.joined,mode=excluded.mode,power=excluded.power""",(player,robot,weapon,self.clock(),mode,power))
+                return {'waiting':True,'message':'???? ????????? ??????. ???? ?? ????????? ? PvP'}
+            row=self._create_match(db,opponent['player'],player,opponent['robot'],opponent['weapon'],robot,weapon,mode)
+            return {'match':self._public(db,row,player)}
 
     def cancel_queue(self, player):
         with self.tx() as db:
@@ -230,34 +200,35 @@ class ArenaService:
             return
         loser = "b" if winner == "a" else "a"
         state["winner"] = winner
-        db.execute(
-            "UPDATE players SET rating=rating+16,coins=coins+25,wins=wins+1 WHERE id=?",
-            (row[winner],),
-        )
-        db.execute(
-            "UPDATE players SET rating=MAX(100,rating-16),coins=coins+5 WHERE id=?",
-            (row[loser],),
-        )
-        clans = {
-            side: db.execute(
-                "SELECT clan FROM players WHERE id=?", (row[side],)
-            ).fetchone()[0]
-            for side in ("a", "b")
-        }
-        clan = clans[winner]
-        if clan:
-            db.execute("UPDATE clans SET xp=xp+20 WHERE id=?", (clan,))
+        if winner is not None and state.get('mode','ranked')=='ranked':
             db.execute(
-                "INSERT INTO contributions VALUES(?,?,?,1) ON CONFLICT(clan,player,week) DO UPDATE SET wins=wins+1",
-                (clan, row[winner], self.week()),
+                "UPDATE players SET rating=rating+16,coins=coins+25,wins=wins+1 WHERE id=?",
+                (row[winner],),
             )
-        if clan and clans[loser] and clan != clans[loser]:
-            first, second = sorted((clan, clans[loser]))
-            field = "score_a" if clan == first else "score_b"
             db.execute(
-                f"UPDATE wars SET {field}={field}+1 WHERE a=? AND b=? AND week=?",
-                (first, second, self.week()),
+                "UPDATE players SET rating=MAX(100,rating-16),coins=coins+5 WHERE id=?",
+                (row[loser],),
             )
+            clans = {
+                side: db.execute(
+                    "SELECT clan FROM players WHERE id=?", (row[side],)
+                ).fetchone()[0]
+                for side in ("a", "b")
+            }
+            clan = clans[winner]
+            if clan:
+                db.execute("UPDATE clans SET xp=xp+20 WHERE id=?", (clan,))
+                db.execute(
+                    "INSERT INTO contributions VALUES(?,?,?,1) ON CONFLICT(clan,player,week) DO UPDATE SET wins=wins+1",
+                    (clan, row[winner], self.week()),
+                )
+            if clan and clans[loser] and clan != clans[loser]:
+                first, second = sorted((clan, clans[loser]))
+                field = "score_a" if clan == first else "score_b"
+                db.execute(
+                    f"UPDATE wars SET {field}={field}+1 WHERE a=? AND b=? AND week=?",
+                    (first, second, self.week()),
+                )
         db.execute(
             "UPDATE matches SET state=?,result='finished',revision=revision+1,updated=? WHERE id=?",
             (json.dumps(state), self.clock(), row["id"]),
@@ -265,7 +236,7 @@ class ArenaService:
 
     def turn(self, player, identity, revision, command, action):
         if (
-            action not in {"attack", "guard", "charge", "special", "dodge", "resign"}
+            action not in ACTIONS|{"resign"}
             or not 8 <= len(command) <= 80
         ):
             raise RuleError("Некорректная команда")
@@ -290,74 +261,27 @@ class ArenaService:
             other = "b" if side == "a" else "a"
             if action != "resign" and state["turn"] != side:
                 raise RuleError("Сейчас ход соперника")
-            actor, target = state[side], state[other]
-            target_dodged = target.get("dodge", False)
-            damage, heal = 0, 0
-            actor["guard"] = actor["dodge"] = False
-            base, cost = WEAPONS[actor["weapon"]]
-            if action in {"attack", "special"}:
-                needed = cost + (2 if action == "special" else 0)
-                if actor["energy"] < needed or (
-                    action == "special" and actor["cooldown"]
-                ):
-                    raise RuleError("Нужна зарядка или перезарядка способности")
-                actor["energy"] -= needed
-                damage = base
-                if action == "special":
-                    damage = round(base * 1.5)
-                    actor["cooldown"] = 3
-                    if actor["robot"] == "flora":
-                        damage = max(1, base // 2)
-                        heal = min(28, 120 - actor["hp"])
-                        actor["hp"] += heal
-                    if actor["robot"] in {"aegis", "forge"}:
-                        actor["guard"] = True
-                    if actor["robot"] == "spark":
-                        damage = round(base * 1.65)
-                    if actor["robot"] == "glacier":
-                        target["energy"] = max(0, target["energy"] - 3)
-                    if actor["robot"] == "aegis":
-                        heal = min(12, 120 - actor["hp"])
-                        actor["hp"] += heal
-                        damage = base
-                    if actor["robot"] == "solar":
-                        heal = min(10, 120 - actor["hp"])
-                        actor["hp"] += heal
-                if target["dodge"]:
-                    damage = 0
-                    target["dodge"] = False
-                elif target["guard"] and not (
-                    action == "special" and actor["robot"] in {"nova", "solar"}
-                ):
-                    damage = round(
-                        damage
-                        * (0.65 if actor["weapon"] in {"laser", "sniper"} else 0.35)
-                    )
-                target["hp"] = max(0, target["hp"] - damage)
-            elif action == "guard":
-                actor["guard"] = True
-                actor["energy"] = min(10, actor["energy"] + 2)
-            elif action == "charge":
-                actor["energy"] = min(10, actor["energy"] + 5)
-            elif action == "dodge":
-                if actor["energy"] < 2:
-                    raise RuleError("Нужно 2 энергии")
-                actor["dodge"] = True
-                actor["energy"] -= 2
-            actor["cooldown"] = max(0, actor["cooldown"] - 1)
-            state["last"] = {
-                "dodged": bool(target_dodged and action in {"attack", "special"}),
-                "actor": side,
-                "action": action,
-                "damage": damage,
-                "heal": heal,
-                "weapon": actor["weapon"],
-            }
-            state["turn"] = other
-            if action == "special" and actor["robot"] == "volt" and target["hp"]:
-                state["turn"] = side
+            actor,target=state[side],state[other]
+            # Upgrade an in-progress legacy match without touching its HP/energy.
+            if state.get('rules_version')!=3:
+                for key in ('a','b'):
+                    previous=state[key];fresh=arena_actor(previous['robot'],previous['weapon'])
+                    fresh.update({k:v for k,v in previous.items() if k in fresh});state[key]=fresh
+                state['rules_version']=3
+                actor,target=state[side],state[other]
+            if action!='resign':
+                event=resolve_action(actor,target,action,seed=int(identity[:8],16)+revision)
+                if not event['ok']:raise RuleError(event['error'])
+                state['last']={**event,'actor':side}
+            else:state['last']=dict(actor=side,action=action,damage=0,heal=0,weapon=actor['weapon'])
+            state['turn']=other
+            if action=='resign':state['finish_reason']='resign'
             if action == "resign" or not target["hp"]:
                 self._finish(db, row, state, other if action == "resign" else side)
+            elif revision>=119:
+                state['finish_reason']='turn-limit'
+                score={key:state[key]['hp']/state[key]['max_hp'] for key in ('a','b')}
+                self._finish(db,row,state,None if score['a']==score['b'] else max(score,key=score.get))
             else:
                 db.execute(
                     "UPDATE matches SET state=?,revision=revision+1,updated=? WHERE id=?",
@@ -374,14 +298,15 @@ class ArenaService:
             )
             return result
 
-    def clans(self, player):
+    def clans(self, player, search=""):
         with self.tx() as db:
             profile = db.execute(
                 "SELECT clan FROM players WHERE id=?", (player,)
             ).fetchone()
             result = []
             for row in db.execute(
-                "SELECT c.*,COUNT(p.id) members FROM clans c LEFT JOIN players p ON p.clan=c.id GROUP BY c.id ORDER BY c.xp DESC,c.id LIMIT 50"
+                "SELECT c.*,COUNT(p.id) members FROM clans c LEFT JOIN players p ON p.clan=c.id WHERE c.name LIKE ? GROUP BY c.id ORDER BY c.rating DESC,c.xp DESC,c.id LIMIT 50",
+                ("%"+search[:24]+"%",)
             ):
                 entry = dict(row)
                 entry["level"] = 1 + math.isqrt(entry["xp"] // 50)
@@ -389,6 +314,8 @@ class ArenaService:
                     "SELECT COALESCE(SUM(wins),0) FROM contributions WHERE clan=? AND week=?",
                     (entry["id"], self.week()),
                 ).fetchone()[0]
+                entry['roster']=[{**dict(member),'role':'owner' if member['id']==entry['owner'] else member['clan_role']}
+                    for member in db.execute('SELECT id,name,rating,clan_role FROM players WHERE clan=? ORDER BY rating DESC',(entry['id'],))] if entry['id']==profile[0] else []
                 result.append(entry)
             wars = [
                 dict(row)
@@ -405,6 +332,7 @@ class ArenaService:
             }
 
     def clan_action(self, player, action, value=""):
+        if action in {'edit','promote','demote','kick'}:return self.clan_edit(player,action,value)
         with self.tx() as db:
             me = db.execute("SELECT * FROM players WHERE id=?", (player,)).fetchone()
             clan = me["clan"]
@@ -459,7 +387,7 @@ class ArenaService:
                         )
                     else:
                         db.execute("DELETE FROM clans WHERE id=?", (clan,))
-                db.execute("UPDATE players SET clan=NULL WHERE id=?", (player,))
+                db.execute("UPDATE players SET clan=NULL,clan_role='member' WHERE id=?", (player,))
             elif action == "donate":
                 if not clan or me["coins"] < 10:
                     raise RuleError("Нужно 10 PvP-жетонов и членство в клане")

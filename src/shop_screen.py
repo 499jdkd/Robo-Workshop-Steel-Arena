@@ -84,6 +84,9 @@ def ShopScreen(page: ft.Page, device_id: str, session=None, on_home=None):
     state = use_game(session)
     tab, set_tab = ft.use_state(0)
     now = session.clock()
+    from collection_ui import CollectionPanel,RobotDetail
+    if session.robot_detail:
+        return RobotDetail(page=page,session=session,identity=session.robot_detail,on_home=on_home)
 
     async def robots_tab(_):
         set_tab(0)
@@ -154,22 +157,7 @@ def ShopScreen(page: ft.Page, device_id: str, session=None, on_home=None):
             )
         )
     if tab == 0:
-        controls.extend(
-            [
-                incubator_card(session),
-                team_summary(session),
-                ft.Text("Яйца и роботы", size=17, color=INK, weight=ft.FontWeight.BOLD),
-                ft.Text(
-                    "На каждом яйце видно, какой друг появится и чем он поможет",
-                    size=11,
-                    color=MUTED,
-                ),
-                *(
-                    robot_card(session, robot, on_home)
-                    for robot in sorted(ROBOTS, key=lambda item: item.level)
-                ),
-            ]
-        )
+        return ft.Column([controls[2],CollectionPanel(page=page,session=session,on_home=on_home)],spacing=8,expand=True)
     elif tab == 3:
         controls.extend(armory_panel(session))
     elif tab == 1:

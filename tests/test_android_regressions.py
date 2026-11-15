@@ -385,7 +385,9 @@ class ScreenConstructionTests(unittest.TestCase):
                     patch.object(ft, "use_dialog"),
                 ):
                     if module_name == "shop_screen":
+                        import collection_ui
                         with (
+                            patch.object(collection_ui,'CollectionPanel',return_value=ft.Container()),
                             patch.object(
                                 module, "ShopCard", module.ShopCard.__wrapped__
                             ),

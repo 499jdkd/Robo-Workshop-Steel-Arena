@@ -203,10 +203,15 @@ class GameState:
     tournament: dict = field(default_factory=dict)
     collection: dict = field(default_factory=dict)
 
+    def __post_init__(self):
+        if not self.collection:
+            from collection_progress import restore as restore_collection
+            restore_collection(self,{})
+
     @classmethod
     def from_dict(cls, data: dict | None) -> GameState:
         if not isinstance(data, dict):
-            return cls()
+            data = {}
         state = cls()
         integer_fields = (
             "level",

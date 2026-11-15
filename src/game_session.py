@@ -114,6 +114,9 @@ class GameSession:
         self.motion_sound = True
         self.last_auto_feed = -1000000.0
         self.focus_scene = ""
+        self.route = ""
+        self.robot_detail = ""
+        self.inspection_id = ""
         self._focus_window_size = None
         self._board_reader = None
         board_at = cached.get("board_updated_at")
@@ -373,7 +376,6 @@ class GameSession:
         identity = state.active_robot
         if (
             identity
-            and not state.egg_id
             and result.coins
             and state.food >= 5
             and self.clock() - self.last_auto_feed >= 0.7

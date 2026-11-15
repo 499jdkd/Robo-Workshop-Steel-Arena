@@ -8,7 +8,7 @@ import httpx
 async def set_scene_focus(page, session, scene=""):
     if not session.ui_alive:
         return
-    if scene not in {"", "battle", "workshop", "online-battle"}:
+    if scene not in {"", "battle", "workshop", "online-battle", "robot"}:
         return
     enabled = bool(scene)
     pending = getattr(page, "_clicker_rewarded", None)

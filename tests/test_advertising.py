@@ -104,10 +104,11 @@ class BannerFooterTests(unittest.TestCase):
                     ) as footer,
                 ):
                     root = main.App.__wrapped__(self.page, "existing-device")
-                footer.assert_called_once_with(page=self.page, key="advertising-footer")
+                if index==2:footer.assert_not_called()
+                else:footer.assert_called_once_with(page=self.page, key="advertising-footer")
                 self.assertEqual(root.controls[0].expand, True)
                 self.assertIsInstance(root.controls[1], ft.NavigationBar)
-                self.assertEqual(root.controls[-1].height, 50)
+                self.assertEqual(root.controls[-1].height, 0 if index==2 else 50)
                 self.assertEqual(root.spacing, 0)
 
 

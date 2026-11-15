@@ -162,6 +162,11 @@ def video_offer(state, kind, target="", now=0):
             kind=kind,
             target=incubation_key(state),
         )
+    if kind in {'gold','container','season_xp'}:
+        title={'gold':'50 золота','container':'Контейнер роботов','season_xp':'10 сезонного опыта'}[kind]
+        return dict(title=title,detail='Добровольный бонус за завершённое видео',kind=kind,target='')
+    if kind=='order_speed' and state.work_id and state.work_end_at>now:
+        return dict(title='−30 секунд заказа',detail='Ускорение текущего проекта',kind=kind,target=f'{state.work_id}:{state.work_end_at:.3f}')
     return None
 
 
@@ -181,7 +186,7 @@ def grant_video(state, token, offer, now):
     if video_available(state, now)[0] <= 0:
         return ActionResult(False, "Сегодняшние видеобонусы получены")
     kind, target = offer.get("kind"), offer.get("target", "")
-    if kind not in {"food", "boost", "training", "incubator"}:
+    if kind not in {"food", "boost", "training", "incubator",'gold','container','season_xp','order_speed'}:
         return ActionResult(False, "Неизвестная награда")
     if kind == "food":
         state.food = min(MAX_VALUE, state.food + 15)
@@ -189,6 +194,15 @@ def grant_video(state, token, offer, now):
     elif kind == "boost":
         state.video_boost_end_at = max(now, state.video_boost_end_at) + 120
         message = "Двойные золото и корм на 2 минуты"
+    elif kind in {'gold','container','season_xp','order_speed'}:
+        from collection_progress import grant,add_season_xp
+        if kind=='gold':state.earn(50,0);message='+50 золота'
+        elif kind=='container':grant(state,dict(kind='chests',id='normal',amount=1));message='Получен контейнер роботов'
+        elif kind=='season_xp':add_season_xp(state,10,now);message='+10 сезонного опыта'
+        else:
+            if state.work_id and target==f'{state.work_id}:{state.work_end_at:.3f}' and state.work_end_at>now:
+                state.work_end_at=max(now,state.work_end_at-30);message='Заказ ускорен на 30 секунд'
+            else:state.food=min(MAX_VALUE,state.food+5);message='Проект уже готов: +5 корма'
     elif kind == "training":
         if target not in state.robot_levels:
             return ActionResult(False, "Робот не найден")

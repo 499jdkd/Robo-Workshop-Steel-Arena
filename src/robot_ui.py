@@ -26,6 +26,8 @@ def robot_scene(
     state = session.state
     egg = ROBOT_BY_ID.get(state.egg_id)
     robot = ROBOT_BY_ID.get(state.active_robot)
+    if robot is not None:
+        egg=None  # An incubating second robot must not hide the selected one.
     image = egg.egg_image if egg else robot.image if robot else "art/egg_starter.webp"
     phase = int(session.clock()) % 2
     width = width or max(280, (getattr(session.page, "width", None) or 420) - 28)
@@ -73,7 +75,7 @@ def robot_scene(
                 ft.Container(
                     ft.AnimatedSwitcher(
                         ft.Image(
-                            f"art/room_{state.stage_index}.webp",
+                            'art/workshop-future-v1.png' if state.stage_index>=1 else f"art/room_{state.stage_index}.webp",
                             key=f"room-{state.stage_index}",
                             fit=ft.BoxFit.COVER,
                             width=float("inf"),
@@ -86,7 +88,7 @@ def robot_scene(
                     if not expanded
                     else None,
                     image=ft.DecorationImage(
-                        src=f"art/room_{state.stage_index}.webp",
+                        src='art/workshop-future-v1.png' if state.stage_index>=1 else f"art/room_{state.stage_index}.webp",
                         fit=ft.BoxFit.COVER,
                         alignment=ft.Alignment.BOTTOM_CENTER,
                     )

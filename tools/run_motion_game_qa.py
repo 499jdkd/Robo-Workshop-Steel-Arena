@@ -21,6 +21,7 @@ from robot_catalog import ROBOTS
 async def main(page):
     page.title = "Clicker · проверка игровых анимаций"
     page.padding = 0
+    page.theme_mode = ft.ThemeMode.DARK
     session = GameSession.preview(page)
     session.motion_sound = False
     session.state = GameState(

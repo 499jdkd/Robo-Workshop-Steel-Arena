@@ -176,8 +176,8 @@ class RobotCollectionTests(unittest.TestCase):
         self.assertEqual((state.active_robot, state.egg_id), ("spark", ""))
 
     def test_catalog_has_distinct_roles_and_existing_sprite_references(self):
-        self.assertEqual(len({robot.id for robot in ROBOTS}), 8)
-        self.assertEqual(len({robot.role for robot in ROBOTS}), 8)
+        self.assertGreaterEqual(len({robot.id for robot in ROBOTS}), 30)
+        self.assertEqual(len({robot.role for robot in ROBOTS}), len(ROBOTS))
         for robot in ROBOTS:
             for name in (robot.image, robot.egg_image):
                 path = Path(__file__).resolve().parents[1] / "src/assets" / name

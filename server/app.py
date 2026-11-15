@@ -49,6 +49,7 @@ class Register(BaseModel):
 class Queue(BaseModel):
     robot: str = Field(max_length=20)
     weapon: str = Field(max_length=20)
+    mode: str = Field(default='ranked', pattern='^(ranked|balanced)$')
 
 
 class Turn(BaseModel):
@@ -59,7 +60,16 @@ class Turn(BaseModel):
 
 class ClanAction(BaseModel):
     action: str = Field(max_length=16)
-    value: str = Field(default="", max_length=40)
+    value: str = Field(default="", max_length=190)
+
+
+class FriendAction(BaseModel):
+    action: str = Field(pattern='^(request|accept|remove)$')
+    player: str = Field(min_length=24,max_length=24)
+
+
+class Duel(Queue):
+    code: str = Field(default='',max_length=8)
 
 
 @app.get("/health")
@@ -67,6 +77,8 @@ def health():
     return {
         "service": "clicker-arena",
         "protocol": 1,
+        "rules_version": 3,
+        "features": ['friends','duel-codes','balanced','clan-roles','history'],
         "opponents": "human-only",
         "storage": "transactional-sqlite",
     }
@@ -94,7 +106,7 @@ def current(uid=Depends(player)):
 
 @app.post("/queue")
 def queue(body: Queue, uid=Depends(player)):
-    return call(service.enqueue, uid, body.robot, body.weapon)
+    return call(service.enqueue, uid, body.robot, body.weapon, body.mode)
 
 
 @app.delete("/queue")
@@ -108,10 +120,35 @@ def turn(identity: str, body: Turn, uid=Depends(player)):
 
 
 @app.get("/clans")
-def clans(uid=Depends(player)):
-    return service.clans(uid)
+def clans(search: str='',uid=Depends(player)):
+    return service.clans(uid,search)
 
 
 @app.post("/clans/action")
 def clan_action(body: ClanAction, uid=Depends(player)):
     return call(service.clan_action, uid, body.action, body.value)
+
+
+@app.get('/friends')
+def friends(uid=Depends(player)):
+    return service.friends(uid)
+
+
+@app.post('/friends/action')
+def friend_action(body:FriendAction,uid=Depends(player)):
+    return call(service.friend_action,uid,body.action,body.player)
+
+
+@app.get('/history')
+def history(uid=Depends(player)):
+    return service.history(uid)
+
+
+@app.post('/duels')
+def invite(body:Duel,uid=Depends(player)):
+    return call(service.invite,uid,body.robot,body.weapon)
+
+
+@app.post('/duels/join')
+def join_duel(body:Duel,uid=Depends(player)):
+    return call(service.join_invite,uid,body.code,body.robot,body.weapon)

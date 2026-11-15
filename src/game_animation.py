@@ -7,6 +7,7 @@ import flet as ft
 from flet_rive import Rive
 
 from robot_catalog import ROBOT_BY_ID
+from robot_designs import DESIGNS
 
 # Ordinary attacks showcase the robot's built-in equipment. Specials retain
 # their existing effects (healing/stun/shield/piercing) and combat arithmetic.
@@ -30,7 +31,13 @@ WEAPON_NAMES = {
 }
 
 
+for _id,_design in DESIGNS.items():
+    WEAPONS[_id]=(_design['weapon'],_design['weapon'])
+
+
 def weapon_for(robot_id, action="attack", state=None, battle=None):
+    if action == 'emp':
+        return 'emp'
     if action == "guard":
         return "shield"
     if action in {"charge", "dodge"}:
@@ -52,17 +59,19 @@ class GameRive(Rive):
     renderer: str = "auto"
 
 
-def animated_scene(session, *, arena=False, battle=None, expanded=False):
+def animated_scene(session, *, arena=False, battle=None, expanded=False, identity=None):
     state = session.state
     visual = session.arena_visual if arena else {}
     battle = battle or {}
     if visual.get("battle_id") != battle.get("id"):
         visual = {}
-    robot_id = battle.get("robot_id") if arena else state.active_robot
+    robot_id = battle.get("robot_id") if arena else identity or state.active_robot
     enemy_id = battle.get("enemy_id", "flora")
     robot = ROBOT_BY_ID.get(robot_id, ROBOT_BY_ID["spark"])
     enemy = ROBOT_BY_ID.get(enemy_id, ROBOT_BY_ID["flora"])
     action = visual.get("action", "idle") if arena else session.motion_action
+    actual_action=action
+    action={'quick':'attack','pierce':'attack','burst':'attack','emp':'attack','ultimate':'special'}.get(action,action)
     phase = visual.get("phase", "idle") if arena else "workshop"
     if phase in {"counter-flight", "counter-hit"}:
         action = "attack"
@@ -80,8 +89,13 @@ def animated_scene(session, *, arena=False, battle=None, expanded=False):
         "enemyMobility": enemy.mobility,
         "enemyAction": battle.get("enemy_action", "attack"),
         "level": state.robot_levels.get(robot.id, 1),
-        "weapon": weapon_for(robot.id, action, state, animation_battle),
+        "weapon": weapon_for(robot.id, actual_action if actual_action=='emp' else action, state, animation_battle),
+        "combatAction": actual_action,
         "equipped": state.loadouts.get(robot.id, [])[:2],
+        "modules": list(state.collection.get('module_loadouts',{}).get(robot.id,{}).values()),
+        "skin": state.collection.get('skin_loadouts',{}).get(robot.id,''),
+        "workshopLevel": state.stage_index,
+        "inventions": state.craft_counts,
         "enemyWeapon": battle.get("enemy_weapon")
         or weapon_for(
             enemy.id,

@@ -203,18 +203,28 @@ def action_panel(session, *, wide=False):
     active = battle["result"] == "active"
     busy = session.arena_animating
     buttons = []
-    for action, label, icon in (
+    choices = [
         ("attack", "Удар", ft.Icons.BOLT_ROUNDED),
         ("guard", "Щит", ft.Icons.SHIELD_ROUNDED),
         ("special", "Навык", ft.Icons.AUTO_AWESOME_ROUNDED),
         ("dodge", "Уворот", ft.Icons.DOUBLE_ARROW_ROUNDED),
         ("charge", "Фокус", ft.Icons.CENTER_FOCUS_STRONG_ROUNDED),
-    ):
+    ]
+    if battle.get('rules_version')==3:
+        from combat_rules import allowed,current_actor
+        actor=current_actor(battle)
+        choices += [(a,label,icon) for a,label,icon in [
+            ('quick','Быстрый',ft.Icons.SPEED_ROUNDED),('pierce','Пробитие',ft.Icons.GPS_FIXED_ROUNDED),
+            ('burst','Серия',ft.Icons.GRAIN_ROUNDED),('emp','EMP',ft.Icons.WIFI_OFF_ROUNDED),('ultimate','Супер',ft.Icons.AUTO_AWESOME_ROUNDED)] if a in allowed(actor)]
+    for action,label,icon in choices:
 
         async def act(_, move=action, battle_id=identity, expected=turn):
             await animate_turn(session, move, battle_id, expected)
 
         unavailable = not active or busy
+        if battle.get('rules_version')==3:
+            from combat_rules import action_error,current_actor
+            unavailable |= bool(action_error(current_actor(battle),action))
         if action == "special":
             unavailable |= battle["cooldown"] > 0 or battle.get("focus", 2) < 2
         if action == "dodge":
@@ -255,6 +265,11 @@ def action_panel(session, *, wide=False):
         "special": "Сейчас можно использовать приём",
         "dodge": "Уклонение поможет избежать атаки",
         "charge": "В защитную стойку лучше не бить",
+        'quick':'Быстрый удар прервёт подготовку',
+        'pierce':'Пробитие разрушит стойку',
+        'burst':'Серия осложнит уклонение',
+        'emp':'EMP отключит энергетический щит',
+        'ultimate':'Суперспособность полностью заряжена',
     }
     controls = [
         ft.Row(
@@ -302,6 +317,7 @@ def action_panel(session, *, wide=False):
             spacing=5,
         ),
         ft.ResponsiveRow(buttons, spacing=6, run_spacing=7),
+        *([ft.Text(f'Суперспособность: {battle.get("super_charge",0)}% · Энергия {battle.get("battery",12)}/{battle.get("max_battery",12)}',color=GOLD,size=11),ft.ProgressBar(value=battle.get('super_charge',0)/100,color=GOLD,bgcolor='#294260',height=7,border_radius=4)] if battle.get('rules_version')==3 else []),
         ft.Text(
             f"{SPECIALS[battle['robot_id']][0]} · "
             + (

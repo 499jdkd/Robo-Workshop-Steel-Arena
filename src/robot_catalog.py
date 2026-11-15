@@ -1,6 +1,6 @@
 """Visible, deterministic robot rewards and their permanent team abilities."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from robot_designs import DESIGNS
 
 MAX_ROBOT_LEVEL = 12
@@ -35,13 +35,7 @@ class Robot:
 
     @property
     def image(self):
-        if self.id not in {'spark','volt','flora','forge','nova','glacier','aegis','solar'}:
-            return f"art/portraits/{self.id}.webp"
-        return (
-            f"art/portraits/{self.id}.svg"
-            if self.id in {"glacier", "aegis", "solar"}
-            else f"art/robot_{self.id}.webp"
-        )
+        return f"art/portraits/{self.id}.svg"
 
     @property
     def egg_image(self):
@@ -190,6 +184,7 @@ ROBOTS = (
     ),
 )
 _old_ids = {r.id for r in ROBOTS}
+ROBOTS = tuple(replace(r,mobility=DESIGNS[r.id]['mobility']) for r in ROBOTS)
 ROBOTS += tuple(Robot(d['id'], d['name'], d['ultimate'], d['strength'] + '. ' + d['weakness'] + '.',
                       d['unlock'], 150*d['unlock'], 50+5*d['unlock'], 80+20*d['unlock'],
                       'cosmic' if d['rarity'] in {'legendary','mythic'} else 'tech', d['color'],

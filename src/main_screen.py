@@ -3,6 +3,8 @@ import asyncio
 import flet as ft
 
 from armory_ui import weekly_panel
+from game_ui import game_button,resource_hud
+from feature_screens import navigate
 
 from game_session import preview_session
 from gameplay import (
@@ -321,8 +323,8 @@ def MainScreen(
     )
     goals = active_goals(state)
     controls = [
-        heading("Clicker", "Твоя робо-мастерская", wallet(state)),
-        food_bar(session),
+        heading("Robo Workshop", "Мастерская · "+(state.username or 'Инженер'), None),
+        resource_hud(state),
         saving_status(session),
         ft.Row(
             [
@@ -350,6 +352,11 @@ def MainScreen(
             color=MUTED,
         ),
         scene,
+        ft.Row([
+            game_button('Сезон',navigate(session,'season'),key='open-season',expand=True),
+            game_button('Фабрика',navigate(session,'factory'),kind='blue',key='open-factory',expand=True),
+            game_button('Магазин',navigate(session,'store'),kind='purple',key='open-store',expand=True),
+        ],spacing=7),
         incubator_card(session, on_collection),
         care_panel(session, on_arena),
         RewardPanel(page=page, session=session, compact=True),

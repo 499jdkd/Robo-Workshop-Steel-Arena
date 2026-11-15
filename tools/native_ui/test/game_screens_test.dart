@@ -109,6 +109,7 @@ void main() {
             child: RepaintBoundary(
               key: key,
               child: MaterialApp(
+                theme:ThemeData.dark(),
                 debugShowCheckedModeBanner: false,
                 builder: (context, child) => MediaQuery(
                   data: MediaQuery.of(context).copyWith(
@@ -191,6 +192,7 @@ void main() {
           image.dispose();
         });
         await tester.pumpWidget(const SizedBox.shrink());
+        await tester.runAsync(robot.clearIdleRigCache);
         backend.dispose();
       },
     );

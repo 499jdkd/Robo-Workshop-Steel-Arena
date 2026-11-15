@@ -73,6 +73,12 @@ def league_name(stage):
 
 
 def robot_stats(robot_id, level):
+    from robot_designs import base_stats
+    stats=base_stats(robot_id,max(1,min(MAX_ROBOT_LEVEL,level)))
+    return stats['health'],stats['attack']
+
+
+def _legacy_robot_stats(robot_id, level):
     level = max(1, min(MAX_ROBOT_LEVEL, level))
     health = (
         78
@@ -168,6 +174,12 @@ def enemy_intent(battle):
 def suggested_action(battle):
     """Used in the introductory tip and balance simulations, never auto-plays."""
     from armory import equipped_weapon
+    if battle.get('rules_version')==3 and battle.get('combatants'):
+        from combat_rules import action_error,allowed,current_actor
+        actor=current_actor(battle);intent=enemy_intent(battle)
+        preferred=['ultimate'] if actor['super_charge']>=100 else []
+        preferred+=['quick'] if intent=='windup' else ['pierce','emp','charge'] if intent=='guard' else ['dodge','guard'] if intent in {'heavy','pierce','pulse'} else ['special','attack','guard','charge']
+        return next((a for a in preferred+['charge'] if a in allowed(actor) and not action_error(actor,a)),'charge')
 
     equipment, _equipment_level = equipped_weapon(battle)
     if equipment and battle.get("battery", 12) < equipment.energy:
@@ -194,6 +206,9 @@ class TurnResult:
 
 
 def take_turn(battle, action, battle_id, expected_turn):
+    if battle.get('rules_version')==3 and battle.get('combatants'):
+        from combat_rules import local_turn
+        return local_turn(battle,action,battle_id,expected_turn)
     if not battle or battle.get("result") != "active":
         return TurnResult(False, "Бой уже завершён")
     if battle_id != battle["id"] or expected_turn != battle["turn"]:
@@ -454,15 +469,18 @@ def restore_battle(data):
     result["mode"] = "tournament" if data.get("mode") == "tournament" else "route"
     for key, default, maximum in (
         ("focus", 2, 3),
-        ("battery", 12, 12),
+        ("battery", 12, 18 if data.get('rules_version')==3 else 12),
         ("heat", 0, 3),
-        ("dodge_cooldown", 0, 2),
+        ("dodge_cooldown", 0, 3 if data.get('rules_version')==3 else 2),
         ("precision", 0, 1),
         ("player_level", 1, MAX_ROBOT_LEVEL),
         ("last_damage", 0, 1000000),
         ("last_incoming", 0, 1000000),
         ("last_heal", 0, 1000000),
         ("last_counter", 0, 1000000),
+        ("defense", 0, 100), ("speed",100,500), ("crit",8,35), ("crit_damage",150,200),
+        ("max_battery",12,18), ("regen",3,6), ("super_charge",0,100), ("weapon_cooldown",0,5),
+        ("emp_turns",0,3), ("slow_turns",0,3), ("skill_level",1,5),
     ):
         value = data.get(key, default)
         result[key] = (
@@ -470,6 +488,11 @@ def restore_battle(data):
             if isinstance(value, int) and not isinstance(value, bool)
             else default
         )
+    if 'insulated' in data:result['insulated']=data['insulated'] is True
+    # A legacy standalone battle has none of the v3 fields; keep round trips
+    # exact instead of silently introducing statistics into a running fight.
+    for key in ('defense','speed','crit','crit_damage','max_battery','regen','super_charge','weapon_cooldown','emp_turns','slow_turns','skill_level'):
+        if key not in data:result.pop(key,None)
     log = data.get("log")
     result.update(
         robot_id=data["robot_id"],
@@ -483,4 +506,11 @@ def restore_battle(data):
         last_stunned=bool(data.get("last_stunned", False)),
         log=[str(line)[:180] for line in log][-7:] if isinstance(log, list) else [],
     )
+    if data.get('rules_version')==3 and isinstance(data.get('combatants'),dict):
+        from combat_rules import restore_fighter
+        fighters={side:restore_fighter(data['combatants'].get(side)) for side in ('a','b')}
+        if not all(fighters.values()):return {}
+        result['combatants']=fighters;result['rules_version']=3
+        result['enemy_weapon']=fighters['b']['weapon']
+        if 'enemy_action' in data:result['enemy_action']=str(data['enemy_action'])[:16]
     return result

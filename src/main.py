@@ -11,6 +11,7 @@ from profile_screen import profile_screen
 from scene_focus import FocusedScene
 from shop_screen import shop_screen
 from ui_shared import BG, page_gradient, tint, use_game
+from feature_screens import FeatureScreen
 
 
 @ft.component
@@ -28,6 +29,8 @@ def App(page: ft.Page, device_id: str = "", session=None, start_tab=0):
         if session.arena_expanded and index != 2:
             await set_arena_expanded(page, session, False)
         if session.ui_alive:
+            session.route=''
+            session.robot_detail=''
             set_selected_index(index)
 
     screens = (
@@ -59,6 +62,7 @@ def App(page: ft.Page, device_id: str = "", session=None, start_tab=0):
                     content=ft.Container(
                         content=FocusedScene(page=page, session=session)
                         if expanded
+                        else FeatureScreen(page=page,session=session) if session.route
                         else screens[selected_index](),
                         padding=ft.Padding.all(5)
                         if expanded
@@ -73,7 +77,7 @@ def App(page: ft.Page, device_id: str = "", session=None, start_tab=0):
                 selected_index=selected_index,
                 on_change=navigate,
                 visible=not expanded,
-                height=80,
+                height=68,
                 bgcolor=tint(state.accent, 0.95),
                 indicator_color=tint(state.accent, 0.78),
                 destinations=[
@@ -91,7 +95,7 @@ def App(page: ft.Page, device_id: str = "", session=None, start_tab=0):
                     ),
                 ],
             ),
-            BannerFooter(page=page, key="advertising-footer"),
+            BannerFooter(page=page, key="advertising-footer") if not expanded and selected_index!=2 and session.route!='factory' else ft.Container(height=0),
         ],
         spacing=0,
         expand=True,
@@ -105,7 +109,7 @@ async def main(page: ft.Page):
     page.window.height = 840
     page.padding = 0
     page.bgcolor = BG
-    page.theme_mode = ft.ThemeMode.LIGHT
+    page.theme_mode = ft.ThemeMode.DARK
     session = GameSession(page, demo=demo)
     page.theme = ft.Theme(color_scheme_seed=session.state.accent)
     prefs = None if demo else ft.SharedPreferences()

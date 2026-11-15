@@ -15,6 +15,9 @@ class Weapon:
     price: int
     unlock: int
     ability: str
+    animation: str = ""
+    effect: str = ""
+    mass: int = 1
 
 
 WEAPONS = (
@@ -138,6 +141,18 @@ WEAPONS = (
         13,
         "Поддерживает атакой во время зарядки",
     ),
+)
+WEAPONS += (
+    Weapon('fist','Электрические кулаки',15,1.25,1,2,'common',240,3,'Быстрый рывок прерывает заряд','fist','interrupt',2),
+    Weapon('cryo','Криогенная пушка',12,.9,7,3,'rare',580,7,'Холод замедляет следующий ответ','cryo','slow',2),
+    Weapon('ion','Ионная пушка',22,.55,9,5,'legendary',1700,16,'Ионный импульс частично пробивает броню','ion','pierce',4),
+    Weapon('blaster','Импульсный бластер',11,1.7,5,2,'common',200,3,'Серия импульсов затрудняет уклонение','blaster','burst',1),
+    Weapon('magnetic','Магнитная пушка',15,.8,6,4,'epic',900,10,'Полярный захват ослабляет ответ после фокуса','magnetic','disrupt',3),
+    Weapon('grenade','Гранатомёт',19,.65,7,4,'rare',650,8,'Навесной снаряд поражает защитную стойку','grenade','splash',3),
+    Weapon('emp','EMP-генератор',8,.7,6,4,'epic',1000,11,'Отключает щит противника на два хода','emp','emp',2),
+    Weapon('drill','Механический бур',21,.75,1,4,'epic',1150,12,'Разрушает броню при пробивающем ударе','drill','shred',4),
+    Weapon('disc','Дисковый метатель',12,1.6,6,3,'rare',540,7,'Два рикошета против быстрого уклонения','disc','burst',2),
+    Weapon('repair','Ремонтный луч',4,.9,5,3,'rare',400,5,'Восстанавливает здоровье; небольшой урон','repair','heal',1),
 )
 BY_ID = {weapon.id: weapon for weapon in WEAPONS}
 DIFFICULTIES = {
@@ -307,6 +322,9 @@ def perform_armory(state, name, args, now):
             return ActionResult(True, "Вернул штатное оснащение")
         if identity not in state.weapon_levels:
             return ActionResult(False, "Сначала купи это оружие")
+        from robot_designs import base_stats
+        if weapon.mass > base_stats(robot)['capacity']:
+            return ActionResult(False, 'Слишком тяжёлое оружие для этой конструкции')
         if identity not in equipped:
             if len(equipped) >= 2:
                 return ActionResult(False, "Два слота заняты. Сними один модуль")
@@ -347,6 +365,23 @@ def equip_battle(state, battle):
         battle[key] = max(1, round(battle[key] * multiplier))
     battle["reward"] = max(1, round(battle["reward"] * reward))
     battle["mode"] = "tournament" if state.tournament.get("active") else "route"
+    from collection_progress import ensure
+    from equipment_catalog import effective_stats
+    data = ensure(state)
+    stats = effective_stats(state,battle['robot_id'])
+    # Legacy battles retain their base arithmetic. Individual equipment adds
+    # bounded bonuses; normalized online matches do not call this function.
+    from robot_designs import base_stats
+    baseline = base_stats(battle['robot_id'],state.robot_levels[battle['robot_id']])
+    health_bonus = max(0,stats['health']-baseline['health'])
+    battle['player_hp'] += health_bonus
+    battle['player_max_hp'] += health_bonus
+    battle['player_attack'] += max(0,stats['attack']-baseline['attack'])
+    battle.update(defense=stats['defense'],speed=stats['speed'],crit=stats['crit'],crit_damage=stats['crit_damage'],
+                  max_battery=stats['energy'],regen=stats['regen'],super_charge=0,weapon_cooldown=0,
+                  emp_turns=0,slow_turns=0,skill_level=data['skills'].get(battle['robot_id'],1),insulated='insulator' in data['module_loadouts'].get(battle['robot_id'],{}).values())
+    from combat_rules import prepare_local
+    prepare_local(state,battle)
 
 
 def equipped_weapon(battle):
@@ -371,7 +406,7 @@ def equipment_effect(battle, action, attack):
             bonus += min(5, battle.get("heat", 0) * 2)
     if weapon.id == "rocket" and battle.get("precision"):
         bonus += 5
-    pierce = weapon.id == "laser" or (
+    pierce = weapon.id in {"laser","ion","drill"} or (
         weapon.id == "sniper" and bool(battle.get("precision"))
     )
     return attack + bonus, pierce, weapon.id == "shield"

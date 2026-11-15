@@ -1,0 +1,21 @@
+* text=auto
+*.py text eol=lf
+*.dart text eol=lf
+*.rml text eol=lf
+*.svg text eol=lf
+*.md text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.toml text eol=lf
+*.json text eol=lf
+*.sh text eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.png binary
+*.webp binary
+*.jpg binary
+*.riv binary
+*.wav binary
+*.apk binary
+*.aab binary
+*.zip binary

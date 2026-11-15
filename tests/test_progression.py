@@ -138,7 +138,7 @@ class ProgressionTests(unittest.TestCase):
         self.assertEqual(state.avatar_id, "robot:spark")
 
     def test_new_robots_all_have_working_skills(self):
-        self.assertEqual(len(ROBOTS), 8)
+        self.assertGreaterEqual(len(ROBOTS), 30)
         for robot in ROBOTS:
             with self.subTest(robot=robot.id):
                 battle = new_battle(robot.id, 3, 0, 1)

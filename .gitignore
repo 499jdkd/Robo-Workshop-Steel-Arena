@@ -14,8 +14,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -100,6 +100,8 @@ ipython_config.py
 #   commonly ignored for libraries.
 #   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
 *.lock
+!uv.lock
+!pubspec.lock
 
 # pdm
 #   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
@@ -168,3 +170,28 @@ storage/
 .signing/
 *.jks
 *.keystore
+.env.*
+!.env.example
+*.sqlite
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+workshop-save*.json
+arena-identity-*.json
+arena-server.json
+
+# Personal / temp files
+leaderboard.json
+python
+uv
+src/tempCodeRunnerFile.py
+*.rar
+Microservice/
+
+# Personal / temp files
+leaderboard.json
+python
+uv
+src/tempCodeRunnerFile.py
+*.rar
+Microservice/

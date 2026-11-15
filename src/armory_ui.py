@@ -74,7 +74,7 @@ def armory_panel(session):
                         ft.Row(
                             [
                                 ft.Container(
-                                    ft.Icon(ICONS[weapon.id], size=30, color=color),
+                                    ft.Image(f'art/weapons/{weapon.id}.svg', width=52,height=52),
                                     padding=12,
                                     bgcolor="#F0F4FC",
                                     border_radius=14,

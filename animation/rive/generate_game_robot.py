@@ -205,6 +205,8 @@ def build():
             solid = ET.SubElement(fill, "SolidColor", colorValue="FFFFB94D")
             ET.SubElement(solid, "DataBindContext", propertyKey="37", sourcePathIds=f"0:10-{color_id}")
 
+    from generate_collection_rigs import extend_collection
+    root = extend_collection(root)
     target = ROOT / "game_robot"
     target.mkdir(exist_ok=True)
     shutil.copy2(ROOT / "spark/AGENTS.md", target / "AGENTS.md")

@@ -245,6 +245,11 @@ async def animate_turn(session, choice, identity, expected):
     ):
         return False
     from armory import equipped_weapon
+    from combat_rules import ATTACKS,action_error,current_actor
+    if battle.get('rules_version')==3:
+        error=action_error(current_actor(battle),choice)
+        if error:
+            session.tell(error);session.notify();return False
 
     equipment, _level = equipped_weapon(battle)
     if (
@@ -284,7 +289,7 @@ async def animate_turn(session, choice, identity, expected):
     try:
         if not await frame("approach", 0.6):
             return False
-        if choice in {"attack", "special"} and not await frame("flight", 0.95):
+        if choice in ATTACKS and not await frame("flight", 0.95):
             return False
         result = session.act("battle_turn", choice, identity, expected)
         if not result.ok:

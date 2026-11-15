@@ -15,19 +15,19 @@ RARITY_ORDER=('common','rare','epic','legendary','mythic')
 def integer(value,maximum=LIMIT):
     return min(maximum,max(0,value)) if isinstance(value,int) and not isinstance(value,bool) else 0
 
-def clean_map(raw,ids,maximum):
-    return {key:integer(value,maximum) for key,value in raw.items() if key in ids and integer(value,maximum)} if isinstance(raw,dict) else {}
+def clean_map(raw,ids,maximum,keep_zero=False):
+    return {key:integer(value,maximum) for key,value in raw.items() if key in ids and (integer(value,maximum) or (keep_zero and type(value) is int and value==0))} if isinstance(raw,dict) else {}
 
 def restore(state,raw):
     from armory import BY_ID
     raw=raw if isinstance(raw,dict) else {}
     data={'version':3,'crystals':integer(raw.get('crystals')),'cores':integer(raw.get('cores')),
-          'fragments':clean_map(raw.get('fragments'),DESIGNS,100000),
+          'fragments':clean_map(raw.get('fragments'),DESIGNS,100000,True),
           'stars':{r:max(1,integer(raw.get('stars',{}).get(r),5)) for r in state.robot_levels} if isinstance(raw.get('stars',{}),dict) else {r:1 for r in state.robot_levels},
           'skills':clean_map(raw.get('skills'),state.robot_levels,5),
           'modules':clean_map(raw.get('modules'),MODULE_BY_ID,10),
-          'module_loadouts':{},'blueprints':clean_map(raw.get('blueprints'),BY_ID,100000),
-          'chests':clean_map(raw.get('chests'),CHESTS,10000),
+          'module_loadouts':{},'blueprints':clean_map(raw.get('blueprints'),BY_ID,100000,True),
+          'chests':clean_map(raw.get('chests'),CHESTS,10000,True),
           'factory_day':integer(raw.get('factory_day')),'factory_serial':integer(raw.get('factory_serial')),
           'factory_rewards':[],'factory_receipt':str(raw.get('factory_receipt',''))[:60],
           'season':{},'skins':[],'emblems':[],'animations':[],'skin_loadouts':{},'team':[]}

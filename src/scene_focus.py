@@ -42,6 +42,13 @@ def FocusedScene(page, session):
     async def close(_):
         await set_scene_focus(page, session, "")
 
+    if session.focus_scene == 'robot':
+        from game_animation import animated_scene
+        return ft.Stack([
+            ft.Image('art/workshop-future-v1.png',fit=ft.BoxFit.COVER,width=float('inf'),height=height),
+            ft.Container(animated_scene(session,identity=session.inspection_id,expanded=True),left=0,right=0,top=0,bottom=0),
+            ft.Container(ft.IconButton(ft.Icons.CLOSE_ROUNDED,on_click=close,icon_color='white',key='robot-inspect-close'),right=8,top=8,bgcolor='#AA142A46',border_radius=12)
+        ],expand=True)
     if session.focus_scene == "workshop":
         return ft.Container(
             robot_scene(

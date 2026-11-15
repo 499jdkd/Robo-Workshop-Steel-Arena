@@ -95,7 +95,7 @@ class RobotUITests(unittest.IsolatedAsyncioTestCase):
         images = [
             item.src for item in render_controls(root) if isinstance(item, ft.Image)
         ]
-        self.assertIn("art/robot_spark.webp", images)
+        self.assertIn("art/portraits/spark.svg", images)
 
     async def test_collection_buttons_buy_and_train_without_duplicate_charges(self):
         self.session.state = GameState(
@@ -107,6 +107,7 @@ class RobotUITests(unittest.IsolatedAsyncioTestCase):
             egg_id="",
         )
         root = self.root(shop_screen.ShopScreen)
+        await self.keyed(root,'robot-open-volt').on_click(None)
         buy = self.keyed(root, "robot-egg-volt")
         self.assertFalse(buy.disabled)
         await buy.on_click(None)
@@ -114,7 +115,9 @@ class RobotUITests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             (self.session.state.coin, self.session.state.egg_id), (820, "volt")
         )
-        train = self.keyed(root, "robot-train-spark")
+        await self.keyed(root,'robot-detail-back').on_click(None)
+        await self.keyed(root,'robot-open-spark').on_click(None)
+        train = self.keyed(root, "train-spark")
         await train.on_click(None)
         self.assertEqual(
             (self.session.state.coin, self.session.state.robot_levels["spark"]),
@@ -327,7 +330,7 @@ class RobotUITests(unittest.IsolatedAsyncioTestCase):
                 control for control in controls if isinstance(control, ft.NavigationBar)
             )
             self.assertFalse(nav.visible)
-            self.assertEqual(sum(control is footer for control in controls), 1)
+            self.assertEqual(sum(control is footer for control in controls), 0)
             self.assertIsNotNone(self.keyed(root, "arena-dodge"))
             await self.keyed(root, "arena-scene-collapse").on_click(None)
             self.assertFalse(self.page.window.full_screen)

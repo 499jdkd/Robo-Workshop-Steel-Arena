@@ -66,7 +66,7 @@ class ExpansionUITests(unittest.IsolatedAsyncioTestCase):
             self.page.width, self.page.height = 844, 390
             controls = render_controls(root)
             self.assertEqual(self.session.focus_scene, "workshop")
-            self.assertEqual(sum(item is footer for item in controls), 1)
+            self.assertEqual(sum(item is footer for item in controls), 0)
             self.assertFalse(
                 next(
                     item for item in controls if isinstance(item, ft.NavigationBar)
@@ -118,7 +118,7 @@ class ExpansionUITests(unittest.IsolatedAsyncioTestCase):
         self.session.state.parts = 8
         root = self.root(shop_screen.ShopScreen)
         controls = render_controls(root)
-        self.assertTrue(any(item.key == "robot-card-volt" for item in controls))
+        self.assertTrue(any(item.key == "robot-open-volt" for item in controls))
         self.assertFalse(any(item.key == "crate-supply" for item in controls))
         await next(
             item
@@ -140,6 +140,7 @@ class ExpansionUITests(unittest.IsolatedAsyncioTestCase):
 
     async def test_timed_incubator_hatch_button_becomes_ready_after_restart(self):
         root = self.root(shop_screen.ShopScreen)
+        await self.keyed(root,'robot-open-volt').on_click(None)
         await self.keyed(root, "robot-egg-volt").on_click(None)
         self.session.state = GameState.from_dict(self.session.store.load()["state"])
         self.assertTrue(self.keyed(root, "hatch-egg").disabled)

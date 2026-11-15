@@ -196,8 +196,11 @@ class ArenaTests(unittest.TestCase):
         state = self.state(stage=8)
         state.coin = 75
         start_battle(state, "spark", 1000)
-        while state.battle["result"] == "active":
-            battle_turn(state, "attack", state.battle["id"], state.battle["turn"], 1001)
+        for _ in range(60):
+            if state.battle['result']!='active':break
+            from combat_rules import action_error
+            move='charge' if action_error(state.battle['combatants']['a'],'attack') else 'attack'
+            battle_turn(state, move, state.battle["id"], state.battle["turn"], 1001)
         self.assertEqual(
             (state.battle["result"], state.coin, state.arena_stage), ("loss", 75, 8)
         )
