@@ -1,8 +1,9 @@
-"""Verify Volt-only source scope and the real APK's new renderer/assets.
+"""Verify Volt visual scope, character audio, and the real APK's assets.
 
 These are static source/package checks, not Android execution or FPS tests.
-The baseline is the snapshot taken before the Volt task, preserving earlier
-accepted v32 work even when it has not yet been committed to Git.
+Builds before v35 use the snapshot taken before the Volt task; v35 and later
+use the preserved v34 source snapshot. --baseline selects another snapshot.
+Existing audio and the other 31 robot visuals remain byte/structure checked.
 """
 
 import argparse
@@ -19,9 +20,17 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 BASELINE = ROOT / ".cache/volt-refinement/before"
+POLISH_BASELINE = ROOT / ".cache/volt-polish-v35/baseline"
 ABIS = ("arm64-v8a", "armeabi-v7a", "x86_64")
 MARKERS = ("flutter-canvas-articulated", "voltPower", "volt_pulse", "volt_charge", "volt_storm", "volt_shutdown")
 VOLT_SOUNDS = tuple(f"volt_{cue}.wav" for cue in ("pulse", "charge", "storm", "shutdown"))
+ROBOT_SOUNDS = tuple(f"robot_{cue}.wav" for cue in (
+    "reply_light", "reply_heavy", "reply_bio", "reply_air", "reply_spectral",
+    "reply_beast", "servo", "step_heavy", "wheel", "hover", "dance_tick",
+    "dance_bass", "dance_chime", "surprise", "grump", "powerdown", "charge",
+    "reply_electric",
+))
+ROBOT_MARKERS = ("robot_reply_electric", "robot_dance_tick", "robot_powerdown")
 COMBAT_FILES = ("combat_rules.py", "robot_arena.py", "armory.py")
 
 
@@ -89,7 +98,22 @@ def named_nodes(path, kind):
     return nodes
 
 
-def verify_scope(root=ROOT, baseline=BASELINE):
+def sound_report(audio, names):
+    report = {}
+    for name in names:
+        data = (audio / name).read_bytes()
+        with wave.open(io.BytesIO(data), "rb") as sound:
+            require(sound.getnframes() > 0 and sound.getcomptype() == "NONE", f"Invalid or empty PCM WAV: {name}")
+            require(sound.getnchannels() in (1, 2) and sound.getsampwidth() == 2, f"Unexpected WAV format: {name}")
+            require(8000 <= sound.getframerate() <= 48000, f"Unexpected WAV sample rate: {name}")
+            report[name] = {"sha256": sha256(data), "bytes": len(data),
+                "channels": sound.getnchannels(), "sample_rate": sound.getframerate(),
+                "duration_seconds": round(sound.getnframes() / sound.getframerate(), 4)}
+    require(len({item["sha256"] for item in report.values()}) == len(names), "Character sound files are identical")
+    return report
+
+
+def verify_scope(root=ROOT, baseline=BASELINE, *, character_audio=False):
     root, baseline = Path(root), Path(baseline)
     current_src, before_src = root / "src", baseline / "src"
     rows, before_rows = ability_rows(current_src / "robot_abilities.py"), ability_rows(before_src / "robot_abilities.py")
@@ -129,16 +153,12 @@ def verify_scope(root=ROOT, baseline=BASELINE):
         relative = path.relative_to(before_audio)
         report["existing_audio"][relative.as_posix()] = unchanged_file(audio / relative, path, "audio/" + relative.as_posix())
     new_relatives = {path.relative_to(audio).as_posix() for path in audio.rglob("*") if path.is_file()} - old_relatives
-    require(new_relatives == set(VOLT_SOUNDS), "Expected exactly four new Volt WAV files")
-    report["volt_audio"] = {}
-    for name in VOLT_SOUNDS:
-        data = (audio / name).read_bytes()
-        with wave.open(io.BytesIO(data), "rb") as sound:
-            require(sound.getnframes() > 0 and sound.getcomptype() == "NONE", f"Invalid or empty Volt PCM WAV: {name}")
-            report["volt_audio"][name] = {"sha256": sha256(data), "bytes": len(data),
-                "channels": sound.getnchannels(), "sample_rate": sound.getframerate(),
-                "duration_seconds": round(sound.getnframes() / sound.getframerate(), 4)}
-    require(len({item["sha256"] for item in report["volt_audio"].values()}) == 4, "Volt sound files are identical")
+    permitted = set(VOLT_SOUNDS) | (set(ROBOT_SOUNDS) if character_audio else set())
+    expected_new = permitted - old_relatives
+    require(new_relatives == expected_new, "Unexpected new audio inventory: "
+            f"missing={sorted(expected_new - new_relatives)}, extra={sorted(new_relatives - expected_new)}")
+    report["volt_audio"] = sound_report(audio, VOLT_SOUNDS)
+    report["robot_audio"] = sound_report(audio, ROBOT_SOUNDS) if character_audio else {}
     portrait = current_src / "assets/art/portraits/volt.svg"
     old_portrait = before_src / "assets/art/portraits/volt.svg"
     report["volt_portrait"] = {"sha256": file_hash(portrait), "bytes": portrait.stat().st_size,
@@ -147,7 +167,8 @@ def verify_scope(root=ROOT, baseline=BASELINE):
     report["counts"] = {"other_robot_portraits": len(report["other_portraits"]),
                         "other_ability_rows": len(others), "other_artboards": len(report["rml_other_artboards"]),
                         "other_view_models": len(report["rml_other_view_models"]),
-                        "unchanged_existing_audio": len(old_files), "new_volt_audio": len(VOLT_SOUNDS),
+                        "unchanged_existing_audio": len(old_files), "new_volt_audio": len(set(VOLT_SOUNDS) - old_relatives),
+                        "new_robot_audio": len(set(ROBOT_SOUNDS) - old_relatives) if character_audio else 0,
                         "unchanged_combat_files": len(COMBAT_FILES)}
     return report
 
@@ -157,25 +178,27 @@ def verify_package(apk, scope, root=ROOT):
     require(apk.is_file(), "Final APK is not ready")
     result = {"apk": str(apk.resolve()), "bytes": apk.stat().st_size, "sha256": file_hash(apk),
               "native_marker_checks": {}, "asset_checks": {}}
+    markers = MARKERS + (ROBOT_MARKERS if scope.get("robot_audio") else ())
     with zipfile.ZipFile(apk) as package:
         native_abis = {name.split("/")[1] for name in package.namelist()
                        if name.startswith("lib/") and name.endswith("/libapp.so")}
         require(native_abis == set(ABIS), "APK libapp.so ABI inventory changed")
         for abi in ABIS:
             binary = package.read(f"lib/{abi}/libapp.so")
-            require(all(marker.encode("ascii") in binary for marker in MARKERS), f"Volt renderer/audio marker absent in {abi} libapp.so")
-            result["native_marker_checks"][abi] = {"sha256": sha256(binary), "bytes": len(binary), "markers_present": list(MARKERS)}
+            require(all(marker.encode("ascii") in binary for marker in markers), f"Volt renderer/audio marker absent in {abi} libapp.so")
+            result["native_marker_checks"][abi] = {"sha256": sha256(binary), "bytes": len(binary), "markers_present": list(markers)}
         with zipfile.ZipFile(io.BytesIO(package.read("assets/app.zip"))) as app:
             checks = ["assets/animation/game_robot.riv", "assets/art/portraits/volt.svg"]
             checks.extend("assets/audio/" + name for name in VOLT_SOUNDS)
+            checks.extend("assets/audio/" + name for name in scope.get("robot_audio", {}))
             checks.extend("assets/audio/" + name for name in scope["existing_audio"])
             checks.extend(f"assets/art/portraits/{identity}.svg" for identity in scope["other_portraits"])
-            for name in checks:
+            for name in sorted(set(checks)):
                 expected = (root / "src" / name).read_bytes()
                 actual = app.read(name)
                 require(actual == expected, f"APK contains stale or altered asset: {name}")
                 result["asset_checks"][name] = {"sha256": sha256(actual), "bytes": len(actual), "matches_source": True}
-    result["counts"] = {"abis": len(result["native_marker_checks"]), "markers_per_abi": len(MARKERS),
+    result["counts"] = {"abis": len(result["native_marker_checks"]), "markers_per_abi": len(markers),
                         "verified_assets": len(result["asset_checks"])}
     return result
 
@@ -183,6 +206,7 @@ def verify_package(apk, scope, root=ROOT):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-number", type=int, default=33)
+    parser.add_argument("--baseline", type=Path, help="Override the preserved source snapshot")
     args = parser.parse_args()
     if args.build_number <= 0:
         parser.error("--build-number must be positive")
@@ -195,7 +219,8 @@ def main():
     try:
         apk = ROOT / f"build/apk-game-v{args.build_number}/clicker.apk"
         require(apk.is_file(), "Final APK is not ready")
-        report["scope"] = verify_scope()
+        baseline = args.baseline or (POLISH_BASELINE if args.build_number >= 35 else BASELINE)
+        report["scope"] = verify_scope(baseline=baseline, character_audio=args.build_number >= 35)
         report["package"] = verify_package(apk, report["scope"])
         report["status"] = "passed"
     except Exception as error:

@@ -447,6 +447,18 @@ VoltFrame applyVoltPose(
       p.eyeY = 1 - .7 * fail;
       p.brow = -.28 * fail;
   }
+  // The detailed optical iris, brow actuator, counter-rotor and radiator
+  // shutters are independent of the head/body/coil mechanisms above.
+  f['joint7'] = -f['joint4']! * .77;
+  f['joint10'] =
+      (.6 * (1 - unit(p.eyeY)) + .25 * unit(p.focus) + .28 * (1 - power)).clamp(
+        0.0,
+        .7,
+      );
+  f['joint11'] = (p.brow * .45 - .04 * p.shock).clamp(-.25, .25);
+  final ventilation = unit(charge * .75 + discharge * .5 + wave * .2);
+  f['joint12'] = -.5 * ventilation * power;
+  f['joint13'] = .5 * ventilation * power * (.94 + .06 * math.sin(clock * 3));
   p.aura = 0; // Avoid the common solid disc covering Volt's reactor detail.
   return VoltFrame(
     action: action,
@@ -478,6 +490,11 @@ void blendVoltPose(GamePose pose, GamePose previous, double weight) {
     'joint4',
     'joint5',
     'joint6',
+    'joint7',
+    'joint10',
+    'joint11',
+    'joint12',
+    'joint13',
     'jet',
   ]) {
     pose.extra[key] =

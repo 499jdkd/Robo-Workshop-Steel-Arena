@@ -10,14 +10,34 @@ import 'volt_geometry.dart';
 /// All other characters continue to use their existing Rive artboards.
 final _model = _VoltCanvasModel();
 
-void warmVoltModel({Color accent = const Color(0xFF36DFFF)}) =>
-    _model.materials(accent);
+/// Records only immutable local assemblies. Dynamic joints, gaze, glow and
+/// weapon deployment remain live; no bitmap of the whole robot is retained.
+/// Calling this before the first paint avoids recording assemblies in a frame.
+void warmVoltModel({Color accent = const Color(0xFF36DFFF)}) {
+  _model.pictures(accent);
+}
+
+/// Releases native Pictures and accent materials, retaining immutable Paths.
+/// It is safe to call after a memory-pressure notification or between tests.
+void clearVoltModelCaches() => _model.clearCaches();
 
 Map<String, int> get voltModelCacheStats => {
   'sourceShapes': voltGeometryShapeCount,
   'paths': _model.paths.length,
   'materialsPerAccent': voltGeometryPaints.length,
   'accentVariants': _model.paintCache.length,
+  'staticAssemblies': _model.assemblies.length,
+  'staticShapes': _model.cachedShapeCount,
+  'pictureAccentVariants': _model.pictureCache.length,
+  'assemblyPictures': _model.pictureCache.values.fold(
+    0,
+    (sum, set) => sum + set.pictures.length,
+  ),
+  'pictureBytes': _model.pictureBytes,
+  'pictureBudgetBytes': _VoltCanvasModel.pictureBudgetBytes,
+  'maxAccentVariants': _VoltCanvasModel.maxAccentVariants,
+  'maxAssembliesPerAccent': _VoltCanvasModel.maxAssembliesPerAccent,
+  'recordedAssemblies': _model.recordedAssemblies,
 };
 
 /// [origin] is the actual Robot root in scene coordinates, already including
@@ -31,13 +51,23 @@ void drawVoltModel(
   double facing, {
   Color accent = const Color(0xFF36DFFF),
   Offset gaze = Offset.zero,
+  bool cacheStaticAssemblies = true,
 }) {
   if (!scale.isFinite ||
       scale <= 0 ||
       !origin.dx.isFinite ||
       !origin.dy.isFinite)
     return;
-  _model.draw(canvas, pose, origin, scale, facing, accent, gaze);
+  _model.draw(
+    canvas,
+    pose,
+    origin,
+    scale,
+    facing,
+    accent,
+    gaze,
+    cacheStaticAssemblies: cacheStaticAssemblies,
+  );
 }
 
 class _VoltMaterial {
@@ -52,9 +82,179 @@ class _VoltMaterial {
   }
 }
 
+class _VoltAssembly {
+  _VoltAssembly(this.roots, this.shapeCount);
+  final List<int> roots;
+  final int shapeCount;
+}
+
+class _VoltDraw {
+  const _VoltDraw.node(this.node) : assembly = -1;
+  const _VoltDraw.assembly(this.assembly) : node = -1;
+  final int node, assembly;
+}
+
+class _VoltPictures {
+  _VoltPictures(this.pictures)
+    : bytes = pictures.fold(
+        0,
+        (sum, picture) => sum + picture.approximateBytesUsed,
+      );
+  final List<ui.Picture> pictures;
+  final int bytes;
+
+  void dispose() {
+    for (final picture in pictures) picture.dispose();
+  }
+}
+
 class _VoltCanvasModel {
+  _VoltCanvasModel() {
+    _plan(0);
+  }
+
+  static const maxAccentVariants = 8;
+  static const maxAssembliesPerAccent = 64;
+  static const pictureBudgetBytes = 2 * 1024 * 1024;
   final paths = [for (final geometry in voltGeometryPaths) _path(geometry)];
   final paintCache = LinkedHashMap<int, List<_VoltMaterial>>();
+  final pictureCache = LinkedHashMap<int, _VoltPictures>();
+  final _uncacheableAccents = <int>{};
+  final assemblies = <_VoltAssembly>[];
+  final _commands = List<List<_VoltDraw>?>.filled(
+    voltGeometryNodes.length,
+    null,
+  );
+  final _static = List<bool?>.filled(voltGeometryNodes.length, null);
+  final _shapeCounts = List<int?>.filled(voltGeometryNodes.length, null);
+  int pictureBytes = 0, recordedAssemblies = 0;
+
+  int get cachedShapeCount =>
+      assemblies.fold(0, (sum, assembly) => sum + assembly.shapeCount);
+
+  bool _isStatic(int index) {
+    final previous = _static[index];
+    if (previous != null) return previous;
+    final node = voltGeometryNodes[index];
+    return _static[index] =
+        node.xBinding.isEmpty &&
+        node.yBinding.isEmpty &&
+        node.rotationBinding.isEmpty &&
+        node.scaleXBinding.isEmpty &&
+        node.scaleYBinding.isEmpty &&
+        node.opacityBinding.isEmpty &&
+        node.children.every(_isStatic);
+  }
+
+  int _shapeCount(int index) => _shapeCounts[index] ??=
+      (voltGeometryNodes[index].path >= 0 ? 1 : 0) +
+      voltGeometryNodes[index].children.fold(
+        0,
+        (sum, child) => sum + _shapeCount(child),
+      );
+
+  void _plan(int index) {
+    final commands = <_VoltDraw>[], run = <int>[];
+    void flush() {
+      if (run.isEmpty) return;
+      final shapes = run.fold(0, (sum, child) => sum + _shapeCount(child));
+      // Tiny paths are cheaper to draw directly than to retain native Pictures.
+      if (shapes >= 4 && assemblies.length < maxAssembliesPerAccent) {
+        commands.add(_VoltDraw.assembly(assemblies.length));
+        assemblies.add(_VoltAssembly(List<int>.unmodifiable(run), shapes));
+      } else {
+        commands.addAll(run.map(_VoltDraw.node));
+      }
+      run.clear();
+    }
+
+    for (final child in voltGeometryNodes[index].children) {
+      if (_isStatic(child)) {
+        run.add(child);
+      } else {
+        flush();
+        commands.add(_VoltDraw.node(child));
+        _plan(child);
+      }
+    }
+    flush();
+    _commands[index] = commands;
+  }
+
+  void _removePictures(int key) {
+    final removed = pictureCache.remove(key);
+    if (removed == null) return;
+    pictureBytes -= removed.bytes;
+    removed.dispose();
+  }
+
+  void clearCaches() {
+    for (final set in pictureCache.values) set.dispose();
+    pictureCache.clear();
+    paintCache.clear();
+    _uncacheableAccents.clear();
+    pictureBytes = 0;
+    recordedAssemblies = 0;
+  }
+
+  _VoltPictures? pictures(Color accent) {
+    final key = accent.toARGB32();
+    final paints = materials(accent);
+    if (_uncacheableAccents.contains(key)) return null;
+    final previous = pictureCache.remove(key);
+    if (previous != null) {
+      pictureCache[key] = previous;
+      return previous;
+    }
+    final result = <ui.Picture>[];
+    for (final assembly in assemblies) {
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(recorder);
+      for (final root in assembly.roots) _staticNode(canvas, root, paints, 1);
+      result.add(recorder.endRecording());
+      recordedAssemblies++;
+    }
+    final set = _VoltPictures(result);
+    if (set.bytes > pictureBudgetBytes) {
+      set.dispose();
+      // A future oversized authoring export must not re-record and discard
+      // the same Pictures every frame. Keep its vector fallback until eviction.
+      _uncacheableAccents.add(key);
+      return null;
+    }
+    while (pictureCache.isNotEmpty &&
+        (pictureBytes + set.bytes > pictureBudgetBytes ||
+            pictureCache.length >= maxAccentVariants)) {
+      _removePictures(pictureCache.keys.first);
+    }
+    pictureCache[key] = set;
+    pictureBytes += set.bytes;
+    return set;
+  }
+
+  void _staticNode(
+    Canvas canvas,
+    int index,
+    List<_VoltMaterial> paints,
+    double inheritedAlpha,
+  ) {
+    final n = voltGeometryNodes[index];
+    final alpha = inheritedAlpha * n.opacity.clamp(0, 1);
+    if (alpha < .001 || n.scaleX.abs() < .0001 || n.scaleY.abs() < .0001)
+      return;
+    canvas.save();
+    if (n.x != 0 || n.y != 0) canvas.translate(n.x, n.y);
+    if (n.rotation != 0) canvas.rotate(n.rotation);
+    if (n.scaleX != 1 || n.scaleY != 1) canvas.scale(n.scaleX, n.scaleY);
+    if (n.path >= 0) {
+      for (final paintId in n.paints) {
+        final material = paints[paintId]..opacity(alpha);
+        canvas.drawPath(paths[n.path], material.paint);
+      }
+    }
+    for (final child in n.children) _staticNode(canvas, child, paints, alpha);
+    canvas.restore();
+  }
 
   List<_VoltMaterial> materials(Color accent) {
     final key = accent.toARGB32();
@@ -69,7 +269,12 @@ class _VoltCanvasModel {
     paintCache[key] = result;
     // User skins have a small finite palette; retain a bounded cache if a
     // custom theme supplies many accent colors during a long-running session.
-    if (paintCache.length > 8) paintCache.remove(paintCache.keys.first);
+    if (paintCache.length > maxAccentVariants) {
+      final oldest = paintCache.keys.first;
+      paintCache.remove(oldest);
+      _uncacheableAccents.remove(oldest);
+      _removePictures(oldest);
+    }
     return result;
   }
 
@@ -258,9 +463,11 @@ class _VoltCanvasModel {
     double scale,
     double facing,
     Color accent,
-    Offset gaze,
-  ) {
+    Offset gaze, {
+    bool cacheStaticAssemblies = true,
+  }) {
     final paints = materials(accent);
+    final recorded = cacheStaticAssemblies ? pictures(accent) : null;
     canvas.save();
     canvas.translate(origin.dx, origin.dy);
     canvas.scale(scale * (facing < 0 ? -1 : 1), scale);
@@ -288,7 +495,25 @@ class _VoltCanvasModel {
           canvas.drawPath(paths[n.path], material.paint);
         }
       }
-      for (final child in n.children) node(child, alpha);
+      final commands = recorded == null ? null : _commands[index];
+      if (commands == null) {
+        for (final child in n.children) node(child, alpha);
+      } else {
+        for (final command in commands) {
+          if (command.assembly < 0) {
+            node(command.node, alpha);
+          } else if (alpha == 1) {
+            canvas.drawPicture(recorded!.pictures[command.assembly]);
+          } else {
+            // Applying group opacity to a cached composite would change how
+            // overlapping translucent paths blend. Keep original per-path
+            // opacity during shutdown, glow fades and all partial-alpha poses.
+            for (final root in assemblies[command.assembly].roots) {
+              _staticNode(canvas, root, paints, alpha);
+            }
+          }
+        }
+      }
       canvas.restore();
     }
 

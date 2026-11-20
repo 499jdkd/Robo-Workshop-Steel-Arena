@@ -232,6 +232,32 @@ void main() {
     expect(voltAnchors(p, root, 1).leftCoil, isNot(folded.leftCoil));
   });
 
+  test('new core rotor, iris and cooling actuators respond independently', () {
+    final focused = sample('charge', .5).pose;
+    expect(
+      focused.extra['joint7'],
+      closeTo(-focused.extra['joint4']! * .77, 1e-9),
+    );
+    expect(focused.extra['joint12'], lessThan(-.3));
+    expect(focused.extra['joint13'], greaterThan(.3));
+    final surprise = sample('surprise', .35).pose;
+    final annoyed = sample('anger', .35).pose;
+    expect(surprise.extra['joint10'], lessThan(annoyed.extra['joint10']!));
+    expect(surprise.extra['joint11'], isNot(annoyed.extra['joint11']));
+    final off = sample('defeat', 1).pose;
+    expect(off.extra['joint12'], 0);
+    expect(off.extra['joint13'], 0);
+    expect(off.extra['joint10'], greaterThan(.6));
+    for (final joint in [7, 10, 11, 12, 13]) {
+      final next = sample('charge', .5).pose;
+      final previous = sample('surprise', .35).pose;
+      final expected =
+          (next.extra['joint$joint']! + previous.extra['joint$joint']!) / 2;
+      blendVoltPose(next, previous, .5);
+      expect(next.extra['joint$joint'], closeTo(expected, 1e-9));
+    }
+  });
+
   test('audio cues cross once at the same moments at 30, 60 and 120 Hz', () {
     for (final action in voltCues.keys) {
       for (final hz in [30, 60, 120]) {

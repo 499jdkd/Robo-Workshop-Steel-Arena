@@ -11,6 +11,7 @@ import 'package:rive/rive.dart' as rive;
 import 'robot/game_motion.dart';
 import 'robot/motion_model.dart';
 import 'robot/scene_audio.dart';
+import 'robot/robot_audio.dart';
 import 'robot/robot_profiles.dart';
 import 'robot/rig_cache.dart';
 import 'robot/signature_motion.dart';
@@ -234,6 +235,7 @@ class _GameRiveControlState extends State<GameRiveControl>
   @override
   void didHaveMemoryPressure() {
     clearIdleRigCache();
+    clearVoltModelCaches();
   }
 
   @override
@@ -342,12 +344,25 @@ class _VoltPlayback {
 }
 
 class GameSceneClock extends ChangeNotifier {
+  GameSceneClock({void Function(RobotAudioCue)? onCharacterCue}) {
+    characterSounds = RobotSoundDirector(
+      onCharacterCue ??
+          (cue) => audio.play(
+            cue.name,
+            rate: cue.rate,
+            volume: cue.volume,
+            channel: cue.channel,
+          ),
+    );
+  }
   Map<String, dynamic> data = {};
   final player = GameActor(), enemy = GameActor()..facing = -1;
   final effects = GameEffects();
   void Function()? pendingBurst;
   GamePose? previousPlayer, previousEnemy;
   final audio = SceneAudio();
+  late final RobotSoundDirector characterSounds;
+  int _localSoundSerial = 0;
   final _voltPlayer = _VoltPlayback(), _voltEnemy = _VoltPlayback();
   VoltFrame? get playerVoltFrame => _voltPlayer.frame;
   VoltFrame? get enemyVoltFrame => _voltEnemy.frame;
@@ -466,6 +481,8 @@ class GameSceneClock extends ChangeNotifier {
       lastTap = clock - 10;
       audio.pause();
       pendingBurst = null;
+      characterSounds.reset();
+      _localSoundSerial = 0;
       previousPlayer = previousEnemy = null;
       _voltPlayer.reset();
       _voltEnemy.reset();
@@ -503,10 +520,6 @@ class GameSceneClock extends ChangeNotifier {
       showcase(combatAction);
     }
     if (arena) {
-      if (phase == 'approach' && !isVolt)
-        audio.play(weapon == 'sniper' ? 'aim' : 'deploy');
-      if (visibleShot && data[enemyShot ? 'enemy' : 'robot'] != 'volt')
-        audio.play(activeWeapon == 'fist' ? 'electric' : activeWeapon);
       if (phase == 'impact' || phase == 'reply' || phase == 'counter-hit') {
         final guarded = phase == 'reply' && action == 'guard';
         final damage =
@@ -533,7 +546,6 @@ class GameSceneClock extends ChangeNotifier {
           }
         }
       }
-      if (phase == 'victory' && !isVolt) audio.play('victory');
     } else if (action == 'feed') {
       audio.play('feed');
       if (!reduced)
@@ -618,6 +630,7 @@ class GameSceneClock extends ChangeNotifier {
         if (beat > 19 && beat < 20.7)
           p.emotion(data['idleEmotion'] as String? ?? 'dance', beat - 19);
         if (beat > 25 && beat < 27.25 && !demonstration) {
+          _localSoundSerial++;
           localAction = 'attack';
           localAge = beat - 25;
           player.facing = 1;
@@ -918,7 +931,138 @@ class GameSceneClock extends ChangeNotifier {
         : 1.0;
     final target = zoomTarget * autoZoom;
     zoom += (target - zoom) * (1 - math.exp(-10 * dt));
+    _sampleCharacterSounds();
     notifyListeners();
+  }
+
+  ({String action, double t, String token}) _localAudioPresentation() {
+    final localToken = 'local:$_localSoundSerial';
+    if (isVolt) {
+      final frame = playerVoltFrame;
+      return (
+        action: frame?.action ?? 'idle',
+        t: frame?.t ?? 0,
+        token: frame?.action == localAction
+            ? localToken
+            : 'ambient:${(clock / 23).floor()}',
+      );
+    }
+    if (localAction == 'attack' && localAge < 1.8)
+      return (action: 'attack', t: unit(localAge / 1.4), token: localToken);
+    if ({'special', 'ultimate', 'guard'}.contains(localAction) &&
+        localAge < 2.25)
+      return (action: localAction, t: unit(localAge / 2.25), token: localToken);
+    if (localAction.isNotEmpty && localAge < 1.6)
+      return (action: localAction, t: unit(localAge / 1.6), token: localToken);
+    final reacting = age < (action == 'feed' ? 1.7 : .95) && action != 'idle';
+    if (reacting)
+      return (
+        action: action,
+        t: unit(age / (action == 'feed' ? 1.7 : .95)),
+        token: 'event:${data['event']}',
+      );
+    if (manualPosition && walkAge < walkDuration)
+      return (
+        action: 'move',
+        t: unit(walkAge / walkDuration),
+        token: localToken,
+      );
+    if (!inspecting && !reduced && localAge >= 2.25) {
+      final id = data['robot'] as String? ?? 'spark';
+      final seed = id.codeUnits.fold<int>(0, (sum, n) => sum + n);
+      final shifted = clock + seed % 11;
+      final beat = shifted % 29;
+      final token = 'ambient:${(shifted / 29).floor()}';
+      if (beat > 10 && beat < 11.6)
+        return (action: 'inspect', t: (beat - 10) / 1.6, token: token);
+      if (beat > 19 && beat < 20.7)
+        return (
+          action: data['idleEmotion'] as String? ?? 'dance',
+          t: (beat - 19) / 1.7,
+          token: token,
+        );
+    }
+    return (action: 'idle', t: 0.0, token: localToken);
+  }
+
+  ({String action, double t}) _battleAudioPresentation(bool opponent) {
+    if ({'victory', 'idle'}.contains(phase) &&
+        {'win', 'loss'}.contains(data['result'])) {
+      _voltOutcomeAt ??= clock;
+      final won = data['result'] == 'win';
+      return (
+        action: (opponent ? !won : won) ? 'victory' : 'defeat',
+        t: unit((clock - _voltOutcomeAt!) / 2.2),
+      );
+    }
+    if (opponent) {
+      final name = data['enemyCombatAction'] as String? ?? 'attack';
+      if (phase == 'enemy-flight' && data['stunned'] != true) {
+        if (data['intent'] == 'windup' || data['enemyAction'] == 'charge')
+          return (action: 'charge', t: unit(age / .72));
+        return (action: name, t: .28 + .55 * unit(age / .72));
+      }
+      if (phase == 'reply' && data['stunned'] != true)
+        return (action: name, t: .83 + .17 * unit(age / .25));
+      return (action: 'idle', t: 0.0);
+    }
+    final name = phase.startsWith('counter-') ? 'attack' : combatAction;
+    final prepare = (data['prepareSeconds'] as num? ?? .4).toDouble();
+    final recover = (data['impactSeconds'] as num? ?? .25).toDouble();
+    if ({'guard', 'dodge', 'charge'}.contains(name)) {
+      if (phase == 'approach')
+        return (action: name, t: .3 * unit(age / prepare));
+      if (phase == 'impact')
+        return (action: name, t: .3 + .1 * unit(age / recover));
+      if (phase == 'enemy-flight')
+        return (action: name, t: .4 + .4 * unit(age / .72));
+      if (phase == 'reply') return (action: name, t: .8 + .2 * unit(age / .25));
+    } else {
+      if (phase == 'approach')
+        return (action: name, t: .28 * unit(age / prepare));
+      if (phase == 'flight' || phase == 'counter-flight')
+        return (action: name, t: .28 + .55 * progress);
+      if (phase == 'impact' || phase == 'counter-hit')
+        return (action: name, t: .83 + .17 * unit(age / recover));
+    }
+    return (action: 'idle', t: 0.0);
+  }
+
+  void _sampleCharacterSounds() {
+    final audible = audio.enabled && !audio.muted;
+    if (!arena) {
+      final sample = _localAudioPresentation();
+      // Volt has his own attack/charge timeline. His previously silent social
+      // reactions share this director; feeding already has its saved-game cue.
+      final ownedByDirector =
+          !isVolt ||
+          {'joy', 'anger', 'dance', 'inspect', 'move'}.contains(sample.action);
+      characterSounds.sample(
+        slot: 'player',
+        robot: data['robot'] as String? ?? 'spark',
+        action: sample.action,
+        t: sample.t,
+        token: sample.token,
+        weapon: weapon,
+        enabled: audible && ownedByDirector && sample.action != 'feed',
+      );
+      return;
+    }
+    final event = (data['event'] ?? '').toString().split(':').take(2).join(':');
+    for (final opponent in [false, true]) {
+      final id = data[opponent ? 'enemy' : 'robot'] as String? ?? 'spark';
+      if (id == 'volt') continue;
+      final sample = _battleAudioPresentation(opponent);
+      characterSounds.sample(
+        slot: opponent ? 'enemy' : 'player',
+        robot: id,
+        action: sample.action,
+        t: sample.t,
+        token: event,
+        weapon: opponent ? enemyWeapon : weapon,
+        enabled: audible,
+      );
+    }
   }
 
   ({String action, double t}) _voltPresentation(bool opponent) {
@@ -1061,8 +1205,17 @@ class GameSceneClock extends ChangeNotifier {
     if (!reduced && playback.from != null && clock - playback.blendAt < .18)
       blendVoltPose(pose, playback.from!, (clock - playback.blendAt) / .18);
     if (!arena) voltTrackGaze(pose, gaze);
-    for (final cue in voltCuesCrossed(name, playback.cueT, sample.t))
-      audio.play(cue);
+    for (final cue in voltCuesCrossed(name, playback.cueT, sample.t)) {
+      final mountedShot =
+          cue == 'volt_pulse' &&
+          mounted.isNotEmpty &&
+          {'attack', 'quick', 'pierce', 'burst'}.contains(sample.action) &&
+          SceneAudio.cueSeconds.containsKey(mounted);
+      audio.play(
+        mountedShot ? mounted : cue,
+        channel: opponent ? 'enemy:action' : 'player:action',
+      );
+    }
     playback.cueT = sample.t;
     playback.frame = frame;
   }
@@ -1139,6 +1292,7 @@ class GameSceneClock extends ChangeNotifier {
   ).contains(worldPoint(point));
 
   void react() {
+    _localSoundSerial++;
     tapBurst = clock - lastTap < .4 ? tapBurst + 1 : 1;
     lastTap = clock;
     final reactions =
@@ -1167,6 +1321,7 @@ class GameSceneClock extends ChangeNotifier {
 
   void moveTo(Offset point) {
     if (arena) return;
+    _localSoundSerial++;
     final edge = 210 * scale + 8;
     final width = viewport.width;
     final x = worldPoint(point).dx.clamp(edge, math.max(edge, width - edge));
@@ -1184,6 +1339,7 @@ class GameSceneClock extends ChangeNotifier {
 
   void showcase(String name) {
     if (arena || suspended || data['paused'] == true) return;
+    _localSoundSerial++;
     localAction = name;
     localAge = 0;
     player.facing = 1;
@@ -1193,10 +1349,6 @@ class GameSceneClock extends ChangeNotifier {
       _voltPlayer.cueT = -.001;
       return; // Native Volt timeline owns its synchronised audio cues.
     }
-    if ({'special', 'ultimate'}.contains(name))
-      audio.play(name == 'ultimate' ? 'ion' : 'deploy');
-    if (name == 'attack') audio.play(weapon == 'fist' ? 'electric' : weapon);
-    if (name == 'guard') audio.play('shield');
   }
 
   @override

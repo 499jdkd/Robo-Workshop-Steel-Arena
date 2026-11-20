@@ -1,7 +1,8 @@
 """Replace only Volt's Rive artboard/view model and its collection portrait.
 
 The other 31 authored artboards are checked structurally and left byte-for-byte
-in the RML document. Run the official Rive verify/inspect/publish afterwards.
+in the RML document. Run the official Rive verify/inspect afterwards, then
+regenerate the Canvas geometry consumed by the main Flutter client.
 """
 
 from copy import deepcopy
@@ -69,6 +70,7 @@ def main():
         "unchanged_other_view_models": 31, "shape_count": len(list(fresh.iter("Shape"))),
         "independent_coil_hinges": ["joint0", "joint1", "joint2", "joint3"],
         "independent_core_and_panels": ["joint4", "joint5", "joint6"],
+        "independent_optics_and_cooling": ["joint7", "joint10", "joint11", "joint12", "joint13"],
         "unmodified_objects": [{"type": tag, "name": name, "sha256": digest} for (tag, name), digest in before.items()],
     }, indent=2), encoding="utf-8")
     print(f"Updated only Volt: {len(list(fresh.iter('Shape')))} shapes, 31 other robots unchanged")

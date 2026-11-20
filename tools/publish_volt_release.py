@@ -133,6 +133,21 @@ def check_asset(asset, *, name, size, digest):
             "github_digest": remote_digest, "download_url": asset["browser_download_url"]}
 
 
+def published_assets(api, release_id, apk_name, size, digest, checksum):
+    """Draft browser URLs use an untagged alias which changes on publication."""
+    assets = api.request("GET", "/releases/" + str(release_id) + "/assets").json()
+    def find(name):
+        matches = [asset for asset in assets if asset.get("name") == name]
+        if len(matches) != 1:
+            raise ReleaseError("Published release did not contain exactly one expected asset")
+        return matches[0]
+    return (
+        check_asset(find(apk_name), name=apk_name, size=size, digest=digest),
+        check_asset(find(apk_name + ".sha256"), name=apk_name + ".sha256",
+                    size=len(checksum), digest=hashlib.sha256(checksum).hexdigest()),
+    )
+
+
 def verify_public_download(address, *, expected_size, expected_sha256, attempts=5):
     if urlparse(address).hostname != "github.com":
         raise ReleaseError("Unexpected public download host")
@@ -267,6 +282,8 @@ def main():
         if api.resolved_tag(args.tag) != target_sha:
             raise ReleaseError("Published tag does not match the requested source commit")
         report.update(stage="published", release_url=published["html_url"], published_at=published["published_at"])
+        report["asset"], report["checksum_asset"] = published_assets(
+            api, release["id"], apk.name, size, digest, checksum)
         save()
         report["public_download"] = verify_public_download(
             report["asset"]["download_url"], expected_size=size, expected_sha256=digest)

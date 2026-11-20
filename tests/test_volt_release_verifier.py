@@ -62,7 +62,7 @@ class VoltReleaseVerifierTests(unittest.TestCase):
             sound.setframerate(22050)
             sound.writeframes(struct.pack("<h", 200) * frames)
 
-    def package(self, *, missing_marker_abi=None, stale_audio=False):
+    def package(self, *, missing_marker_abi=None, stale_audio=False, character_audio=False, stale_robot_audio=False):
         apk = Path(self.temp.name) / "synthetic.apk"
         embedded = io.BytesIO()
         with zipfile.ZipFile(embedded, "w") as app:
@@ -71,11 +71,15 @@ class VoltReleaseVerifierTests(unittest.TestCase):
                     data = source.read_bytes()
                     if stale_audio and source.name == "volt_storm.wav":
                         data = b"stale audio"
+                    if stale_robot_audio and source.name == "robot_dance_chime.wav":
+                        data = b"stale character audio"
                     app.writestr(source.relative_to(self.current / "src").as_posix(), data)
         with zipfile.ZipFile(apk, "w") as package:
             package.writestr("assets/app.zip", embedded.getvalue())
             for abi in verifier.ABIS:
-                markers = verifier.MARKERS[:-1] if abi == missing_marker_abi else verifier.MARKERS
+                markers = verifier.MARKERS + (verifier.ROBOT_MARKERS if character_audio else ())
+                if abi == missing_marker_abi:
+                    markers = markers[:-1]
                 package.writestr(f"lib/{abi}/libapp.so", b"\0".join(marker.encode() for marker in markers))
         return apk
 
@@ -127,6 +131,57 @@ class VoltReleaseVerifierTests(unittest.TestCase):
     def test_missing_native_marker_or_stale_packaged_audio_is_rejected(self):
         scope = verifier.verify_scope(self.current, self.before)
         for options in [{"missing_marker_abi": "armeabi-v7a"}, {"stale_audio": True}]:
+            with self.subTest(options=options), self.assertRaises(verifier.VerificationError):
+                verifier.verify_package(self.package(**options), scope, self.current)
+
+    def polish_baseline(self):
+        """v35 starts with the four Volt sounds already shipped in v34."""
+        for name in verifier.VOLT_SOUNDS:
+            shutil.copyfile(self.current / "src/assets/audio" / name, self.before / "src/assets/audio" / name)
+        for i, name in enumerate(verifier.ROBOT_SOUNDS):
+            self.sound(self.current / "src/assets/audio" / name, 100 + i)
+
+    def test_v35_permits_only_the_explicit_character_sound_inventory(self):
+        self.polish_baseline()
+        scope = verifier.verify_scope(self.current, self.before, character_audio=True)
+        self.assertEqual(scope["counts"]["unchanged_existing_audio"], 5)
+        self.assertEqual(scope["counts"]["new_volt_audio"], 0)
+        self.assertEqual(scope["counts"]["new_robot_audio"], 18)
+        self.assertEqual(len(scope["robot_audio"]), 18)
+        self.assertEqual(scope["counts"]["other_artboards"], 31)
+        self.assertEqual(scope["counts"]["unchanged_combat_files"], 3)
+        unexpected = self.current / "src/assets/audio/robot_unreviewed.wav"
+        self.sound(unexpected, 120)
+        with self.assertRaisesRegex(verifier.VerificationError, "Unexpected new audio inventory"):
+            verifier.verify_scope(self.current, self.before, character_audio=True)
+        unexpected.unlink()
+        (self.current / "src/assets/audio" / verifier.ROBOT_SOUNDS[0]).unlink()
+        with self.assertRaisesRegex(verifier.VerificationError, "Unexpected new audio inventory"):
+            verifier.verify_scope(self.current, self.before, character_audio=True)
+
+    def test_v35_preserves_the_previously_shipped_volt_sounds(self):
+        self.polish_baseline()
+        self.sound(self.current / "src/assets/audio/volt_storm.wav", 500)
+        with self.assertRaisesRegex(verifier.VerificationError, "Out-of-scope change: audio/volt_storm.wav"):
+            verifier.verify_scope(self.current, self.before, character_audio=True)
+
+    def test_v35_requires_distinct_valid_character_wavs(self):
+        self.polish_baseline()
+        source = self.current / "src/assets/audio" / verifier.ROBOT_SOUNDS[0]
+        target = self.current / "src/assets/audio" / verifier.ROBOT_SOUNDS[1]
+        shutil.copyfile(source, target)
+        with self.assertRaisesRegex(verifier.VerificationError, "sound files are identical"):
+            verifier.verify_scope(self.current, self.before, character_audio=True)
+
+    def test_v35_package_checks_new_character_sounds_and_native_markers(self):
+        self.polish_baseline()
+        scope = verifier.verify_scope(self.current, self.before, character_audio=True)
+        package = verifier.verify_package(self.package(character_audio=True), scope, self.current)
+        self.assertEqual(package["counts"]["markers_per_abi"], 9)
+        self.assertIn("assets/audio/robot_dance_chime.wav", package["asset_checks"])
+        for options in [{"character_audio": False},
+                        {"character_audio": True, "missing_marker_abi": "arm64-v8a"},
+                        {"character_audio": True, "stale_robot_audio": True}]:
             with self.subTest(options=options), self.assertRaises(verifier.VerificationError):
                 verifier.verify_package(self.package(**options), scope, self.current)
 

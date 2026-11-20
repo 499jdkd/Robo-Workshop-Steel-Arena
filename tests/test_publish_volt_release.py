@@ -54,6 +54,9 @@ class PublicationTests(unittest.TestCase):
                     "upload_url": "https://uploads.github.com/repos/example/game/releases/1/assets{?name,label}"}
         elif method == "GET" and path == "/releases/assets/11":
             data = self.asset()
+        elif method == "GET" and path == "/releases/1/assets":
+            checksum = f"{self.digest}  {self.apk.name}\n".encode("ascii")
+            data = [self.asset(), {**self.asset(self.apk.name + ".sha256", checksum), "id": 12}]
         elif method == "POST" and path.startswith("https://uploads.github.com/"):
             name = kwargs["params"]["name"]
             if name == self.apk.name:
@@ -147,6 +150,25 @@ class PublicationTests(unittest.TestCase):
         self.assertIs(session.trust_env, False)
         self.assertEqual(verified["sha256"], self.digest)
         self.assertNotIn("Authorization", session.get.call_args.kwargs["headers"])
+
+    def test_published_asset_url_is_refreshed_after_untagged_draft_changes(self):
+        original = self.api_response
+        def draft_url(method, path, **kwargs):
+            response = original(method, path, **kwargs)
+            if path == "/releases/assets/11":
+                data = response.json()
+                data["browser_download_url"] = "https://github.com/example/game/releases/download/untagged-draft/" + self.apk.name
+                return Mock(json=lambda: data)
+            return response
+        self.api.request.side_effect = draft_url
+        self.api.resolved_tag.side_effect = [None, None, self.sha]
+        with patch.object(release, "GitHub", return_value=self.api), \
+             patch.object(release, "credential_token", return_value="never-write-this-credential"), \
+             patch.object(release, "verify_public_download", return_value={"unauthenticated":True}) as verify, \
+             patch("sys.argv", self.argv + ["--publish"]), patch("builtins.print"):
+            release.main()
+        self.assertEqual(verify.call_args.args[0], self.asset()["browser_download_url"])
+        self.assertNotIn("untagged-", json.loads(self.report.read_text())["asset"]["download_url"])
 
 
 if __name__ == "__main__":
