@@ -22,7 +22,9 @@ def main():
     checked = []
     for name in ("main", "gameplay", "game_session", "battle_ui", "game_animation", "armory",
                  "armory_ui", "online_arena", "online_ui", "online_focus", "robot_catalog",
-                 "robot_ui", "scene_focus", "profile_screen", "local_store", "progression"):
+                 "robot_ui", "scene_focus", "profile_screen", "local_store", "progression",
+                 "network_config", "app_paths", "combat_rules", "combat_info",
+                 "robot_abilities", "robot_preview", "collection_ui", "feature_screens"):
         code = archive.extract(name)
         source = ROOT / "src" / (name + ".py")
         assert code == compile(source.read_bytes(), code.co_filename, "exec", dont_inherit=True), name
@@ -52,7 +54,8 @@ def main():
                   sha256=hashlib.sha256(distribution.read_bytes()).hexdigest(),
                   verified_modules=checked, verified_assets=count,
                   published_rive_bytes=(assets / "animation/game_robot.riv").stat().st_size,
-                  bundled_roboto_fonts=4, private_keys_bundled=False)
+                  bundled_roboto_fonts=4, private_keys_bundled=False,
+                  arena_url=json.loads((assets / "config/network.json").read_text(encoding="utf-8"))["arena_url"])
     validation = root / "validation"
     validation.mkdir(exist_ok=True)
     (validation / "summary.json").write_text(json.dumps(report, indent=2), encoding="utf-8")

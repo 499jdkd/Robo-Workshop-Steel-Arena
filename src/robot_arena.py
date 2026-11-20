@@ -8,7 +8,11 @@ from robot_designs import DESIGNS
 BATTLE_ENERGY = 20
 INTENTS = ("windup", "heavy", "guard", "attack")
 INTENT_NAMES = {
-    "attack": "Быстрый удар",
+    "attack": "Обычная атака",
+    "quick": "Быстрый удар — прервёт подготовку",
+    "burst": "Серия — уворот уберёт только первое попадание",
+    "emp": "Электромагнитный импульс — отключит щит",
+    "skill": "Особый приём противника",
     "guard": "Защитная стойка",
     "windup": "Накапливает энергию",
     "heavy": "Сокрушительный рывок",
@@ -172,6 +176,27 @@ def new_battle(robot_id, level, stage, serial):
 
 def enemy_intent(battle):
     stage, turn = battle.get("stage", 0), battle.get("turn", 0)
+    if battle.get("rules_version") == 3 and battle.get("combatants"):
+        difficulty = battle.get("difficulty", "normal")
+        if difficulty == "training":
+            return ("windup", "attack", "guard", "attack")[turn % 4]
+        if difficulty in {"hard", "expert"}:
+            from combat_rules import action_error
+
+            a, b = battle["combatants"]["a"], battle["combatants"]["b"]
+            if b["energy"] < 2:
+                return "windup"
+            if a.get("preparing") and not action_error(b, "quick"):
+                return "quick"
+            if a.get("guard"):
+                if not action_error(b, "pierce"):
+                    return "pierce"
+                if not action_error(b, "emp"):
+                    return "emp"
+            if a.get("dodge") and not action_error(b, "burst"):
+                return "burst"
+            if difficulty == "expert" and not action_error(b, "special") and turn % 3 != 1:
+                return "skill"
     if battle.get("boss"):
         pattern = ("windup", "heavy", "guard", "pierce", "pulse", "attack")
         return pattern[(turn + stage // 5) % len(pattern)]

@@ -4,6 +4,8 @@ The eight original IDs are retained. Each construction has its own articulated
 Rive artboard; palette is not used as a substitute for a different silhouette.
 """
 
+from robot_abilities import ABILITIES
+
 CLASSES = {
     "tank": "Танк",
     "striker": "Штурмовик",
@@ -522,6 +524,10 @@ DESIGNS = {
 }
 RARITY_FRAGMENTS = {"common": 10, "rare": 20, "epic": 30, "legendary": 60, "mythic": 80}
 STAR_COSTS = (20, 40, 80, 120)
+
+# Encyclopedia and showroom describe the actual shared v3 combat effects.
+for _identity, _ability in ABILITIES.items():
+    DESIGNS[_identity].update(ultimate=_ability.title, strength=_ability.effect)
 
 
 def spec(identity):

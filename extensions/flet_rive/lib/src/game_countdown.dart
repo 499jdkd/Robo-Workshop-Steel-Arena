@@ -16,13 +16,16 @@ class _GameCountdownState extends State<GameCountdown> {
   String identity = '';
   double initial = 0;
   bool emitted = false;
-  int get left => (initial - watch.elapsedMilliseconds / 1000).ceil().clamp(0, 8640000);
+  int get left =>
+      (initial - watch.elapsedMilliseconds / 1000).ceil().clamp(0, 8640000);
   void sync() {
     final next = widget.control.getString('countdown_id', '')!;
     if (next == identity && watch.isRunning) return;
     identity = next;
     initial = widget.control.getDouble('seconds', 0)!;
-    watch..reset()..start();
+    watch
+      ..reset()
+      ..start();
     emitted = false;
     timer?.cancel();
     timer = Timer.periodic(const Duration(milliseconds: 250), (_) {
@@ -35,14 +38,28 @@ class _GameCountdownState extends State<GameCountdown> {
       }
     });
   }
+
   @override
-  void dispose() { timer?.cancel(); watch.stop(); super.dispose(); }
+  void dispose() {
+    timer?.cancel();
+    watch.stop();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     sync();
-    return LayoutControl(control: widget.control, child: Text(
-      left == 0 ? widget.control.getString('ready_text', 'Готово!')! : 'Готово через $left с',
-      style: TextStyle(fontSize: widget.control.getDouble('size', 12), color: const Color(0xFF9CB4D6)),
-    ));
+    return LayoutControl(
+      control: widget.control,
+      child: Text(
+        left == 0
+            ? widget.control.getString('ready_text', 'Готово!')!
+            : 'Готово через $left с',
+        style: TextStyle(
+          fontSize: widget.control.getDouble('size', 12),
+          color: const Color(0xFF9CB4D6),
+        ),
+      ),
+    );
   }
 }

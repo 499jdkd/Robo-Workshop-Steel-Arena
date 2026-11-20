@@ -60,9 +60,15 @@ class LocalStore:
                 previous_data = json.loads(previous)
                 # Immutable archive is kept before the first v3 collection save.
                 # The normal rotating backup remains independent of this archive.
-                migration_backup = self.directory / "workshop-save-before-collection-v3.json"
+                migration_backup = (
+                    self.directory / "workshop-save-before-collection-v3.json"
+                )
                 old_collection = previous_data.get("state", {}).get("collection", {})
-                if payload.get("state", {}).get("collection", {}).get("version") == 3 and old_collection.get("version") != 3 and not migration_backup.exists():
+                if (
+                    payload.get("state", {}).get("collection", {}).get("version") == 3
+                    and old_collection.get("version") != 3
+                    and not migration_backup.exists()
+                ):
                     with migration_backup.open("x", encoding="utf-8") as archive:
                         archive.write(previous)
                 self.backup.write_text(previous, encoding="utf-8")

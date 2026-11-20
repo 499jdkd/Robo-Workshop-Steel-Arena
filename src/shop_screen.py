@@ -84,9 +84,12 @@ def ShopScreen(page: ft.Page, device_id: str, session=None, on_home=None):
     state = use_game(session)
     tab, set_tab = ft.use_state(0)
     now = session.clock()
-    from collection_ui import CollectionPanel,RobotDetail
+    from collection_ui import CollectionPanel, RobotDetail
+
     if session.robot_detail:
-        return RobotDetail(page=page,session=session,identity=session.robot_detail,on_home=on_home)
+        return RobotDetail(
+            page=page, session=session, identity=session.robot_detail, on_home=on_home
+        )
 
     async def robots_tab(_):
         set_tab(0)
@@ -157,7 +160,11 @@ def ShopScreen(page: ft.Page, device_id: str, session=None, on_home=None):
             )
         )
     if tab == 0:
-        return ft.Column([controls[2],CollectionPanel(page=page,session=session,on_home=on_home)],spacing=8,expand=True)
+        return ft.Column(
+            [controls[2], CollectionPanel(page=page, session=session, on_home=on_home)],
+            spacing=8,
+            expand=True,
+        )
     elif tab == 3:
         controls.extend(armory_panel(session))
     elif tab == 1:

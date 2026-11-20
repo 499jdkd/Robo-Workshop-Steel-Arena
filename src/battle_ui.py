@@ -24,14 +24,14 @@ def health_panel(name, hp, maximum, element, color):
                     [
                         ft.Text(
                             name,
-                            size=11,
+                            size=13,
                             weight=ft.FontWeight.BOLD,
                             color="white",
                             expand=True,
-                            max_lines=1,
+                            max_lines=2,
                             overflow=ft.TextOverflow.ELLIPSIS,
                         ),
-                        ft.Text(f"{hp}/{maximum}", size=9, color="#CAD9EE"),
+                        ft.Text(f"{hp}/{maximum}", size=11, color="#CAD9EE"),
                     ],
                     spacing=5,
                 ),
@@ -42,7 +42,7 @@ def health_panel(name, hp, maximum, element, color):
                     height=6,
                     border_radius=7,
                 ),
-                ft.Text(ELEMENT_NAMES[element], size=9, color=ELEMENT_COLORS[element]),
+                ft.Text(ELEMENT_NAMES[element], size=11, color=ELEMENT_COLORS[element]),
             ],
             spacing=4,
         ),
@@ -97,6 +97,8 @@ def battle_scene(
         if before_commit
         else battle["enemy_hp"]
     )
+    if before_reply and not before_commit:
+        enemy_hp = max(0, enemy_hp - battle.get("last_enemy_heal", 0))
     if phase in {"impact", "enemy-flight", "reply", "counter-flight"}:
         enemy_hp = min(battle["enemy_max_hp"], enemy_hp + battle.get("last_counter", 0))
     player, enemy = ROBOT_BY_ID[battle["robot_id"]], ROBOT_BY_ID[battle["enemy_id"]]
@@ -228,6 +230,32 @@ def battle_scene(
     )
 
 
+def turn_timing(choice):
+    return {
+        "quick": (0.22, 0.42, 0.22),
+        "ultimate": (0.72, 1.15, 0.38),
+        "special": (0.55, 0.85, 0.30),
+        "pierce": (0.55, 0.65, 0.25),
+    }.get(choice, (0.40, 0.72, 0.25))
+
+
+def battle_action_error(battle, choice):
+    if battle.get("rules_version") == 3:
+        from combat_rules import action_error, current_actor
+
+        return action_error(current_actor(battle), choice)
+    if choice == "special" and (battle["cooldown"] or battle.get("focus", 2) < 2):
+        return "Нужны 2 фокуса и готовый навык"
+    if choice == "dodge" and (battle.get("dodge_cooldown", 0) or battle.get("focus", 2) < 1):
+        return "Нужен 1 фокус и готовый уворот"
+    from armory import equipped_weapon
+
+    equipment, _ = equipped_weapon(battle)
+    if equipment and choice in {"attack", "special"} and battle.get("battery", 12) < equipment.energy:
+        return "Батарея разряжена: используй фокус или щит"
+    return ""
+
+
 async def animate_turn(session, choice, identity, expected):
     battle = session.state.battle
     if (
@@ -238,28 +266,15 @@ async def animate_turn(session, choice, identity, expected):
         or battle.get("result") != "active"
     ):
         return False
-    if choice == "special" and (battle["cooldown"] or battle.get("focus", 2) < 2):
-        return False
-    if choice == "dodge" and (
-        battle.get("dodge_cooldown", 0) or battle.get("focus", 2) < 1
-    ):
-        return False
-    from armory import equipped_weapon
-    from combat_rules import ATTACKS,action_error,current_actor
-    if battle.get('rules_version')==3:
-        error=action_error(current_actor(battle),choice)
-        if error:
-            session.tell(error);session.notify();return False
+    from combat_rules import ATTACKS
 
-    equipment, _level = equipped_weapon(battle)
-    if (
-        equipment
-        and choice in {"attack", "special"}
-        and battle.get("battery", 12) < equipment.energy
-    ):
-        session.tell("Батарея разряжена: используй фокус или щит")
+    error = battle_action_error(battle, choice)
+    if error:
+        session.tell(error)
         session.notify()
         return False
+    speed = min(2.0, max(1.0, session.battle_speed))
+    prepare_seconds, flight_seconds, impact_seconds = turn_timing(choice)
     session.arena_animation_id += 1
     generation = session.arena_animation_id
     session.arena_animating = True
@@ -269,11 +284,16 @@ async def animate_turn(session, choice, identity, expected):
         action=choice,
         before_hp=battle["player_hp"],
         before_enemy_hp=battle["enemy_hp"],
+        speed=speed,
+        flight_seconds=flight_seconds,
+        prepare_seconds=prepare_seconds,
+        impact_seconds=impact_seconds,
     )
 
     def valid():
         return (
             session.ui_alive
+            and not session._paused
             and generation == session.arena_animation_id
             and session.state.battle.get("id") == identity
         )
@@ -283,18 +303,18 @@ async def animate_turn(session, choice, identity, expected):
             return False
         session.arena_visual["phase"] = phase
         session.notify()
-        await asyncio.sleep(duration)
+        await asyncio.sleep(duration / speed)
         return valid()
 
     try:
-        if not await frame("approach", 0.6):
+        if not await frame("approach", prepare_seconds):
             return False
-        if choice in ATTACKS and not await frame("flight", 0.95):
+        if choice in ATTACKS and not await frame("flight", flight_seconds):
             return False
         result = session.act("battle_turn", choice, identity, expected)
         if not result.ok:
             return False
-        if not await frame("impact", 0.5):
+        if not await frame("impact", impact_seconds):
             return True
         battle = session.state.battle
         own_kill = battle["result"] == "win" and not battle.get("last_counter")
@@ -302,11 +322,11 @@ async def animate_turn(session, choice, identity, expected):
             duration = (
                 0.4
                 if battle.get("last_stunned") or battle.get("last_intent") == "windup"
-                else 0.95
+                else 0.72
             )
             if not await frame("enemy-flight", duration):
                 return True
-            if not await frame("reply", 0.5):
+            if not await frame("reply", 0.25):
                 return True
             if battle.get("last_counter"):
                 if not await frame("counter-flight", 0.65):

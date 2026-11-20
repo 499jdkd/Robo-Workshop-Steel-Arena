@@ -83,6 +83,15 @@ class RobotUITests(unittest.IsolatedAsyncioTestCase):
     def keyed(self, root, key):
         return next(control for control in render_controls(root) if control.key == key)
 
+    async def test_main_store_robot_profile_returns_to_the_store(self):
+        self.session.route = "store"
+        root = self.root(main.App)
+        self.keyed(root, "store-robot-spark").on_click(None)
+        self.assertEqual(self.session.robot_detail, "spark")
+        await self.keyed(root, "robot-detail-back").on_click(None)
+        self.assertEqual(self.session.route, "store")
+        self.assertIsNotNone(self.keyed(root, "store-robot-spark"))
+
     async def test_main_scene_taps_charge_then_open_first_robot(self):
         root = self.root(main_screen.MainScreen)
         for _ in range(12):
@@ -107,7 +116,7 @@ class RobotUITests(unittest.IsolatedAsyncioTestCase):
             egg_id="",
         )
         root = self.root(shop_screen.ShopScreen)
-        await self.keyed(root,'robot-open-volt').on_click(None)
+        await self.keyed(root, "robot-open-volt").on_click(None)
         buy = self.keyed(root, "robot-egg-volt")
         self.assertFalse(buy.disabled)
         await buy.on_click(None)
@@ -115,8 +124,8 @@ class RobotUITests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             (self.session.state.coin, self.session.state.egg_id), (820, "volt")
         )
-        await self.keyed(root,'robot-detail-back').on_click(None)
-        await self.keyed(root,'robot-open-spark').on_click(None)
+        await self.keyed(root, "robot-detail-back").on_click(None)
+        await self.keyed(root, "robot-open-spark").on_click(None)
         train = self.keyed(root, "train-spark")
         await train.on_click(None)
         self.assertEqual(
@@ -158,7 +167,8 @@ class RobotUITests(unittest.IsolatedAsyncioTestCase):
             food=4, robot_levels={"spark": 1}, active_robot="spark", egg_id=""
         )
         root = self.root(main_screen.MainScreen)
-        await self.keyed(root, "robot-tap-scene").on_click(None)
+        self.assertIsNone(self.keyed(root, "robot-tap-scene").on_click)
+        await self.keyed(root, "game-rive-workshop").on_robot_tap(None)
         self.assertEqual((self.session.state.food, self.session.state.feedings), (1, 1))
         self.assertEqual(
             (
@@ -203,15 +213,17 @@ class RobotUITests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.session.state.coin, reward)
         render_controls(root)
 
-    async def test_arena_keeps_leaderboard_in_separate_tab(self):
+    async def test_arena_keeps_online_ranking_in_separate_tab(self):
         root = self.root(arena_screen.ArenaScreen)
-        ranking = next(
-            control
-            for control in render_controls(root)
-            if isinstance(control, ft.Button) and control.content == "Рейтинг"
-        )
+        ranking = self.keyed(root, "arena-tab-ranking")
         await ranking.on_click(None)
-        self.assertIsNotNone(self.keyed(root, "leaderboard-refresh"))
+        self.assertIsNotNone(self.keyed(root, "network-status"))
+        self.assertFalse(
+            any(
+                isinstance(c, ft.TextField) and "сервера" in str(c.label)
+                for c in render_controls(root)
+            )
+        )
 
     async def test_all_worlds_and_selected_robots_have_packaged_image_sources(self):
         for stage in STAGES:
@@ -247,7 +259,7 @@ class RobotUITests(unittest.IsolatedAsyncioTestCase):
             robot_levels={"spark": 1}, active_robot="spark", egg_id=""
         )
         root = self.root(main_screen.MainScreen)
-        handler = self.keyed(root, "robot-tap-scene").on_click
+        handler = self.keyed(root, "game-rive-workshop").on_robot_tap
         tasks = [asyncio.create_task(handler(None)) for _ in range(80)]
         await asyncio.sleep(0)
         self.assertEqual(self.session.state.manual_taps, 80)

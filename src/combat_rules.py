@@ -118,11 +118,10 @@ def allowed(actor):
     return choices
 
 
-def action_error(actor, action):
-    if action not in allowed(actor):
-        return "Это действие не поддерживает выбранное оружие"
+def action_cost(actor, action):
+    """One source of truth for validation, previews and resource deductions."""
     weapon = BY_ID[actor["weapon"]]
-    cost = (
+    return (
         weapon.energy
         if action == "attack"
         else 2
@@ -133,16 +132,28 @@ def action_error(actor, action):
         if action == "special"
         else 0
     )
+
+
+def action_error(actor, action):
+    if action not in allowed(actor):
+        return "Это действие не поддерживает выбранное оружие"
+    if actor.get("stun") and action not in {"guard", "charge"}:
+        return "Оглушение: выбери бесплатный щит или фокус, чтобы пропустить ход"
+    cost = action_cost(actor, action)
     if actor["energy"] < cost:
-        return "Не хватает энергии. Используй фокус или защиту"
-    if action == "special" and (actor["cooldown"] or actor["focus"] < 2):
-        return "Нужны 2 фокуса и готовый навык"
+        return f"Нужно {cost} энергии, есть {actor['energy']}. Фокус или щит восстановят энергию"
+    if action == "special" and actor["cooldown"]:
+        return f"Навык: перезарядка {actor['cooldown']} хода"
+    if action == "special" and actor["focus"] < 2:
+        return f"Нужно 2 фокуса, есть {actor['focus']}"
     if action == "ultimate" and actor["super_charge"] < 100:
-        return "Суперспособность ещё не заряжена"
+        return f"Нужно 100% суперзаряда, есть {actor['super_charge']}%"
     if action in {"pierce", "burst", "emp"} and actor["weapon_cooldown"]:
-        return "Боевой модуль перезаряжается"
-    if action == "dodge" and (actor["dodge_cooldown"] or actor["root"]):
-        return "Уворот недоступен: перезарядка или захват"
+        return f"Боевой модуль: перезарядка {actor['weapon_cooldown']} хода"
+    if action == "dodge" and actor["root"]:
+        return f"Захват удерживает робота ещё {actor['root']} хода"
+    if action == "dodge" and actor["dodge_cooldown"]:
+        return f"Уворот: перезарядка {actor['dodge_cooldown']} хода"
     return ""
 
 
@@ -194,15 +205,7 @@ def resolve_action(actor, target, action, *, seed=0):
         a["dodge_cooldown"] = 3
         a["heat"] = 0
     elif action in ATTACKS:
-        cost = (
-            weapon.energy
-            if action == "attack"
-            else 2
-            if action == "quick"
-            else min(7, weapon.energy + 1)
-            if action == "special"
-            else 4
-        )
+        cost = action_cost(a, action)
         a["energy"] -= cost
         a["heat"] = (
             min(3, a["heat"] + 1) if action in {"attack", "quick", "burst"} else 0
@@ -439,6 +442,10 @@ def local_turn(battle, action, identity, expected_turn):
         enemy_action = (
             "charge"
             if intent == "windup"
+            else intent
+            if intent in {"quick", "burst", "emp"}
+            else "special"
+            if intent == "skill"
             else "guard"
             if intent == "guard"
             else "pierce"
@@ -493,7 +500,7 @@ def local_turn(battle, action, identity, expected_turn):
         result=result,
     )
     lines = [
-        f"{action}: {event['damage']} урона"
+        f"{dict(attack='Удар', quick='Быстрый удар', guard='Щит', charge='Фокус', dodge='Уворот', special='Навык', ultimate='Супер', pierce='Пробитие', burst='Серия', emp='Электромагнитный импульс').get(action, action)}: {event['damage']} урона"
         + (" · Критический!" if event["critical"] else ""),
         f"Ответ: {reply.get('damage', 0)} урона",
     ]

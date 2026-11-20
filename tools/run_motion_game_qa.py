@@ -35,18 +35,20 @@ async def main(page):
         last_active_at=session.clock(),
     )
     mode = os.getenv("CLICKER_QA_MODE", "battle")
-    if mode == "workshop":
+    if mode != "battle":
         session.state.work_id = "lamp"
         session.state.work_started_at = session.clock()
         session.state.work_end_at = session.clock() + 25
         session.state.work_reward = 30
         session.start()
+        if mode in {'season','factory','store'}:session.route=mode
+        if mode=='robot':session.robot_detail='spark'
     else:
         session.focus_scene = "battle"
         session.arena_expanded = True
         session.act("battle_start", "spark")
     with patch.object(game, "BannerFooter", lambda **_: ft.Container(height=0)):
-        page.render(game.App, page=page, device_id="qa-synthetic", session=session)
+        page.render(game.App, page=page, device_id="qa-synthetic", session=session,start_tab=1 if mode in {'collection','robot'} else 0)
     page.on_resize = lambda _: session.notify()
 
     async def scenario():
@@ -74,7 +76,7 @@ async def main(page):
             index += 1
             await asyncio.sleep(0.12)
 
-    if mode != "workshop":
+    if mode == "battle":
         page.run_task(scenario)
     page.on_disconnect = lambda _: session.pause()
 

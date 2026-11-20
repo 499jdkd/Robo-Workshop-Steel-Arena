@@ -77,6 +77,9 @@ def main():
         check=True,
     )
     bundle_wasm(project / "build/web/rive")
+    sys.path.insert(0, str(ROOT / "src"))
+    from desktop_startup import write_contract
+    write_contract(ROOT, project / "build/web")
     output = ROOT / f"build/windows-motion-v{args.build_number}"
     if (output / "Clicker").exists():
         raise RuntimeError("Output already exists; retain it and choose a new version")
@@ -100,6 +103,8 @@ def main():
             str(ROOT / "src"),
             "--hidden-import",
             "main",
+            *[arg for module in ("arena_screen", "profile_screen", "shop_screen", "scene_focus", "feature_screens", "collection_ui")
+              for arg in ("--hidden-import", module)],
             "--icon",
             str(ROOT / "src/assets/icon.png"),
             "--collect-all",

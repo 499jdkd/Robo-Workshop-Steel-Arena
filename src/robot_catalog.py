@@ -184,12 +184,26 @@ ROBOTS = (
     ),
 )
 _old_ids = {r.id for r in ROBOTS}
-ROBOTS = tuple(replace(r,mobility=DESIGNS[r.id]['mobility']) for r in ROBOTS)
-ROBOTS += tuple(Robot(d['id'], d['name'], d['ultimate'], d['strength'] + '. ' + d['weakness'] + '.',
-                      d['unlock'], 150*d['unlock'], 50+5*d['unlock'], 80+20*d['unlock'],
-                      'cosmic' if d['rarity'] in {'legendary','mythic'} else 'tech', d['color'],
-                      rarity=d['rarity'], hatch_seconds=120+40*d['unlock'], mobility=d['mobility'])
-                for d in DESIGNS.values() if d['id'] not in _old_ids)
+ROBOTS = tuple(replace(r, mobility=DESIGNS[r.id]["mobility"]) for r in ROBOTS)
+ROBOTS += tuple(
+    Robot(
+        d["id"],
+        d["name"],
+        d["ultimate"],
+        d["strength"] + ". " + d["weakness"] + ".",
+        d["unlock"],
+        150 * d["unlock"],
+        50 + 5 * d["unlock"],
+        80 + 20 * d["unlock"],
+        "cosmic" if d["rarity"] in {"legendary", "mythic"} else "tech",
+        d["color"],
+        rarity=d["rarity"],
+        hatch_seconds=120 + 40 * d["unlock"],
+        mobility=d["mobility"],
+    )
+    for d in DESIGNS.values()
+    if d["id"] not in _old_ids
+)
 ROBOT_BY_ID = {robot.id: robot for robot in ROBOTS}
 
 

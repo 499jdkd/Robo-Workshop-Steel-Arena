@@ -17,10 +17,23 @@ double pulse(double t, double start, double end) => t <= start || t >= end
 class GamePose {
   int mode = 0;
   final extra = <String, double>{
-    for (var i=0;i<16;i++) 'joint$i':0,
-    for (var i=0;i<8;i++) 'segmentY$i':55,
-    'cryo':0,'ion':0,'blaster':0,'magnetic':0,'grenade':0,'emp':0,'drill':0,'disc':0,'repair':0,
-    'modArmor':0,'modCore':0,'modDrive':0,'modDefense':0,'modGadget':0,
+    for (var i = 0; i < 16; i++) 'joint$i': 0,
+    for (var i = 0; i < 8; i++) 'segmentY$i': 95,
+    'cryo': 0,
+    'ion': 0,
+    'blaster': 0,
+    'magnetic': 0,
+    'grenade': 0,
+    'emp': 0,
+    'drill': 0,
+    'disc': 0,
+    'repair': 0,
+    'modArmor': 0,
+    'modCore': 0,
+    'modDrive': 0,
+    'modDefense': 0,
+    'modGadget': 0,
+    'secondaryGun':0,'secondaryPods':0,'secondaryBlade':0,'secondaryOrb':0,
     'bodyscaleX': 1,
     'bodyscaleY': 1,
     'headscaleX': 1,
@@ -165,6 +178,21 @@ class GamePose {
         armR = .3;
         foreL = .7;
         foreR = -.7;
+      case 'dance':
+        mode = 6;
+        body = .22 * math.sin(t * 9);
+        head = -.18 * math.sin(t * 9);
+        armL = .8 + .9 * math.sin(t * 9);
+        armR = -.8 + .9 * math.sin(t * 9);
+        foreL = -1; foreR = 1;
+        y -= 15 * math.sin(t * 9).abs();
+        smile = 1; eyeY = .65;
+      case 'inspect':
+        head = .35 * math.sin(t * 3.8);
+        armR = -.5; foreR = -1;
+        armL = .25; foreL = -.6;
+        eyeY = .8; brow = -.18;
+        body = -.08 * math.sin(t * 3.8);
     }
   }
 
@@ -182,7 +210,7 @@ class GamePose {
     armL = .5;
     foreL = -1.6;
     body = -.16 * deploy;
-    aura = .25 * deploy;
+    aura = {'electric', 'plasma', 'ion', 'cryo', 'emp', 'magnetic'}.contains(type) ? .15 * deploy : 0;
     if (type == 'sniper') {
       armL = -1.05 * deploy;
       foreL = -1.45 * deploy;
@@ -269,7 +297,15 @@ class GamePose {
       'sword',
       'flame',
       'drone',
-      'cryo','ion','blaster','magnetic','grenade','emp','drill','disc','repair',
+      'cryo',
+      'ion',
+      'blaster',
+      'magnetic',
+      'grenade',
+      'emp',
+      'drill',
+      'disc',
+      'repair',
     ])
       type: weapon == type ? 1 : 0,
     'plasma': weapon == 'plasma' ? 1 : 0,
@@ -324,6 +360,7 @@ class GameParticle {
 
 /// Bounded pool; analytic particle motion stays independent of refresh rate.
 class GameEffects {
+  int limit = 96;
   final particles = <GameParticle>[];
   final random = math.Random(83);
   void burst(
@@ -332,7 +369,7 @@ class GameEffects {
     bool smoke = false,
     int count = 28,
   }) {
-    for (var i = 0; i < count && particles.length < 96; i++) {
+    for (var i = 0; i < count && particles.length < limit; i++) {
       final angle = random.nextDouble() * math.pi * 2;
       final speed = smoke
           ? 12 + random.nextDouble() * 55
@@ -359,5 +396,6 @@ class GameEffects {
       p.age += dt;
     }
     particles.removeWhere((p) => p.age >= p.life);
+    if (particles.length > limit) particles.removeRange(0, particles.length - limit);
   }
 }

@@ -108,7 +108,16 @@ class BannerFooterTests(unittest.TestCase):
                 else:footer.assert_called_once_with(page=self.page, key="advertising-footer")
                 self.assertEqual(root.controls[0].expand, True)
                 self.assertIsInstance(root.controls[1], ft.NavigationBar)
-                self.assertEqual(root.controls[-1].height, 0 if index==2 else 50)
+                safe = root.controls[-1]
+                self.assertIsInstance(safe, ft.SafeArea)
+                self.assertTrue(safe.maintain_bottom_view_padding)
+                if index == 2:
+                    self.assertEqual(safe.content.height, 0)
+                else:
+                    self.assertEqual(safe.content.padding.top, 12)
+                    self.assertEqual(safe.content.content.height, 50)
+                self.assertEqual(root.controls[1].height, 80)
+                self.assertEqual(root.controls[1].label_behavior, ft.NavigationBarLabelBehavior.ALWAYS_SHOW)
                 self.assertEqual(root.spacing, 0)
 
 

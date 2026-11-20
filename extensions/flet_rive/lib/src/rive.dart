@@ -192,6 +192,7 @@ class _RiveControlState extends State<RiveControl> {
     bool isFile,
     Map<String, String>? headers,
   ) async {
+    await rive.RiveNative.init();
     if (isFile) {
       return rive.File.path(path, riveFactory: rive.Factory.rive);
     }

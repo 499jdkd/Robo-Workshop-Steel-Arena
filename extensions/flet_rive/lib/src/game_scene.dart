@@ -5,6 +5,7 @@ import 'package:flet/flet.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:rive/rive.dart' as rive;
 
 import 'robot/game_motion.dart';
@@ -12,6 +13,10 @@ import 'robot/motion_model.dart';
 import 'robot/scene_audio.dart';
 import 'robot/robot_profiles.dart';
 import 'robot/rig_cache.dart';
+import 'robot/signature_motion.dart';
+import 'robot/scene_loading.dart';
+import 'robot/volt_motion.dart';
+import 'robot/volt_model.dart';
 
 /// Semantic Flet events drive native timelines, without Python frame updates.
 class GameRiveControl extends StatefulWidget {
@@ -22,17 +27,148 @@ class GameRiveControl extends StatefulWidget {
 }
 
 class _GameRiveControlState extends State<GameRiveControl>
-    with WidgetsBindingObserver {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   rive.File? file;
   Future<rive.File?>? loading;
   GameScenePainter? painter;
   RigLease? lease;
   String source = '', renderer = '';
+  String reportedScene = '';
   int generation = 0;
+  final loadWatch = Stopwatch();
+  GameSceneClock? nativeVoltScene;
+  late final Ticker nativeTicker;
+  Duration? nativePreviousTick;
+  bool nativeSelected = false, appActive = true;
+  double modelWarmMs = 0;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    appActive =
+        WidgetsBinding.instance.lifecycleState == null ||
+        WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+    nativeTicker = createTicker(advanceNativeVolt);
+  }
+
+  void advanceNativeVolt(Duration elapsed) {
+    final scene = nativeVoltScene;
+    if (!nativeSelected || scene == null) return;
+    final previous = nativePreviousTick;
+    nativePreviousTick = elapsed;
+    final dt = previous == null
+        ? 0.0
+        : ((elapsed - previous).inMicroseconds / 1000000).clamp(0.0, .04);
+    // Only CustomPainter listens to this clock. There is no widget rebuild,
+    // Flet event, or Python update on a frame.
+    scene.advance(dt);
+  }
+
+  void syncNativeTicker() {
+    final scene = nativeVoltScene;
+    final running =
+        nativeSelected &&
+        scene != null &&
+        !scene.suspended &&
+        !scene.hidden &&
+        scene.data['paused'] != true;
+    if (running && !nativeTicker.isActive) {
+      nativePreviousTick = null;
+      nativeTicker.start();
+    } else if (!running && nativeTicker.isActive) {
+      nativeTicker.stop();
+      nativePreviousTick = null;
+      scene?.audio.pause();
+    }
+  }
+
+  void dropRive() {
+    generation++; // A late asynchronous load can no longer become this scene.
+    painter?.dispose();
+    painter = null;
+    file = null;
+    loading = null;
+    source = renderer = '';
+    final previous = lease;
+    lease = null;
+    WidgetsBinding.instance.addPostFrameCallback((_) => previous?.release());
+  }
+
+  void dropNativeVolt() {
+    nativeSelected = false;
+    syncNativeTicker();
+    nativeVoltScene?.dispose();
+    nativeVoltScene = null;
+    nativePreviousTick = null;
+  }
+
+  Widget nativeVolt(BuildContext context, Map<String, dynamic> data) {
+    if (!nativeSelected) {
+      dropRive();
+      reportedScene = '';
+      nativeSelected = true;
+      nativeVoltScene = GameSceneClock();
+      final watch = Stopwatch()..start();
+      warmVoltModel();
+      modelWarmMs = watch.elapsedMicroseconds / 1000;
+    }
+    final scene = nativeVoltScene!;
+    scene.update(data);
+    scene.reduced =
+        MediaQuery.disableAnimationsOf(context) ||
+        data['reducedEffects'] == true;
+    scene.hidden =
+        !TickerMode.valuesOf(context).enabled || !widget.control.visible;
+    scene.suspended = !appActive;
+    if (data['sound'] != false) scene.audio.configure(widget.control.backend);
+    syncNativeTicker();
+    final sceneKey = 'native-volt|${data['expanded']}|${data['demonstration']}';
+    return LayoutControl(
+      control: widget.control,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          scene.viewport = constraints.biggest;
+          if (scene.playerVoltFrame == null) {
+            // A paused/hidden first mount still needs a static model. Sampling
+            // time zero never advances motion, consumes resources or plays a cue.
+            final savedData = scene.data,
+                hidden = scene.hidden,
+                suspended = scene.suspended;
+            scene.data = {...savedData, 'paused': false};
+            scene.hidden = scene.suspended = false;
+            scene.advance(0);
+            scene.data = savedData;
+            scene.hidden = hidden;
+            scene.suspended = suspended;
+          } else {
+            scene.advance(0);
+          }
+          return GameSceneView(
+            nativeScene: scene,
+            onRobotTap: () => widget.control.triggerEvent('robot_tap'),
+            onFirstPaint: () {
+              if (!mounted ||
+                  !nativeSelected ||
+                  nativeVoltScene != scene ||
+                  reportedScene == sceneKey ||
+                  !widget.control.getBool('report_ready', false)!)
+                return;
+              reportedScene = sceneKey;
+              widget.control.triggerEvent('ready', {
+                'data': {
+                  'robot': 'volt',
+                  'enemy': '',
+                  'renderer': 'flutter',
+                  'model_renderer': 'flutter-canvas-articulated',
+                  'rig_load_ms': 0,
+                  'model_warm_ms': modelWarmMs,
+                },
+              });
+            },
+          );
+        },
+      ),
+    );
   }
 
   void load() {
@@ -41,37 +177,54 @@ class _GameRiveControlState extends State<GameRiveControl>
     // Both factories use the same native Rive artboard/state machine. The
     // Flutter compositor avoids the platform-texture path on Android/iOS.
     final engine = requested == 'auto'
-        ? (!kIsWeb && {TargetPlatform.android, TargetPlatform.iOS}.contains(defaultTargetPlatform)
-            ? 'flutter' : 'rive')
+        ? (!kIsWeb &&
+                  {
+                    TargetPlatform.android,
+                    TargetPlatform.iOS,
+                  }.contains(defaultTargetPlatform)
+              ? 'flutter'
+              : 'rive')
         : requested;
     if (src == source && engine == renderer) return;
     source = src;
     renderer = engine;
     final current = ++generation;
+    loadWatch
+      ..reset()
+      ..start();
     painter?.dispose();
     painter = null;
     final previous = lease;
     file = null;
     WidgetsBinding.instance.addPostFrameCallback((_) => previous?.release());
     final asset = widget.control.backend.getAssetSource(src);
-    final factory = engine == 'flutter'
-        ? rive.Factory.flutter
-        : rive.Factory.rive;
-    lease=acquireRig('${asset.path}|$engine',()=>rive.RiveNative.init().then((_) =>
-        (asset.isFile
-                ? rive.File.path(asset.path, riveFactory: factory)
-                : rive.File.url(asset.path, riveFactory: factory))));
-    loading = lease!.future
-            .then((value) {
-              if (!mounted || current != generation) {
-                return null;
-              }
-              return file = value;
-            });
+    lease = acquireRig(
+      '${asset.path}|$engine',
+      () => rive.RiveNative.init().then((_) {
+        final factory = engine == 'flutter'
+            ? rive.Factory.flutter
+            : rive.Factory.rive;
+        return asset.isFile
+            ? rive.File.path(asset.path, riveFactory: factory)
+            : rive.File.url(asset.path, riveFactory: factory);
+      }),
+    );
+    loading = lease!.future.then((value) {
+      if (!mounted || current != generation) {
+        return null;
+      }
+      loadWatch.stop();
+      return file = value;
+    });
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    appActive = state == AppLifecycleState.resumed;
+    nativeVoltScene?.suspended = !appActive;
+    nativeVoltScene?.audio.pause();
+    nativePreviousTick = null;
+    syncNativeTicker();
     painter?.scene.suspended = state != AppLifecycleState.resumed;
     painter?.scene.audio.pause();
     painter?.resetTime = true;
@@ -79,10 +232,21 @@ class _GameRiveControlState extends State<GameRiveControl>
   }
 
   @override
-  void didHaveMemoryPressure(){clearIdleRigCache();}
+  void didHaveMemoryPressure() {
+    clearIdleRigCache();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final data =
+        jsonDecode(widget.control.getString('payload', '{}')!)
+            as Map<String, dynamic>;
+    if (data['robot'] == 'volt' && data['arena'] != true)
+      return nativeVolt(context, data);
+    if (nativeSelected) {
+      dropNativeVolt();
+      reportedScene = '';
+    }
     load();
     return LayoutControl(
       control: widget.control,
@@ -102,19 +266,48 @@ class _GameRiveControlState extends State<GameRiveControl>
             );
           }
           final value = snapshot.data;
-          if (value == null) return const Center(child:SizedBox(width:25,height:25,child:CircularProgressIndicator(strokeWidth:2,color:Color(0xFF87DEFF))));
+          if (value == null) return const SceneLoadingRobot();
           final p = painter ??= GameScenePainter(value);
           final data =
               jsonDecode(widget.control.getString('payload', '{}')!)
                   as Map<String, dynamic>;
-          p.scene.reduced = MediaQuery.disableAnimationsOf(context);
+          p.scene.reduced =
+              MediaQuery.disableAnimationsOf(context) ||
+              data['reducedEffects'] == true;
+          p.scene.hidden = !TickerMode.valuesOf(context).enabled;
           p.scene.update(data);
+          final sceneKey =
+              '$source|$renderer|${data['robot']}|${data['enemy']}|${data['arena']}|${data['expanded']}';
+          if (widget.control.getBool('report_ready', false)! &&
+              reportedScene != sceneKey) {
+            p.onFirstPaint = () {
+              if (!mounted || reportedScene == sceneKey) return;
+              reportedScene = sceneKey;
+              widget.control.triggerEvent('ready', {
+                'data': {
+                  'robot': data['robot'],
+                  'enemy': data['arena'] == true ? data['enemy'] : '',
+                  'renderer': renderer,
+                  'model_renderer': data['robot'] == 'volt'
+                      ? 'flutter-canvas-articulated'
+                      : 'rive-artboard',
+                  'rig_load_ms': loadWatch.elapsedMicroseconds / 1000,
+                },
+              });
+            };
+          }
           if (data['sound'] != false)
             p.scene.audio.configure(widget.control.backend);
-        return LayoutBuilder(builder:(context,constraints) {
-          p.scene.viewport=constraints.biggest;
-          return GameSceneView(file:value,painter:p);
-        });
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              p.scene.viewport = constraints.biggest;
+              return GameSceneView(
+                file: value,
+                painter: p,
+                onRobotTap: () => widget.control.triggerEvent('robot_tap'),
+              );
+            },
+          );
         },
       ),
     );
@@ -124,10 +317,27 @@ class _GameRiveControlState extends State<GameRiveControl>
   void dispose() {
     generation++;
     WidgetsBinding.instance.removeObserver(this);
+    nativeTicker.dispose();
+    nativeVoltScene?.dispose();
+    nativeVoltScene = null;
     painter?.dispose();
-    final previous=lease;
-    WidgetsBinding.instance.addPostFrameCallback((_)=>previous?.release());
+    final previous = lease;
+    WidgetsBinding.instance.addPostFrameCallback((_) => previous?.release());
     super.dispose();
+  }
+}
+
+class _VoltPlayback {
+  String action = '';
+  double cueT = -.001, blendAt = -99;
+  GamePose? from;
+  VoltFrame? frame;
+  void reset() {
+    action = '';
+    cueT = -.001;
+    blendAt = -99;
+    from = null;
+    frame = null;
   }
 }
 
@@ -138,24 +348,48 @@ class GameSceneClock extends ChangeNotifier {
   void Function()? pendingBurst;
   GamePose? previousPlayer, previousEnemy;
   final audio = SceneAudio();
+  final _voltPlayer = _VoltPlayback(), _voltEnemy = _VoltPlayback();
+  VoltFrame? get playerVoltFrame => _voltPlayer.frame;
+  VoltFrame? get enemyVoltFrame => _voltEnemy.frame;
+  bool get isVolt => data['robot'] == 'volt';
+  double? _voltOutcomeAt;
   Size viewport = const Size(390, 294);
   double clock = 0, age = 0, zoom = 1, zoomTarget = 1, patrol = 0;
+  double localAge = 99, walkAge = 99, walkDuration = 1;
+  double walkFrom = .5, walkTarget = .5, lastTap = -10;
+  int tapBurst = 0, reactionIndex = 0;
+  String localAction = '';
+  bool manualPosition = false;
   Offset pan = Offset.zero, gaze = Offset.zero;
-  bool reduced = false, suspended = false, inspecting = false;
+  bool reduced = false, suspended = false, inspecting = false, hidden = false;
   bool get arena => data['arena'] == true;
+  bool get demonstration => data['demonstration'] == true;
   bool get expanded => data['expanded'] == true;
   String get phase => data['phase'] as String? ?? 'idle';
   String get action => data['action'] as String? ?? 'idle';
   String get weapon => data['weapon'] as String? ?? 'plasma';
   String get enemyWeapon => data['enemyWeapon'] as String? ?? 'plasma';
   double get scale => math.min(
-    viewport.height * (arena ? .64 : .76) / 330,
+    viewport.height *
+        (arena ? .64 : .68) /
+        330 *
+        (signatureVisible &&
+                {'falcon', 'phoenix', 'storm', 'volt'}.contains(signatureId)
+            ? 1 - .16 * math.sin(signatureT * math.pi)
+            : 1),
     // Reserve the complete 420px artboard, including deployed long weapons,
     // instead of fitting only the 240px chassis and cropping its extremities.
-    viewport.width * (arena ? .46 : .90) / 420,
+    viewport.width *
+        (arena
+            ? .42
+            : demonstration
+            ? .72
+            : .80) /
+        420,
   );
   double get floor => viewport.height * (arena ? .84 : .86);
   bool get playerShot =>
+      (!arena && localAction == 'attack' && localAge >= .4 && localAge < 1.3) ||
       ({'flight', 'counter-flight'}.contains(phase) &&
           {'attack', 'special'}.contains(action)) ||
       phase == 'counter-flight';
@@ -168,7 +402,39 @@ class GameSceneClock extends ChangeNotifier {
   bool get visibleShot =>
       (playerShot || enemyShot) &&
       !{'shield', 'charge', 'dodge'}.contains(activeWeapon);
-  double get progress => unit(age / (phase == 'counter-flight' ? .65 : .95));
+  double get progress => !arena
+      ? unit((localAge - .4) / .9)
+      : unit(
+          age /
+              (phase == 'counter-flight'
+                  ? .65
+                  : enemyShot
+                  ? .72
+                  : (data['flightSeconds'] as num? ?? .72)),
+        );
+  String get combatAction => data['combatAction'] as String? ?? action;
+  String get activeCombatAction => enemyShot
+      ? data['enemyCombatAction'] as String? ?? 'attack'
+      : arena
+      ? combatAction
+      : localAction;
+  bool get signatureVisible => arena
+      ? ({'special', 'ultimate'}.contains(combatAction) &&
+                {'approach', 'flight', 'impact'}.contains(phase)) ||
+            (enemyShot &&
+                {'special', 'ultimate'}.contains(data['enemyCombatAction']))
+      : {'special', 'ultimate'}.contains(localAction) &&
+            localAge < (isVolt ? voltActionSeconds[localAction]! : 2.25);
+  bool get ultimate => activeCombatAction == 'ultimate';
+  String get signatureId =>
+      data[enemyShot ? 'enemy' : 'robot'] as String? ?? 'spark';
+  double get signatureT => !arena
+      ? unit(localAge / 2.25)
+      : phase == 'approach'
+      ? unit(age / (combatAction == 'ultimate' ? .72 : .55)) * .28
+      : phase == 'impact'
+      ? .83 + unit(age / .38) * .17
+      : .28 + progress * .55;
   double get impact =>
       ((phase == 'impact' && (data['damage'] as num? ?? 0) > 0) ||
           (phase == 'reply' && (data['incoming'] as num? ?? 0) > 0) ||
@@ -178,36 +444,68 @@ class GameSceneClock extends ChangeNotifier {
   Offset get shake => reduced
       ? Offset.zero
       : Offset(
-          math.sin(age * 103) * 9 * impact,
-          math.cos(age * 137) * 5 * impact,
+          math.sin(age * 103) * (ultimate ? 12 : 6) * impact,
+          math.cos(age * 137) * (ultimate ? 7 : 3) * impact,
         );
 
   void update(Map<String, dynamic> next) {
-    if(next['robot']!=data['robot'] || next['arena']!=data['arena']) {
-      patrol=0;zoom=zoomTarget=1;pan=Offset.zero;gaze=Offset.zero;
-      inspecting=false;player.facing=1;effects.particles.clear();
+    final contextChanged =
+        next['robot'] != data['robot'] ||
+        next['arena'] != data['arena'] ||
+        next['demonstration'] != data['demonstration'];
+    if (contextChanged) {
+      patrol = 0;
+      zoom = zoomTarget = 1;
+      pan = Offset.zero;
+      gaze = Offset.zero;
+      inspecting = false;
+      manualPosition = false;
+      localAction = '';
+      localAge = walkAge = 99;
+      tapBurst = reactionIndex = 0;
+      lastTap = clock - 10;
+      audio.pause();
+      pendingBurst = null;
+      previousPlayer = previousEnemy = null;
+      _voltPlayer.reset();
+      _voltEnemy.reset();
+      _voltOutcomeAt = null;
+      player.facing = 1;
+      effects.particles.clear();
     }
-    final changed = next['event'] != data['event'];
+    final changed = contextChanged || next['event'] != data['event'];
     final previousAction = action;
     final keepFeeding =
+        !contextChanged &&
         !arena &&
         previousAction == 'feed' &&
         age < 1.4 &&
         next['action'] == 'joy';
-    final keepReaction = !arena && previousAction == next['action'] && age < .5;
+    final keepReaction =
+        !contextChanged &&
+        !arena &&
+        previousAction == next['action'] &&
+        age < .5;
     data = next;
+    if (next['result'] != 'win' && next['result'] != 'loss')
+      _voltOutcomeAt = null;
     if (keepFeeding) data['action'] = 'feed';
     audio.enabled = next['sound'] != false;
     player.mobility = next['mobility'] as String? ?? 'tracks';
     enemy.mobility = next['enemyMobility'] as String? ?? 'tracks';
     if (!changed || keepFeeding || keepReaction) return;
-    previousPlayer = player.pose;
-    previousEnemy = enemy.pose;
+    previousPlayer = contextChanged ? null : player.pose;
+    previousEnemy = contextChanged ? null : enemy.pose;
     age = 0;
+    if (!arena &&
+        ({'attack', 'special', 'ultimate', 'guard'}.contains(combatAction) ||
+            isVolt && voltActionSeconds.containsKey(combatAction))) {
+      showcase(combatAction);
+    }
     if (arena) {
-      if (phase == 'approach')
+      if (phase == 'approach' && !isVolt)
         audio.play(weapon == 'sniper' ? 'aim' : 'deploy');
-      if (visibleShot)
+      if (visibleShot && data[enemyShot ? 'enemy' : 'robot'] != 'volt')
         audio.play(activeWeapon == 'fist' ? 'electric' : activeWeapon);
       if (phase == 'impact' || phase == 'reply' || phase == 'counter-hit') {
         final guarded = phase == 'reply' && action == 'guard';
@@ -217,28 +515,29 @@ class GameSceneClock extends ChangeNotifier {
           audio.play(guarded ? 'shield' : 'impact');
           final target = phase == 'reply' ? player : enemy;
           if (!reduced) {
-            pendingBurst=() {
-            final point=Offset(target.center,floor-140*scale);
-            effects.burst(
-              point,
-              guarded ? const Color(0xFF75DCFF) : const Color(0xFFFFD775),
-              count: 40,
-            );
-            if ((phase == 'reply' ? enemyWeapon : weapon) == 'rocket')
+            pendingBurst = () {
+              final point = Offset(target.center, floor - 140 * scale);
               effects.burst(
                 point,
-                const Color(0xFF97A3B2),
-                smoke: true,
-                count: 22,
+                guarded ? const Color(0xFF75DCFF) : const Color(0xFFFFD775),
+                count: 40,
               );
+              if ((phase == 'reply' ? enemyWeapon : weapon) == 'rocket')
+                effects.burst(
+                  point,
+                  const Color(0xFF97A3B2),
+                  smoke: true,
+                  count: 22,
+                );
             };
           }
         }
       }
-      if (phase == 'victory') audio.play('victory');
+      if (phase == 'victory' && !isVolt) audio.play('victory');
     } else if (action == 'feed') {
       audio.play('feed');
-      if (!reduced) pendingBurst=()=>effects.burst(
+      if (!reduced)
+        pendingBurst = () => effects.burst(
           Offset(player.center, floor - 190 * scale),
           const Color(0xFF6FEAD2),
           count: 14,
@@ -247,36 +546,82 @@ class GameSceneClock extends ChangeNotifier {
   }
 
   void advance(double dt) {
-    if (suspended || data['paused'] == true) return;
+    if (suspended || hidden || data['paused'] == true) return;
     clock += dt;
-    age += dt;
+    age += dt * (arena ? (data['animationSpeed'] as num? ?? 1).clamp(1, 2) : 1);
+    localAge += dt;
+    walkAge += dt;
+    effects.limit = reduced
+        ? 0
+        : viewport.shortestSide < 400
+        ? 48
+        : 96;
     effects.advance(dt);
     final s = scale;
+    final lastPlayer = player.pose, lastEnemy = enemy.pose;
     player.pose = GamePose(clock);
     enemy.pose = GamePose(clock + .7);
-    double px = viewport.width * (arena ? .23 : .5), ex = viewport.width * .77;
+    double px = viewport.width * (arena ? .25 : .5), ex = viewport.width * .75;
     final p = player.pose, e = enemy.pose;
     if (!arena) {
-      final reacting = age < (action == 'feed' ? 1.7 : .95) && action != 'idle';
+      final reacting =
+          (age < (action == 'feed' ? 1.7 : .95) && action != 'idle') ||
+          localAge < 2.25;
       final id = data['robot'];
-      final speed = id == 'forge' || id == 'aegis'
-          ? .64
-          : id == 'volt' || id == 'glacier'
+      final role = robotProfiles[id]?['class'];
+      final speed = role == 'tank'
+          ? 0.64
+          : role == 'scout'
           ? 1.45
+          : role == 'support'
+          ? 0.85
           : 1.0;
       if (!inspecting && !reduced && !reacting) patrol += dt * speed;
       final span = math.max(
         0,
-        (viewport.width - 230 * s) * (expanded ? .36 : .22),
+        (viewport.width - 420 * s - 16) * (expanded ? .36 : .22),
       );
-      px += span * math.sin(patrol * .72);
-      if (!inspecting && !reacting && !reduced)
+      if (manualPosition) {
+        px =
+            viewport.width *
+            (walkFrom +
+                (walkTarget - walkFrom) * smooth(walkAge / walkDuration));
+      } else if (demonstration) {
+        px = viewport.width * .4;
+      } else {
+        px += span * math.sin(patrol * .72);
+      }
+      if (!manualPosition && !inspecting && !reacting && !reduced)
         player.facing = math.cos(patrol * .72) < 0 ? -1 : 1;
       if (reacting) p.emotion(action, age);
+      if (localAge < 1.6 &&
+          !{'attack', 'special', 'ultimate', 'guard'}.contains(localAction)) {
+        p.emotion(localAction, localAge);
+      }
+      if (localAction == 'guard' && localAge < 2.25) {
+        p.shield = math.sin(math.pi * unit(localAge / 2.25));
+        p.armR = -1.3;
+      }
+      if (localAction == 'attack' && localAge < 1.8) {
+        if (localAge < .4)
+          p.prepare(weapon, localAge);
+        else
+          p.fire(weapon, localAge - .4);
+      }
       if (!reacting && !inspecting && !reduced) {
-        final beat = clock % 23;
-        if (beat > 12 && beat < 13.3) p.emotion('surprise', beat - 12);
-        if (beat > 19 && beat < 20.7) p.emotion('joy', beat - 19);
+        final seed = (id as String? ?? 'spark').codeUnits.fold<int>(
+          0,
+          (sum, n) => sum + n,
+        );
+        final beat = (clock + seed % 11) % 29;
+        if (beat > 10 && beat < 11.6) p.emotion('inspect', beat - 10);
+        if (beat > 19 && beat < 20.7)
+          p.emotion(data['idleEmotion'] as String? ?? 'dance', beat - 19);
+        if (beat > 25 && beat < 27.25 && !demonstration) {
+          localAction = 'attack';
+          localAge = beat - 25;
+          player.facing = 1;
+        }
       }
     } else {
       if (phase == 'approach') {
@@ -304,12 +649,24 @@ class GameSceneClock extends ChangeNotifier {
       }
       if (playerShot) {
         p.fire(weapon, age);
-        if (weapon == 'fist' || weapon == 'sword')
+        if (combatAction == 'quick') {
+          p.x += 38 * math.sin(progress * math.pi);
+          p.body += .18;
+        }
+        if (combatAction == 'pierce') {
+          p.eyeY = .35;
+          p.x -= 18 * math.exp(-age * 12);
+        }
+        if (combatAction == 'burst') {
+          p.x -= 14 * math.sin(age * 32);
+          p.foreR += .18 * math.sin(age * 32);
+        }
+        if (!isVolt && (weapon == 'fist' || weapon == 'sword'))
           px += math.max(0, ex - px - 185 * s) * smooth(age / .55);
         e.emotion('fear', age);
       }
       if (phase == 'impact') {
-        if (weapon == 'fist' || weapon == 'sword')
+        if (!isVolt && (weapon == 'fist' || weapon == 'sword'))
           px += math.max(0, ex - px - 185 * s) * (1 - smooth(age / .45));
         if ({'attack', 'special'}.contains(action)) p.fire(weapon, .95 + age);
         if ((data['damage'] as num? ?? 0) > 0)
@@ -322,7 +679,8 @@ class GameSceneClock extends ChangeNotifier {
       }
       if (enemyShot) {
         e.fire(enemyWeapon, age);
-        if (enemyWeapon == 'fist' || enemyWeapon == 'sword')
+        if (data['enemy'] != 'volt' &&
+            (enemyWeapon == 'fist' || enemyWeapon == 'sword'))
           ex -= math.max(0, ex - px - 185 * s) * smooth(age / .55);
         if (action == 'guard') {
           p.shield = 1;
@@ -335,7 +693,8 @@ class GameSceneClock extends ChangeNotifier {
           p.emotion('fear', age);
         }
       }
-      if (phase == 'enemy-flight' && data['intent'] == 'windup') {
+      if (phase == 'enemy-flight' &&
+          (data['intent'] == 'windup' || data['enemyAction'] == 'charge')) {
         e.aura = .85;
         e.emotion('anger', age);
       }
@@ -348,7 +707,8 @@ class GameSceneClock extends ChangeNotifier {
         e.emotion('anger', age);
       }
       if (phase == 'reply') {
-        if (enemyWeapon == 'fist' || enemyWeapon == 'sword')
+        if (data['enemy'] != 'volt' &&
+            (enemyWeapon == 'fist' || enemyWeapon == 'sword'))
           ex -= math.max(0, ex - px - 185 * s) * (1 - smooth(age / .45));
         if ((data['incoming'] as num? ?? 0) > 0)
           p.hit(age, unit((data['incoming'] as num) / 35));
@@ -367,12 +727,16 @@ class GameSceneClock extends ChangeNotifier {
     }
     if (player.mobility == 'hover') p.y -= 10 + 7 * math.sin(clock * 3);
     if (enemy.mobility == 'hover') e.y -= 10 + 7 * math.sin(clock * 3 + 1);
+    if (player.mobility == 'flight') p.y -= 22 + 8 * math.sin(clock * 2.4);
+    if (enemy.mobility == 'flight') e.y -= 22 + 8 * math.sin(clock * 2.4 + 1);
     if (!reduced &&
         !{'impact', 'reply', 'counter-hit'}.contains(phase) &&
         age < .14) {
       final blend = smooth(age / .14);
-      if (previousPlayer != null) p.blendFrom(previousPlayer!, blend);
-      if (previousEnemy != null) e.blendFrom(previousEnemy!, blend);
+      if (previousPlayer != null && !isVolt)
+        p.blendFrom(previousPlayer!, blend);
+      if (previousEnemy != null && data['enemy'] != 'volt')
+        e.blendFrom(previousEnemy!, blend);
     }
     if (!arena) {
       final gear = data['equipped'];
@@ -382,30 +746,58 @@ class GameSceneClock extends ChangeNotifier {
         p.armR = -.85;
       }
     }
-    player.travel(px + p.x * s * player.facing, s, dt);
-    enemy.travel(ex - e.x * s, s, dt);
+    final edge = 210 * s + (arena ? viewport.width * .055 : 8);
+    double inside(double x) => viewport.width > 2 * edge
+        ? x.clamp(edge, viewport.width - edge)
+        : viewport.width / 2;
     void style(GameActor actor, String id) {
       final pose = actor.pose, f = pose.extra;
-      final profile=robotProfiles[id] ?? robotProfiles['spark']!;
-      final construction=profile['construction'] as String;
-      pose.headY+=(profile['headY'] as num).toDouble()+117;
-      for(var i=0;i<16;i++) {
-        final stride=actor.motor.distance/22;
-        f['joint$i']=math.sin(stride+(i%2)*math.pi)*.35;
-        if(actor.mobility=='hexapod') f['joint$i']=math.sin(stride+i*math.pi)*.42;
-        if(actor.mobility=='quadruped') f['joint$i']=math.sin(stride+[0,math.pi,math.pi,0][i%4])*.36;
-        if(i>=8) f['joint$i']=math.max(0,math.sin(stride+(i%2)*math.pi))*.55;
-        if(actor.mobility=='flight') f['joint$i']=math.sin(clock*6+i*math.pi)*.4;
-        if({'gyro','reactor','sun','clock','storm','magnet','hologram'}.contains(construction))
-          f['joint$i']=i*math.pi/6+clock*(construction=='clock' ? .14 : .32);
-        if(construction=='octopus') f['joint$i']=math.sin(clock*2.5-i*.65)*.23;
-        if(construction=='serpent') f['joint$i']=math.sin(clock*3.3-i*.7)*.28;
-        if(construction=='medic' && i>=4 && i<8) f['joint$i']=clock*24;
-        if(construction=='driller' && i==4) f['joint$i']=clock*(phase=='flight'?35:8);
-        if(construction=='transformer' && i>=2 && i<=3) f['joint$i']=(i==2?-1:1)*(.16+pose.deploy*.8);
+      final profile = robotProfiles[id] ?? robotProfiles['spark']!;
+      final construction = profile['construction'] as String;
+      pose.head +=
+          .04 *
+          math.sin(
+            clock * .7 + id.codeUnits.fold<int>(0, (sum, n) => sum + n) * .13,
+          );
+      pose.headY += (profile['headY'] as num).toDouble() + 117;
+      for (var i = 0; i < 16; i++) {
+        final stride = actor.motor.distance / 22;
+        f['joint$i'] = math.sin(stride + (i % 2) * math.pi) * .35;
+        if (actor.mobility == 'hexapod')
+          f['joint$i'] = math.sin(stride + i * math.pi) * .42;
+        if (actor.mobility == 'quadruped')
+          f['joint$i'] =
+              math.sin(stride + [0, math.pi, math.pi, 0][i % 4]) * .36;
+        if (i >= 8)
+          f['joint$i'] =
+              math.max(0, math.sin(stride + (i % 2) * math.pi)) * .55;
+        if (actor.mobility == 'flight')
+          f['joint$i'] = math.sin(clock * 6 + i * math.pi) * .4;
+        if ({
+          'gyro',
+          'reactor',
+          'sun',
+          'clock',
+          'storm',
+          'magnet',
+          'hologram',
+        }.contains(construction))
+          f['joint$i'] =
+              i * math.pi / 6 + clock * (construction == 'clock' ? .14 : .32);
+        if (construction == 'octopus')
+          f['joint$i'] = math.sin(clock * 2.5 - i * .65) * .23;
+        if (construction == 'serpent')
+          f['joint$i'] = math.sin(clock * 3.3 - i * .7) * .28;
+        if (construction == 'medic' && i >= 4 && i < 8)
+          f['joint$i'] = clock * 24;
+        if (construction == 'driller' && i == 4)
+          f['joint$i'] = clock * (phase == 'flight' ? 35 : 8);
+        if (construction == 'transformer' && i >= 2 && i <= 3)
+          f['joint$i'] = (i == 2 ? -1 : 1) * (.16 + pose.deploy * .8);
       }
-      for(var i=0;i<8;i++) f['segmentY$i']=55+math.sin(clock*3.3-i*.7)*13;
-      f['joint14']=actor.motor.distance/17+clock*.5;
+      for (var i = 0; i < 8; i++)
+        f['segmentY$i'] = 95 + math.sin(clock * 3.3 - i * .7) * 7;
+      f['joint14'] = actor.motor.distance / 17 + clock * .5;
       final heavy = id == 'forge' || id == 'aegis';
       f['tracks'] = actor.mobility == 'tracks' ? 1 : 0;
       f['hover'] = actor.mobility == 'hover' ? 1 : 0;
@@ -463,24 +855,216 @@ class GameSceneClock extends ChangeNotifier {
     }
 
     style(player, data['robot'] as String? ?? 'spark');
-    style(enemy, data['enemy'] as String? ?? 'flora');
-    final modules=(data['modules'] as List? ?? const []).cast<String>();
-    for(final entry in {
-      'modArmor':const ['alloy','ceramic'],'modCore':const ['reactor','capacitor'],
-      'modDrive':const ['servo','gyroscope'],'modDefense':const ['barrier','insulator'],
-      'modGadget':const ['scope','overdrive'],
-    }.entries) {
-      player.pose.extra[entry.key]=modules.any(entry.value.contains)?1:0;
+    if (arena) style(enemy, data['enemy'] as String? ?? 'flora');
+    if (signatureVisible && signatureId != 'volt') {
+      signaturePose(
+        enemyShot ? e : p,
+        signatureId,
+        signatureT,
+        ultimate: ultimate,
+      );
     }
-    pendingBurst?.call(); pendingBurst=null;
+    if (isVolt)
+      _animateVolt(player, lastPlayer, _voltPlayer, dt, opponent: false);
+    if (arena && data['enemy'] == 'volt')
+      _animateVolt(enemy, lastEnemy, _voltEnemy, dt, opponent: true);
+    player.travel(inside(px + p.x * s * player.facing), s, dt);
+    if (arena) enemy.travel(inside(ex - e.x * s), s, dt);
+    final modules = (data['modules'] as List? ?? const []).cast<String>();
+    final equipment = (data['equipped'] as List? ?? const []).cast<String>();
+    final second = equipment.length > 1 ? equipment[1] : '';
+    player.pose.extra['secondaryPods'] = {'rocket', 'grenade'}.contains(second)
+        ? 1
+        : 0;
+    player.pose.extra['secondaryBlade'] =
+        {'sword', 'fist', 'drill', 'disc'}.contains(second) ? 1 : 0;
+    player.pose.extra['secondaryOrb'] =
+        {'shield', 'drone', 'repair', 'emp'}.contains(second) ? 1 : 0;
+    player.pose.extra['secondaryGun'] =
+        second.isNotEmpty &&
+            !{
+              'rocket',
+              'grenade',
+              'sword',
+              'fist',
+              'drill',
+              'disc',
+              'shield',
+              'drone',
+              'repair',
+              'emp',
+            }.contains(second)
+        ? 1
+        : 0;
+    for (final entry in {
+      'modArmor': const ['alloy', 'ceramic'],
+      'modCore': const ['reactor', 'capacitor'],
+      'modDrive': const ['servo', 'gyroscope'],
+      'modDefense': const ['barrier', 'insulator'],
+      'modGadget': const ['scope', 'overdrive'],
+    }.entries) {
+      player.pose.extra[entry.key] = modules.any(entry.value.contains) ? 1 : 0;
+    }
+    pendingBurst?.call();
+    pendingBurst = null;
     final autoZoom = reduced
         ? 1.0
         : arena && (phase == 'approach' || visibleShot)
-        ? (activeWeapon == 'sniper' ? 1.09 : 1.035)
+        ? (signatureVisible && ultimate
+              ? 1.07
+              : activeWeapon == 'sniper'
+              ? 1.06
+              : 1.025)
         : 1.0;
     final target = zoomTarget * autoZoom;
     zoom += (target - zoom) * (1 - math.exp(-10 * dt));
     notifyListeners();
+  }
+
+  ({String action, double t}) _voltPresentation(bool opponent) {
+    if (!arena) {
+      final duration = voltActionSeconds[localAction] ?? 1.1;
+      if (localAge < duration && localAction.isNotEmpty)
+        return (action: localAction, t: unit(localAge / duration));
+      if (action == 'feed' && age < 1.7)
+        return (action: 'feed', t: unit(age / 1.7));
+      if (manualPosition && walkAge < walkDuration)
+        return (action: 'move', t: unit(walkAge / walkDuration));
+      final beat = clock % 23;
+      if (!inspecting && !reduced && beat > 12 && beat < 13.7)
+        return (action: 'inspect', t: (beat - 12) / 1.7);
+      if (!inspecting && !reduced && beat > 18 && beat < 20.2)
+        return (action: 'dance', t: (beat - 18) / 2.2);
+      return (action: 'idle', t: 0.0);
+    }
+    if ({'victory', 'idle'}.contains(phase) &&
+        {'win', 'loss'}.contains(data['result'])) {
+      _voltOutcomeAt ??= clock;
+      final won = data['result'] == 'win';
+      final name = (opponent ? !won : won) ? 'victory' : 'defeat';
+      return (
+        action: name,
+        t: unit((clock - _voltOutcomeAt!) / voltActionSeconds[name]!),
+      );
+    }
+    if (opponent) {
+      final name = data['enemyCombatAction'] as String? ?? 'attack';
+      if (phase == 'enemy-flight' && data['stunned'] != true)
+        return (
+          action: data['intent'] == 'windup' ? 'charge' : name,
+          t: unit(age / .72) * .9,
+        );
+      if (phase == 'reply' && data['stunned'] != true)
+        return (action: name, t: .9 + .1 * unit(age / .25));
+      return (action: 'idle', t: 0.0);
+    }
+    final name = phase.startsWith('counter-') ? 'attack' : combatAction;
+    const releases = {
+      'attack': .22,
+      'quick': .26,
+      'special': .46,
+      'ultimate': .62,
+      'pierce': .22,
+      'burst': .26,
+      'emp': .46,
+    };
+    final release = releases[name];
+    final prepare =
+        (data['prepareSeconds'] as num? ??
+                (name == 'ultimate'
+                    ? 0.72
+                    : name == 'special'
+                    ? 0.55
+                    : name == 'quick'
+                    ? 0.22
+                    : 0.4))
+            .toDouble();
+    final impactSeconds = (data['impactSeconds'] as num? ?? .25).toDouble();
+    if (release != null) {
+      if (phase == 'approach')
+        return (action: name, t: release * unit(age / prepare));
+      if (phase == 'flight' || phase == 'counter-flight')
+        return (action: name, t: release + (.9 - release) * progress);
+      if (phase == 'impact' || phase == 'counter-hit')
+        return (action: name, t: .9 + .1 * unit(age / impactSeconds));
+    } else if ({'guard', 'dodge', 'charge'}.contains(name)) {
+      if (phase == 'approach')
+        return (action: name, t: .3 * unit(age / prepare));
+      if (phase == 'impact')
+        return (action: name, t: .3 + .1 * unit(age / impactSeconds));
+      if (phase == 'enemy-flight')
+        return (action: name, t: .4 + .4 * unit(age / .72));
+      if (phase == 'reply') return (action: name, t: .8 + .2 * unit(age / .25));
+    }
+    return (action: 'idle', t: 0.0);
+  }
+
+  void _animateVolt(
+    GameActor actor,
+    GamePose old,
+    _VoltPlayback playback,
+    double dt, {
+    required bool opponent,
+  }) {
+    final sample = _voltPresentation(opponent);
+    final name = switch (sample.action) {
+      'emp' => 'special',
+      'pierce' => 'attack',
+      'burst' => 'quick',
+      _ => sample.action,
+    };
+    if (playback.action != sample.action) {
+      playback.from = playback.action.isEmpty ? null : old;
+      playback.blendAt = clock;
+      playback.cueT = -.001;
+      playback.action = sample.action;
+    }
+    if (sample.t + .05 < playback.cueT) playback.cueT = -.001;
+    final gear = (data['equipped'] as List? ?? const []).cast<String>();
+    final displayed = opponent
+        ? (data['enemyEquipped'] as List? ?? const []).cast<String>()
+        : gear;
+    final selected = opponent ? enemyWeapon : weapon;
+    final mounted = displayed.isEmpty
+        ? ''
+        : displayed.contains(selected)
+        ? selected
+        : displayed.first;
+    final pose = actor.pose;
+    if (sample.action != 'idle') {
+      // The specialised timeline owns its articulated pose. Start from the
+      // suspension pose, so the generic fist/gun animation cannot leak in.
+      final rest = GamePose(clock)..headY += 32;
+      rest.y -= 10 + 7 * math.sin(clock * 3 + (opponent ? 1 : 0));
+      pose.blendFrom(rest, 0);
+      pose.mode = 0;
+    }
+    final frame = applyVoltPose(
+      pose,
+      name,
+      sample.t,
+      equippedWeapon: mounted,
+      clock: clock,
+    );
+    if (mounted.isNotEmpty &&
+        {'attack', 'quick', 'pierce', 'burst'}.contains(sample.action)) {
+      pose.armR = -1.48 + .12 * math.sin(sample.t * math.pi * 6);
+      pose.foreR = -.08;
+      pose.deploy = smooth(sample.t / .15);
+      pose.barrel = 18 - 9 * math.sin(sample.t * math.pi).abs();
+    }
+    pose.extra['voltPower'] = frame.coilGlow;
+    pose.extra['voltCore'] = frame.coreGlow;
+    pose.extra['voltAntenna'] = .08 * math.sin(clock * 3) + .1 * frame.charge;
+    pose.extra['joint8'] = actor.motor.velocity.clamp(-100, 100) * .0015;
+    pose.extra['joint9'] = -pose.extra['joint8']!;
+    if (!reduced && playback.from != null && clock - playback.blendAt < .18)
+      blendVoltPose(pose, playback.from!, (clock - playback.blendAt) / .18);
+    if (!arena) voltTrackGaze(pose, gaze);
+    for (final cue in voltCuesCrossed(name, playback.cueT, sample.t))
+      audio.play(cue);
+    playback.cueT = sample.t;
+    playback.frame = frame;
   }
 
   Offset muzzle(GameActor a, String type) {
@@ -505,11 +1089,114 @@ class GameSceneClock extends ChangeNotifier {
     );
   }
 
-  Offset target(GameActor a) => Offset(a.center, floor - 150 * scale);
+  Offset target(GameActor a) =>
+      Offset(a.center, floor + (a.pose.y - 150) * scale);
   void camera(double value) {
     zoomTarget = value.clamp(1.0, 1.9);
     inspecting = zoomTarget > 1.05;
     if (!inspecting) pan = Offset.zero;
+  }
+
+  Offset worldPoint(Offset point) =>
+      (point -
+          Offset(
+            viewport.width * (1 - zoom) / 2,
+            viewport.height * (1 - zoom) / 2,
+          ) -
+          pan -
+          shake) /
+      zoom;
+
+  void pointAt(Offset point) {
+    if (arena) return;
+    final world = worldPoint(point), pose = player.pose;
+    final profile = robotProfiles[data['robot']] ?? robotProfiles['spark']!;
+    final headX = (profile['headX'] as num? ?? 0).toDouble();
+    final c = math.cos(pose.rotation), s = math.sin(pose.rotation);
+    final head = Offset(
+      player.center + (headX * c - pose.headY * s) * scale * player.facing,
+      floor + (pose.y - 126 + headX * s + pose.headY * c) * scale,
+    );
+    final relative = Offset(
+      (world.dx - head.dx) * player.facing,
+      world.dy - head.dy,
+    );
+    final angle = pose.rotation + pose.head;
+    gaze = Offset(
+      ((relative.dx * math.cos(angle) + relative.dy * math.sin(angle)) /
+              math.max(1, 12 * scale))
+          .clamp(-12, 12),
+      ((relative.dy * math.cos(angle) - relative.dx * math.sin(angle)) /
+              math.max(1, 14 * scale))
+          .clamp(-8, 8),
+    );
+  }
+
+  bool robotAt(Offset point) => Rect.fromCenter(
+    center: target(player),
+    width: 240 * scale,
+    height: 330 * scale,
+  ).contains(worldPoint(point));
+
+  void react() {
+    tapBurst = clock - lastTap < .4 ? tapBurst + 1 : 1;
+    lastTap = clock;
+    final reactions =
+        data['reactions'] as List? ?? ['joy', 'surprise', 'inspect'];
+    final role = robotProfiles[data['robot']]?['class'];
+    localAction = isVolt
+        ? (tapBurst >= 3
+              ? 'anger'
+              : const [
+                  'joy',
+                  'jump',
+                  'surprise',
+                  'inspect',
+                  'dance',
+                ][reactionIndex++ % 5])
+        : tapBurst >= 3
+        ? (role == 'tank' || role == 'striker' ? 'anger' : 'dance')
+        : reactions[reactionIndex++ % reactions.length] as String;
+    if (isVolt) {
+      _voltPlayer.from = player.pose;
+      _voltPlayer.blendAt = clock;
+      _voltPlayer.cueT = -.001;
+    }
+    localAge = 0;
+  }
+
+  void moveTo(Offset point) {
+    if (arena) return;
+    final edge = 210 * scale + 8;
+    final width = viewport.width;
+    final x = worldPoint(point).dx.clamp(edge, math.max(edge, width - edge));
+    walkFrom = player.center / width;
+    walkTarget = x / width;
+    walkDuration = ((x - player.center).abs() / math.max(1, 150 * scale)).clamp(
+      .3,
+      1.5,
+    );
+    walkAge = 0;
+    manualPosition = true;
+    player.facing = x < player.center ? -1 : 1;
+    localAge = 99;
+  }
+
+  void showcase(String name) {
+    if (arena || suspended || data['paused'] == true) return;
+    localAction = name;
+    localAge = 0;
+    player.facing = 1;
+    if (isVolt) {
+      _voltPlayer.from = player.pose;
+      _voltPlayer.blendAt = clock;
+      _voltPlayer.cueT = -.001;
+      return; // Native Volt timeline owns its synchronised audio cues.
+    }
+    if ({'special', 'ultimate'}.contains(name))
+      audio.play(name == 'ultimate' ? 'ion' : 'deploy');
+    if (name == 'attack') audio.play(weapon == 'fist' ? 'electric' : weapon);
+    if (name == 'guard') audio.play('shield');
   }
 
   @override
@@ -587,42 +1274,70 @@ Color robotColor(dynamic value) => Color(
 base class GameScenePainter extends rive.ArtboardPainter
     with rive.RiveTickerAwarePainterMixin {
   GameScenePainter(this.file);
+  VoidCallback? onFirstPaint;
   final rive.File file;
   final scene = GameSceneClock();
   _GameRig? player, enemy;
-  String enemyIdentity='';
+  String enemyIdentity = '';
   bool resetTime = true, disposed = false;
   @override
   void artboardChanged(rive.Artboard artboard) {
     player?.dispose(ownBoard: true);
     enemy?.dispose(ownBoard: true);
     player = _GameRig(file, artboard);
-    enemyIdentity=scene.data['enemy'] as String? ?? 'flora';
-    enemy = _GameRig(file, file.artboard(enemyIdentity=='spark'?'Spark':enemyIdentity) ?? file.artboard('Spark')!);
+    enemyIdentity = scene.data['enemy'] as String? ?? 'flora';
+    enemy = scene.arena
+        ? _GameRig(
+            file,
+            file.artboard(enemyIdentity == 'spark' ? 'Spark' : enemyIdentity) ??
+                file.artboard('Spark')!,
+          )
+        : null;
   }
 
   @override
   bool advance(double elapsedSeconds) {
-    if (disposed || scene.suspended || scene.data['paused'] == true)
+    if (disposed ||
+        scene.suspended ||
+        scene.hidden ||
+        scene.data['paused'] == true)
       return false;
     final dt = resetTime || !elapsedSeconds.isFinite
         ? 0.0
         : math.max(0.0, elapsedSeconds);
     resetTime = false;
-    final desired=scene.data['enemy'] as String? ?? 'flora';
-    if(scene.arena && desired!=enemyIdentity) {
-      enemy?.dispose(ownBoard:true);
-      enemyIdentity=desired;
-      enemy=_GameRig(file,file.artboard(desired=='spark'?'Spark':desired) ?? file.artboard('Spark')!);
+    final desired = scene.data['enemy'] as String? ?? 'flora';
+    if (scene.arena && (enemy == null || desired != enemyIdentity)) {
+      enemy?.dispose(ownBoard: true);
+      enemyIdentity = desired;
+      enemy = _GameRig(
+        file,
+        file.artboard(desired == 'spark' ? 'Spark' : desired) ??
+            file.artboard('Spark')!,
+      );
     }
     scene.advance(dt);
-    player?.advance(
-      scene.player,
-      dt,
-      scene.gaze,
-      robotColor(scene.data['accent']),
-    );
-    if (scene.arena)
+    if (!scene.isVolt)
+      player?.advance(
+        scene.player,
+        dt,
+        scene.gaze,
+        scene.data['skin'] is String &&
+                (scene.data['skin'] as String).startsWith('steel-')
+            ? [
+                const Color(0xFF65D4FF),
+                const Color(0xFFA8AFF0),
+                const Color(0xFFE8C77E),
+                const Color(0xFF8CE3BC),
+                const Color(0xFFF29CCB),
+                const Color(0xFFE6F1FF),
+              ][int.tryParse(
+                    (scene.data['skin'] as String).split('-').last,
+                  )?.clamp(0, 5) ??
+                  0]
+            : robotColor(scene.data['accent']),
+      );
+    if (scene.arena && scene.data['enemy'] != 'volt')
       enemy?.advance(
         scene.enemy,
         dt,
@@ -634,7 +1349,7 @@ base class GameScenePainter extends rive.ArtboardPainter
 
   @override
   void paint(rive.Renderer renderer, Size size, double paintPixelRatio) {
-    if(disposed)return;
+    if (disposed) return;
     scene.viewport = size;
     renderer.save();
     renderer.transform(
@@ -645,15 +1360,21 @@ base class GameScenePainter extends rive.ArtboardPainter
         size.height * (1 - scene.zoom) / 2 + scene.pan.dy + scene.shake.dy,
       ),
     );
-    void draw(_GameRig? rig, GameActor actor) {
+    void draw(
+      _GameRig? rig,
+      GameActor actor, {
+      double opacity = 1,
+      double shift = 0,
+    }) {
       if (rig == null) return;
       final s = scene.scale, face = actor.facing;
       renderer.save();
+      renderer.modulateOpacity(opacity);
       renderer.transform(
         rive.Mat2D.fromScaleAndTranslation(
           s * face,
           s,
-          actor.center - (210 + actor.pose.x) * s * face,
+          actor.center - (210 + actor.pose.x) * s * face + shift,
           scene.floor - 402 * s,
         ),
       );
@@ -661,9 +1382,51 @@ base class GameScenePainter extends rive.ArtboardPainter
       renderer.restore();
     }
 
-    draw(player, scene.player);
-    if (scene.arena) draw(enemy, scene.enemy);
+    final illusion =
+        scene.signatureVisible &&
+        {'phantom', 'specter'}.contains(scene.signatureId);
+    final illusionActor = scene.enemyShot ? scene.enemy : scene.player;
+    final illusionRig = scene.enemyShot ? enemy : player;
+    if (illusion) {
+      for (final side in scene.ultimate ? [-1, 1] : [-1]) {
+        draw(
+          illusionRig,
+          illusionActor,
+          opacity: .32 * math.sin(scene.signatureT * math.pi),
+          shift:
+              side *
+              (24 + 28 * math.sin(scene.signatureT * math.pi)) *
+              scene.scale,
+        );
+      }
+    }
+    final disappearing =
+        illusion &&
+        scene.ultimate &&
+        scene.signatureT > .3 &&
+        scene.signatureT < .68;
+    if (!scene.isVolt)
+      draw(
+        player,
+        scene.player,
+        opacity: disappearing && !scene.enemyShot ? .13 : 1,
+      );
+    if (scene.arena && scene.data['enemy'] != 'volt')
+      draw(
+        enemy,
+        scene.enemy,
+        opacity: disappearing && scene.enemyShot ? .13 : 1,
+      );
     renderer.restore();
+    if (player != null &&
+        (!scene.arena || enemy != null) &&
+        onFirstPaint != null) {
+      final callback = onFirstPaint;
+      onFirstPaint = null;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!disposed) callback?.call();
+      });
+    }
   }
 
   @override
@@ -678,39 +1441,60 @@ base class GameScenePainter extends rive.ArtboardPainter
 }
 
 class GameSceneView extends StatefulWidget {
-  const GameSceneView({super.key, required this.file, required this.painter});
-  final rive.File file;
-  final GameScenePainter painter;
+  const GameSceneView({
+    super.key,
+    this.file,
+    this.painter,
+    this.nativeScene,
+    this.onRobotTap,
+    this.onFirstPaint,
+  }) : assert(nativeScene != null || (file != null && painter != null));
+  final rive.File? file;
+  final GameScenePainter? painter;
+  final GameSceneClock? nativeScene;
+  final VoidCallback? onRobotTap;
+  final VoidCallback? onFirstPaint;
   @override
   State<GameSceneView> createState() => _GameSceneViewState();
 }
 
 class _GameSceneViewState extends State<GameSceneView> {
   double startZoom = 1;
-  GameSceneClock get scene => widget.painter.scene;
+  GameSceneClock get scene => widget.nativeScene ?? widget.painter!.scene;
   @override
   Widget build(BuildContext context) => RepaintBoundary(
     child: MouseRegion(
-      onHover: (e) => scene.gaze = Offset(
-        (e.localPosition.dx / scene.viewport.width - .5) * 12,
-        (e.localPosition.dy / scene.viewport.height - .5) * 8,
-      ),
+      onHover: (e) => scene.pointAt(e.localPosition),
       onExit: (_) => scene.gaze = Offset.zero,
       child: Listener(
         behavior: HitTestBehavior.translucent,
         onPointerDown: (_) => scene.audio.unlock(),
+        onPointerMove: (e) => scene.pointAt(e.localPosition),
         onPointerSignal: (e) {
-          if (e is PointerScrollEvent && scene.expanded)
+          if (e is PointerScrollEvent &&
+              (scene.expanded || scene.demonstration))
             scene.camera(scene.zoomTarget - e.scrollDelta.dy * .0015);
         },
         child: GestureDetector(
-          // No tap recognizer: the workshop's existing Flet feed tap still wins.
-          onScaleStart: scene.expanded
+          behavior: HitTestBehavior.opaque,
+          onTapUp: scene.arena
+              ? null
+              : (e) {
+                  scene.pointAt(e.localPosition);
+                  if (scene.robotAt(e.localPosition)) {
+                    scene.react();
+                    if (!scene.demonstration) widget.onRobotTap?.call();
+                  } else {
+                    scene.moveTo(e.localPosition);
+                  }
+                },
+          onLongPress: scene.arena ? null : () => scene.showcase('ultimate'),
+          onScaleStart: scene.expanded || scene.demonstration
               ? (_) {
                   startZoom = scene.zoomTarget;
                 }
               : null,
-          onScaleUpdate: scene.expanded
+          onScaleUpdate: scene.expanded || scene.demonstration
               ? (e) {
                   if (e.pointerCount > 1)
                     scene.camera(startZoom * e.scale);
@@ -727,12 +1511,24 @@ class _GameSceneViewState extends State<GameSceneView> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              rive.RiveFileWidget(file: widget.file, painter: widget.painter,
-                artboardName:scene.data['robot']=='spark'?'Spark':scene.data['robot'] as String?),
+              if (widget.nativeScene == null)
+                rive.RiveFileWidget(
+                  file: widget.file!,
+                  painter: widget.painter!,
+                  artboardName: scene.data['robot'] == 'spark'
+                      ? 'Spark'
+                      : scene.data['robot'] as String?,
+                ),
               IgnorePointer(
-                child: CustomPaint(painter: GameEffectsPainter(scene)),
+                child: CustomPaint(
+                  painter: widget.nativeScene == null
+                      ? GameEffectsPainter(scene)
+                      : _NativeVoltEffectsPainter(scene, () {
+                          if (mounted) widget.onFirstPaint?.call();
+                        }),
+                ),
               ),
-              if (scene.expanded && !scene.arena)
+              if ((scene.expanded || scene.demonstration) && !scene.arena)
                 Positioned(
                   top: scene.arena ? 78 : 46,
                   right: 12,
@@ -760,7 +1556,10 @@ class _GameSceneViewState extends State<GameSceneView> {
                 bottom: scene.arena ? 42 : 49,
                 child: IconButton(
                   tooltip: 'Звук анимаций',
-                  visualDensity: VisualDensity.compact,
+                  constraints: const BoxConstraints(
+                    minWidth: 48,
+                    minHeight: 48,
+                  ),
                   onPressed: () => setState(() {
                     scene.audio.muted = !scene.audio.muted;
                     if (scene.audio.muted) scene.audio.pause();
@@ -770,7 +1569,7 @@ class _GameSceneViewState extends State<GameSceneView> {
                         ? Icons.volume_off_rounded
                         : Icons.volume_up_rounded,
                     size: 19,
-                    color: const Color(0xFF63818F),
+                    color: const Color(0xFFAFE4F4),
                   ),
                 ),
               ),
@@ -780,6 +1579,25 @@ class _GameSceneViewState extends State<GameSceneView> {
       ),
     ),
   );
+}
+
+class _NativeVoltEffectsPainter extends GameEffectsPainter {
+  _NativeVoltEffectsPainter(super.scene, this.onFirstPaint);
+  final VoidCallback onFirstPaint;
+  bool reported = false;
+  @override
+  void paint(Canvas canvas, Size size) {
+    super.paint(canvas, size);
+    if (!reported &&
+        size.width > 0 &&
+        size.height > 0 &&
+        scene.playerVoltFrame != null &&
+        !scene.hidden &&
+        !scene.suspended) {
+      reported = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => onFirstPaint());
+    }
+  }
 }
 
 class GameEffectsPainter extends CustomPainter {
@@ -851,6 +1669,8 @@ class GameEffectsPainter extends CustomPainter {
     }
 
     if (!scene.arena && !scene.reduced) {
+      final workshopLevel = (scene.data['workshopLevel'] as num? ?? 0).toInt();
+      final inventions = scene.data['inventions'] as Map? ?? const {};
       final beam = Path()
         ..moveTo(size.width * .77, 0)
         ..lineTo(size.width * .35, size.height * .88)
@@ -878,9 +1698,12 @@ class GameEffectsPainter extends CustomPainter {
             ..style = PaintingStyle.fill,
         );
       }
-      for (var i = 0; i < 2; i++) {
+      for (var i = 0; i < 2 + workshopLevel.clamp(0, 3); i++) {
         canvas.save();
-        canvas.translate(size.width * (i == 0 ? .12 : .89), size.height * .74);
+        canvas.translate(
+          size.width * (i.isEven ? .08 : .92),
+          size.height * (.74 - (i ~/ 2) * .18),
+        );
         canvas.rotate(scene.clock * (i == 0 ? .5 : -.4));
         for (var tooth = 0; tooth < 8; tooth++) {
           canvas.save();
@@ -913,10 +1736,157 @@ class GameEffectsPainter extends CustomPainter {
         );
         canvas.restore();
       }
+      // Upgrades add real moving machinery, not only a different title/color.
+      if (workshopLevel >= 2) {
+        for (final side in [-1, 1]) {
+          final point = Offset(
+            size.width * (side < 0 ? .09 : .91),
+            size.height * .2,
+          );
+          canvas.save();
+          canvas.translate(point.dx, point.dy);
+          canvas.drawCircle(
+            Offset.zero,
+            17,
+            paint
+              ..color = const Color(0x99436786)
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 3,
+          );
+          canvas.rotate(scene.clock * (side < 0 ? 4 : -4));
+          for (var blade = 0; blade < 4; blade++) {
+            canvas.rotate(math.pi / 2);
+            canvas.drawOval(
+              const Rect.fromLTWH(-3, 2, 6, 13),
+              paint
+                ..style = PaintingStyle.fill
+                ..color = const Color(0xB886D6EF),
+            );
+          }
+          canvas.restore();
+        }
+      }
+      if (workshopLevel >= 3) {
+        final rect = Rect.fromCenter(
+          center: Offset(size.width * .5, size.height * .9),
+          width: size.width * .76,
+          height: 16,
+        );
+        canvas.drawOval(
+          rect,
+          paint
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2
+            ..color = Color.fromRGBO(
+              76,
+              223,
+              255,
+              .35 + .2 * math.sin(scene.clock * 2),
+            ),
+        );
+      }
+      if ((inventions['lamp'] as num? ?? 0) > 0) {
+        final p = Offset(size.width * .12, size.height * .65);
+        glow(p, 5 + math.sin(scene.clock * 2), const Color(0xFFFFD37D));
+      }
     }
 
+    void drawVolt(GameActor actor, VoltFrame? frame, bool opponent) {
+      if (frame == null) return;
+      final origin = Offset(
+        actor.center,
+        scene.floor + (actor.pose.y - 126) * s,
+      );
+      drawVoltModel(
+        canvas,
+        actor.pose,
+        origin,
+        s,
+        actor.facing,
+        gaze: opponent ? Offset.zero : scene.gaze,
+      );
+      paintVoltEffects(
+        canvas,
+        frame,
+        voltAnchors(actor.pose, origin, s, facing: actor.facing),
+        scene.arena
+            ? scene.target(opponent ? scene.player : scene.enemy)
+            : Offset(size.width * .87, scene.floor - 130 * s),
+        scene.floor,
+        s,
+        reduced: scene.reduced,
+        facing: actor.facing,
+      );
+    }
+
+    if (scene.isVolt) drawVolt(scene.player, scene.playerVoltFrame, false);
+    if (scene.arena && scene.data['enemy'] == 'volt')
+      drawVolt(scene.enemy, scene.enemyVoltFrame, true);
     shield(scene.player);
     if (scene.arena) shield(scene.enemy);
+    final dummy = Offset(size.width * .87, scene.floor - 130 * s);
+    if (!scene.arena &&
+        (scene.demonstration ||
+            scene.localAge < 2.25 &&
+                {
+                  'attack',
+                  'special',
+                  'ultimate',
+                }.contains(scene.localAction))) {
+      for (final radius in [32.0, 21.0, 9.0]) {
+        canvas.drawCircle(
+          dummy,
+          radius * s,
+          paint
+            ..color = const Color(0xAA8BEDFF)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2 * s,
+        );
+      }
+      canvas.drawLine(
+        dummy + Offset(0, 32 * s),
+        Offset(dummy.dx, scene.floor),
+        paint
+          ..color = const Color(0xCC88A6BC)
+          ..strokeWidth = 4 * s,
+      );
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(dummy.dx, scene.floor),
+          width: 55 * s,
+          height: 12 * s,
+        ),
+        paint
+          ..color = const Color(0x6674E8FF)
+          ..style = PaintingStyle.fill,
+      );
+    }
+    if (scene.signatureVisible && scene.signatureId != 'volt') {
+      final actor = scene.enemyShot ? scene.enemy : scene.player;
+      final defender = scene.enemyShot ? scene.player : scene.enemy;
+      final origin =
+          scene.target(actor) + Offset(35 * s * actor.facing, -8 * s);
+      var aim = scene.arena ? scene.target(defender) : dummy;
+      canvas.save();
+      if (actor.facing < 0) {
+        canvas.translate(origin.dx * 2, 0);
+        canvas.scale(-1, 1);
+        aim = Offset(origin.dx * 2 - aim.dx, aim.dy);
+      }
+      paintSignature(
+        canvas,
+        scene.signatureId,
+        origin,
+        aim,
+        scene.floor,
+        s,
+        scene.signatureT,
+        robotColor(scene.data[scene.enemyShot ? 'enemyAccent' : 'accent']),
+        ultimate: scene.ultimate,
+        reduced: scene.reduced,
+      );
+      canvas.restore();
+    }
     if (scene.arena && scene.phase == 'approach' && scene.weapon == 'sniper') {
       final start = scene.muzzle(scene.player, 'sniper'),
           end = scene.target(scene.enemy);
@@ -944,11 +1914,50 @@ class GameEffectsPainter extends CustomPainter {
         paint,
       );
     }
-    if (scene.visibleShot) {
+    final voltBuiltin =
+        scene.data[scene.enemyShot ? 'enemy' : 'robot'] == 'volt' &&
+        ((scene.data[scene.enemyShot ? 'enemyEquipped' : 'equipped'] as List? ??
+                    const [])
+                .isEmpty ||
+            {'special', 'ultimate'}.contains(scene.activeCombatAction));
+    if (scene.visibleShot && !scene.signatureVisible && !voltBuiltin) {
       final actor = scene.enemyShot ? scene.enemy : scene.player;
       final defender = scene.enemyShot ? scene.player : scene.enemy;
       final type = scene.activeWeapon, t = scene.progress;
-      final from = scene.muzzle(actor, type), to = scene.target(defender);
+      final from = scene.muzzle(actor, type),
+          to = scene.arena ? scene.target(defender) : dummy;
+      if (scene.activeCombatAction == 'emp') {
+        for (var i = 0; i < 3; i++) {
+          canvas.drawCircle(
+            from,
+            (18 +
+                    unit(t * 1.5 - i * .18) *
+                        (to - from).distance /
+                        math.max(.01, s)) *
+                s,
+            paint
+              ..color = const Color(0x9977BFFF)
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 3 * s,
+          );
+        }
+      }
+      if (scene.activeCombatAction == 'pierce') {
+        canvas.drawLine(
+          from,
+          Offset.lerp(from, to, unit(t * 2))!,
+          paint
+            ..color = const Color(0xCCFFF1C9)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2 * s,
+        );
+      }
+      if (scene.activeCombatAction == 'burst') {
+        for (var i = 0; i < 3; i++) {
+          final point = Offset.lerp(from, to, unit(t * 1.7 - i * .22))!;
+          glow(point, 6 * s, const Color(0xFFFFD082));
+        }
+      }
       final color = type == 'rocket'
           ? const Color(0xFFFFAE58)
           : type == 'sniper'
@@ -979,13 +1988,17 @@ class GameEffectsPainter extends CustomPainter {
             ..color = Colors.white
             ..strokeWidth = 3 * s,
         );
-      } else if ({'laser','repair','ion'}.contains(type)) {
+      } else if ({'laser', 'repair', 'ion'}.contains(type)) {
         final beam = Offset.lerp(from, to, math.min(1, t * 3))!;
         canvas.drawLine(
           from,
           beam,
           paint
-            ..color = (type=='repair'?const Color(0x447AFFBE):type=='ion'?const Color(0x448EA5FF):const Color(0x44FF6BAD))
+            ..color = (type == 'repair'
+                ? const Color(0x447AFFBE)
+                : type == 'ion'
+                ? const Color(0x448EA5FF)
+                : const Color(0x44FF6BAD))
             ..style = PaintingStyle.stroke
             ..strokeWidth = 22 * s,
         );
@@ -993,7 +2006,11 @@ class GameEffectsPainter extends CustomPainter {
           from,
           beam,
           paint
-            ..color = (type=='repair'?const Color(0xFF86FFD3):type=='ion'?const Color(0xFFBBA6FF):const Color(0xFFFF8DBE))
+            ..color = (type == 'repair'
+                ? const Color(0xFF86FFD3)
+                : type == 'ion'
+                ? const Color(0xFFBBA6FF)
+                : const Color(0xFFFF8DBE))
             ..strokeWidth = 6 * s,
         );
         canvas.drawLine(
@@ -1003,7 +2020,7 @@ class GameEffectsPainter extends CustomPainter {
             ..color = Colors.white
             ..strokeWidth = 2 * s,
         );
-      } else if ({'electric','magnetic','emp'}.contains(type)) {
+      } else if ({'electric', 'magnetic', 'emp'}.contains(type)) {
         final end = Offset.lerp(from, to, t)!;
         final path = Path()..moveTo(from.dx, from.dy);
         for (var j = 1; j <= 14; j++) {
@@ -1026,11 +2043,24 @@ class GameEffectsPainter extends CustomPainter {
             ..color = const Color(0xFFE2FFFF)
             ..strokeWidth = 3 * s,
         );
-        if(type!='electric') {
-          canvas.drawCircle(end,(12+26*t)*s,paint..color=const Color(0xBBAE92FF)..style=PaintingStyle.stroke..strokeWidth=3*s);
-          canvas.drawCircle(end,(5+13*t)*s,paint..color=const Color(0xDDDEBAFF)..strokeWidth=2*s);
+        if (type != 'electric') {
+          canvas.drawCircle(
+            end,
+            (12 + 26 * t) * s,
+            paint
+              ..color = const Color(0xBBAE92FF)
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 3 * s,
+          );
+          canvas.drawCircle(
+            end,
+            (5 + 13 * t) * s,
+            paint
+              ..color = const Color(0xDDDEBAFF)
+              ..strokeWidth = 2 * s,
+          );
         }
-      } else if (type == 'flame' || type=='cryo') {
+      } else if (type == 'flame' || type == 'cryo') {
         final end = Offset.lerp(from, to, t)!;
         for (var j = 0; j < 24; j++) {
           final along = ((scene.clock * 4 + j / 24) % 1);
@@ -1043,14 +2073,18 @@ class GameEffectsPainter extends CustomPainter {
             radius,
             paint
               ..color = Color.lerp(
-                type=='cryo'?const Color(0xDDE8FFFF):const Color(0xDDFFF7BD),
-                type=='cryo'?const Color(0x7785CEFF):const Color(0x77F46B48),
+                type == 'cryo'
+                    ? const Color(0xDDE8FFFF)
+                    : const Color(0xDDFFF7BD),
+                type == 'cryo'
+                    ? const Color(0x7785CEFF)
+                    : const Color(0x77F46B48),
                 along,
               )!
               ..style = PaintingStyle.fill,
           );
         }
-      } else if (type == 'machinegun' || type=='blaster') {
+      } else if (type == 'machinegun' || type == 'blaster') {
         for (var j = 0; j < 4; j++) {
           final f = unit(t * 1.4 - j * .12);
           final point = Offset.lerp(from, to, f)!;
@@ -1094,13 +2128,27 @@ class GameEffectsPainter extends CustomPainter {
         }
         final shot = Offset.lerp(drone, to, unit((t - .35) * 2))!;
         glow(shot, 8 * s, const Color(0xFFB8A4FF));
-      } else if (type=='disc' || type=='grenade') {
-        final position=Offset.lerp(from,to,t)!+Offset(0,type=='grenade'?-math.sin(t*math.pi)*60*s:0);
-        canvas.save();canvas.translate(position.dx,position.dy);canvas.rotate(scene.clock*30);
-        canvas.drawOval(Rect.fromCenter(center:Offset.zero,width:34*s,height:(type=='disc'?9:28)*s),paint..style=PaintingStyle.fill..color=const Color(0xFFBBD9EC));
-        canvas.drawCircle(Offset.zero,5*s,paint..color=color);canvas.restore();
-        glow(position,7*s,color);
-      } else if (type == 'fist' || type=='drill') {
+      } else if (type == 'disc' || type == 'grenade') {
+        final position =
+            Offset.lerp(from, to, t)! +
+            Offset(0, type == 'grenade' ? -math.sin(t * math.pi) * 60 * s : 0);
+        canvas.save();
+        canvas.translate(position.dx, position.dy);
+        canvas.rotate(scene.clock * 30);
+        canvas.drawOval(
+          Rect.fromCenter(
+            center: Offset.zero,
+            width: 34 * s,
+            height: (type == 'disc' ? 9 : 28) * s,
+          ),
+          paint
+            ..style = PaintingStyle.fill
+            ..color = const Color(0xFFBBD9EC),
+        );
+        canvas.drawCircle(Offset.zero, 5 * s, paint..color = color);
+        canvas.restore();
+        glow(position, 7 * s, color);
+      } else if (type == 'fist' || type == 'drill') {
         for (var i = 0; i < 6; i++) {
           final path = Path()..moveTo(from.dx - 30 * s, from.dy);
           for (var j = 0; j < 7; j++) {

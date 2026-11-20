@@ -42,13 +42,19 @@ def FocusedScene(page, session):
     async def close(_):
         await set_scene_focus(page, session, "")
 
-    if session.focus_scene == 'robot':
-        from game_animation import animated_scene
-        return ft.Stack([
-            ft.Image('art/workshop-future-v1.png',fit=ft.BoxFit.COVER,width=float('inf'),height=height),
-            ft.Container(animated_scene(session,identity=session.inspection_id,expanded=True),left=0,right=0,top=0,bottom=0),
-            ft.Container(ft.IconButton(ft.Icons.CLOSE_ROUNDED,on_click=close,icon_color='white',key='robot-inspect-close'),right=8,top=8,bgcolor='#AA142A46',border_radius=12)
-        ],expand=True)
+    if session.focus_scene == "robot":
+        from robot_preview import preview_controls, preview_stage
+
+        identity = session.inspection_id
+        scene = preview_stage(session, identity, expanded=True, on_expand=close,
+                              height=max(210, height - 40) if width >= 650 else min(400, height * .55))
+        controls = preview_controls(session, identity)
+        if width >= 650:
+            return ft.Row([
+                ft.Container(scene, expand=2),
+                ft.Container(ft.Column([controls], scroll=ft.ScrollMode.AUTO), expand=1),
+            ], expand=True, spacing=10, vertical_alignment=ft.CrossAxisAlignment.START)
+        return ft.Column([scene, controls], expand=True, spacing=10, scroll=ft.ScrollMode.AUTO)
     if session.focus_scene == "workshop":
         return ft.Container(
             robot_scene(
@@ -83,7 +89,7 @@ def FocusedScene(page, session):
         )
         from armory import equip_battle
 
-        equip_battle(state,battle)
+        equip_battle(state, battle)
     active = battle.get("result") == "active" and battle.get("id", 0) > 0
     animating = session.arena_animating and session.arena_visual.get(
         "battle_id"

@@ -2,7 +2,6 @@
 
 import flet as ft
 import os
-import httpx
 
 
 async def set_scene_focus(page, session, scene=""):
@@ -20,6 +19,7 @@ async def set_scene_focus(page, session, scene=""):
     session.notify()
     try:
         if getattr(page, "web", False) and os.getenv("CLICKER_DESKTOP_HOST_URL"):
+            import httpx
             async with httpx.AsyncClient(timeout=2) as client:
                 await client.post(
                     os.environ["CLICKER_DESKTOP_HOST_URL"] + "/host/scene",

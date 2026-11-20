@@ -524,6 +524,12 @@ def equip_battle(state, battle):
     battle["player_hp"] += health_bonus
     battle["player_max_hp"] += health_bonus
     battle["player_attack"] += max(0, stats["attack"] - baseline["attack"])
+    if difficulty == "training":
+        # Practise counters against a comparable chassis even on a late route.
+        battle["enemy_hp"] = battle["enemy_max_hp"] = min(
+            battle["enemy_max_hp"], max(65, round(battle["player_max_hp"] * 1.15))
+        )
+        battle["enemy_attack"] = min(battle["enemy_attack"], max(8, round(battle["player_attack"] * .9)))
     battle.update(
         defense=stats["defense"],
         speed=stats["speed"],

@@ -38,18 +38,20 @@ class _RobotRiveControlState extends State<RobotRiveControl> {
     final factory = renderer == 'flutter'
         ? rive.Factory.flutter
         : rive.Factory.rive;
-    _loading =
-        (asset.isFile
-                ? rive.File.path(asset.path, riveFactory: factory)
-                : rive.File.url(asset.path, riveFactory: factory))
-            .then((file) {
-              if (!mounted || generation != _generation) {
-                file?.dispose();
-                return null;
-              }
-              _file = file;
-              return file;
-            });
+    _loading = rive.RiveNative.init()
+        .then(
+          (_) => (asset.isFile
+              ? rive.File.path(asset.path, riveFactory: factory)
+              : rive.File.url(asset.path, riveFactory: factory)),
+        )
+        .then((file) {
+          if (!mounted || generation != _generation) {
+            file?.dispose();
+            return null;
+          }
+          _file = file;
+          return file;
+        });
   }
 
   @override

@@ -1,0 +1,152 @@
+{
+  "build": 34,
+  "apk_sha256": "e33a20f03436c78c3fe3a38484877c679b6683e17b12a3f71ada368e691b27a7",
+  "scope_counts": {
+    "other_robot_portraits": 31,
+    "other_ability_rows": 31,
+    "other_artboards": 31,
+    "other_view_models": 31,
+    "unchanged_existing_audio": 24,
+    "new_volt_audio": 4,
+    "unchanged_combat_files": 3
+  },
+  "package_counts": {
+    "abis": 3,
+    "markers_per_abi": 6,
+    "verified_assets": 61
+  },
+  "performance": {
+    "before-workshop": {
+      "platform": "Windows Chrome headless / Flutter profile",
+      "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+      "samples_after_warmup": 25,
+      "median_unique_vsync_fps": 101.21629667432168,
+      "minimum_unique_vsync_fps": 59.09813269765594,
+      "median_raw_fps": 101.21629667432168,
+      "maximum_ui_p95_ms": 14.5,
+      "maximum_raster_p95_ms": 5.6,
+      "viewport": [
+        390,
+        844
+      ],
+      "flutter_errors": [],
+      "physical_android_tested": false,
+      "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+      "first_render": {
+        "python_first_render_ms": 178.87530000007246
+      },
+      "first_native_paint": {
+        "robot": "volt",
+        "enemy": "",
+        "renderer": "rive",
+        "rig_load_ms": 880.8,
+        "since_session_ms": 2371.099399999366
+      },
+      "dpr": 3,
+      "capture": "volt-paired-before-workshop"
+    },
+    "after-workshop": {
+      "platform": "Windows Chrome headless / Flutter profile",
+      "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+      "samples_after_warmup": 26,
+      "median_unique_vsync_fps": 91.90622889663649,
+      "minimum_unique_vsync_fps": 62.32650709684177,
+      "median_raw_fps": 91.90622889663649,
+      "maximum_ui_p95_ms": 12.701,
+      "maximum_raster_p95_ms": 10.201,
+      "viewport": [
+        390,
+        844
+      ],
+      "flutter_errors": [],
+      "physical_android_tested": false,
+      "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+      "first_render": {
+        "python_first_render_ms": 103.02290000254288
+      },
+      "first_native_paint": {
+        "robot": "volt",
+        "enemy": "",
+        "renderer": "flutter",
+        "model_renderer": "flutter-canvas-articulated",
+        "rig_load_ms": 0,
+        "model_warm_ms": 3.4,
+        "since_session_ms": 339.98130000327365
+      },
+      "dpr": 3,
+      "capture": "volt-paired-after-workshop"
+    },
+    "before-combat": {
+      "platform": "Windows Chrome headless / Flutter profile",
+      "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+      "samples_after_warmup": 25,
+      "median_unique_vsync_fps": 117.85690586996719,
+      "minimum_unique_vsync_fps": 105.77777777777777,
+      "median_raw_fps": 117.85690586996719,
+      "maximum_ui_p95_ms": 6.5,
+      "maximum_raster_p95_ms": 3,
+      "viewport": [
+        844,
+        390
+      ],
+      "flutter_errors": [],
+      "physical_android_tested": false,
+      "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+      "first_render": {
+        "python_first_render_ms": 405.10490000087884
+      },
+      "first_native_paint": {
+        "robot": "volt",
+        "enemy": "spark",
+        "renderer": "rive",
+        "rig_load_ms": 882.101,
+        "since_session_ms": 1718.4285999974236
+      },
+      "dpr": 2,
+      "capture": "volt-paired-before-combat"
+    },
+    "after-combat": {
+      "platform": "Windows Chrome headless / Flutter profile",
+      "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+      "samples_after_warmup": 25,
+      "median_unique_vsync_fps": 94.73775554315384,
+      "minimum_unique_vsync_fps": 82.93838862559242,
+      "median_raw_fps": 94.73775554315384,
+      "maximum_ui_p95_ms": 11,
+      "maximum_raster_p95_ms": 7.399,
+      "viewport": [
+        844,
+        390
+      ],
+      "flutter_errors": [],
+      "physical_android_tested": false,
+      "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+      "first_render": {
+        "python_first_render_ms": 352.34199999831617
+      },
+      "first_native_paint": {
+        "robot": "volt",
+        "enemy": "spark",
+        "renderer": "rive",
+        "model_renderer": "flutter-canvas-articulated",
+        "rig_load_ms": 822.799,
+        "since_session_ms": 1503.7006999991718
+      },
+      "dpr": 2,
+      "capture": "volt-paired-after-combat"
+    }
+  },
+  "python_tests": {
+    "total": 282,
+    "passed": 272,
+    "skipped": 10,
+    "skip_reason": "optional local PostgreSQL not configured"
+  },
+  "native_tests": {
+    "distinct_cases_passed": 130,
+    "main_game_layouts_passed": 9,
+    "parallel_png_readback_timed_out": true,
+    "serial_native_control_recheck_passed": 8
+  },
+  "physical_android_tested": false
+}

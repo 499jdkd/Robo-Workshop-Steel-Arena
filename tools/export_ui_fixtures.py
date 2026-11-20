@@ -64,7 +64,7 @@ def portable(value):
 
 async def fixture(
     name, tab, width, height, *, battle=False, expanded=False, phase=None,
-    robot_id="spark", weapon=None, action="special"
+    robot_id="spark", weapon=None, action="special",route='',detail='', energy=None
 ):
     page = SimpleNamespace(
         web=False,
@@ -93,6 +93,16 @@ async def fixture(
         parts=26,
     )
     session.arena_expanded = expanded
+    if route or detail:
+        from collection_progress import refresh_season
+        session.state.coin=50000
+        session.state.collection['modules']={'alloy':2,'reactor':1,'servo':2,'barrier':1,'scope':1}
+        session.state.collection['module_loadouts']={'spark':{'armor':'alloy','core':'reactor','drive':'servo','defense':'barrier','gadget':'scope'}}
+        session.state.collection['chests']={'normal':5,'rare':1}
+        session.state.collection['skins']=['steel-1']
+        session.state.weapon_levels={'plasma':3,'shield':2}
+        session.state.loadouts={'spark':['plasma','shield']}
+        refresh_season(session.state,session.clock())['xp']=1600
     if name.startswith('armory'):
         session.state.level=20
         session.state.coin=20000
@@ -124,6 +134,9 @@ async def fixture(
     session.focus_scene = "battle" if expanded else ""
     if name.startswith(("workshop-landscape", "motion-robot", "motion-emotion")):
         session.focus_scene = "workshop"
+    if name.startswith("interaction-inspect"):
+        session.focus_scene = "robot"
+        session.inspection_id = robot_id
     if name.startswith("motion-emotion-"):
         session.motion_action = name.removeprefix("motion-emotion-")
         session.motion_event = 1
@@ -153,6 +166,9 @@ async def fixture(
         )
     if battle:
         session.act("battle_start", robot_id)
+        if energy is not None:
+            session.state.battle["combatants"]["a"].update(energy=energy, super_charge=100)
+            session.state.battle.update(battery=energy, super_charge=100)
         if phase:
             before = session.state.battle.copy()
             if phase not in {"approach", "flight"}:
@@ -194,6 +210,9 @@ async def fixture(
                     SimpleNamespace(control=SimpleNamespace(selected_index=tab))
                 )
                 render_controls(tree)
+            if route or detail:
+                session.route=route;session.robot_detail=detail;session.notify()
+                render_controls(tree)
             tree = tree._b
             if name.startswith('armory'):
                 toggle=next(item for item in render_controls(tree) if item.key=='armory-tab')
@@ -234,6 +253,20 @@ async def fixture(
                     if control.key == "profile-icons-toggle"
                 )
                 await toggle.on_click(None)
+            if name.startswith("interaction-factory-"):
+                from collection_progress import CHESTS
+                kind = name.removeprefix("interaction-factory-")
+                if kind == "rewards":
+                    session.act("factory_open", "normal", 1)
+                    render_controls(tree)
+                    control = next(c for c in render_controls(tree) if c.key == "factory-show-rewards")
+                    await control.on_click(None)
+                    render_controls(tree)
+                else:
+                    label = CHESTS[kind][0].replace("Контейнер ", "").replace(" контейнер", "")
+                    control = next(c for c in render_controls(tree) if isinstance(c, ft.Button) and c.content == label)
+                    control.on_click(None)
+                    render_controls(tree)
             if name == "arena-help":
                 from arena_screen import BattleHelp
 
@@ -302,6 +335,18 @@ async def fixture(
 
 
 async def main_export():
+    for kind in ("normal", "rare", "weapon", "parts", "capsule", "rewards"):
+        await fixture("interaction-factory-"+kind,0,390,844,route="factory")
+    for width, height, suffix in [(320,640,"-small"),(390,844,""),(844,390,"-landscape")]:
+        await fixture("interaction-energy"+suffix,2,width,height,battle=True,robot_id="volt",energy=1)
+        await fixture("interaction-zero"+suffix,2,width,height,battle=True,robot_id="volt",energy=0)
+        await fixture("interaction-locked"+suffix,1,width,height,detail="titan")
+        await fixture("interaction-inspect"+suffix,1,width,height,robot_id="arachna")
+    for route in ('season','factory','store'):
+        for suffix,width,height in [('',390,844),('-small',320,640),('-landscape',844,390)]:
+            await fixture('feature-'+route+suffix,0,width,height,route=route)
+    for suffix,width,height in [('',390,844),('-small',320,640),('-landscape',844,390)]:
+        await fixture('feature-robot-detail'+suffix,1,width,height,detail='spark')
     for name, tab in (
         ("workshop-idle", 0),
         ("workshop-feeding", 0),

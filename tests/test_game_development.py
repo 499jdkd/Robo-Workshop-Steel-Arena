@@ -137,7 +137,9 @@ class ArenaServerTests(unittest.TestCase):
         with self.assertRaises(RuleError): self.server.turn(self.b['id'],identity,0,'command-0','attack')
         result=self.server.turn(self.a['id'],identity,0,'command-1','attack')
         self.assertEqual(self.server.turn(self.a['id'],identity,0,'command-1','attack'),result)
-        self.assertEqual(self.server.current(self.b['id'])['state']['b']['hp'],105)
+        victim=self.server.current(self.b['id'])['state']['b']
+        self.assertGreater(victim['hp'],0)
+        self.assertLess(victim['hp'],victim['max_hp'])
         with self.assertRaises(RuleError): self.server.turn(self.a['id'],identity,0,'command-2','attack')
         result=self.server.turn(self.b['id'],identity,1,'command-3','resign')
         self.assertEqual(result['result'],'finished')

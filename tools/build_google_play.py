@@ -90,6 +90,8 @@ def prepare_stage(root, stage, *, number, version, ads_mode):
                 f'path = "{(root / "extensions" / package).as_posix()}"',
             )
     if ads_mode == "test":
+        (stage/'src/assets/config').mkdir(parents=True,exist_ok=True)
+        (stage/'src/assets/config/billing.json').write_text(json.dumps({'sandbox':True}),encoding='utf-8')
         app_id = settings["tool"]["flet"]["android"]["meta_data"][
             "com.google.android.gms.ads.APPLICATION_ID"
         ]

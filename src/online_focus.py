@@ -7,6 +7,7 @@ import flet as ft
 from battle_ui import battle_scene
 from display_mode import set_scene_focus
 from online_arena import online_for
+from online_ui import online_actions
 from ui_shared import INK, MUTED, button_style, card, use_game
 
 
@@ -55,27 +56,22 @@ def FocusedOnlineBattle(page, session):
             "Твой ход" if your_turn else "Ход соперника" if active else "Матч завершён",
             color=session.state.accent,
         ),
-        ft.Text(f"Энергия {match['state'][side]['energy']}/10", color=MUTED, size=12),
+        ft.Text(
+            f"Энергия {match['state'][side]['energy']}/{match['state'][side].get('max_energy', 12)} · Супер {match['state'][side].get('super_charge', 0)}%",
+            color=MUTED,
+            size=12,
+        ),
     ]
-    for action, title in [
-        ("attack", "Атака"),
-        ("guard", "Защита"),
-        ("special", "Способность"),
-        ("dodge", "Уклонение"),
-        ("charge", "Зарядка"),
-    ]:
 
-        async def act(_, choice=action):
-            await online.command(choice)
+    def command(action):
+        async def act(_):
+            await online.command(action)
 
-        controls.append(
-            ft.Button(
-                title,
-                on_click=act,
-                disabled=not your_turn or online.busy,
-                style=button_style(session.state.accent, secondary=action != "attack"),
-            )
-        )
+        return act
+
+    controls.append(
+        ft.ResponsiveRow(online_actions(online, command), spacing=5, run_spacing=6)
+    )
     controls.append(ft.TextButton("Вернуться", on_click=close))
     panel = ft.Column(controls, spacing=8, scroll=ft.ScrollMode.AUTO, expand=True)
     width = getattr(page, "width", 420) or 420

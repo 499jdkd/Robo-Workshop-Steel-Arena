@@ -18,11 +18,15 @@ from gameplay import (
     perform,
     threshold,
 )
-from leaderboard import LeaderboardManager
 from local_store import LocalStore, MemoryStore
 from progression import DAILY_SPECS, refresh_day
 
 logger = logging.getLogger(__name__)
+
+
+def default_manager(identity):
+    from leaderboard import LeaderboardManager
+    return LeaderboardManager(identity)
 
 
 class GameSession:
@@ -32,7 +36,7 @@ class GameSession:
         *,
         store=None,
         clock=time.time,
-        manager_factory=LeaderboardManager,
+        manager_factory=default_manager,
         demo=False,
     ):
         self.page = page
@@ -112,11 +116,23 @@ class GameSession:
         self.motion_event = 0
         self.motion_action = "idle"
         self.motion_sound = True
+        preferences = cached.get("presentation", {})
+        preferences = preferences if isinstance(preferences, dict) else {}
+        self.battle_speed = preferences.get("battle_speed", 1.5)
+        if self.battle_speed not in (1.0, 1.5, 2.0):
+            self.battle_speed = 1.5
+        self.reduced_effects = preferences.get("reduced_effects") is True
+        self.preview_identity = ""
+        self.preview_action = "idle"
+        self.preview_event = 0
         self.last_auto_feed = -1000000.0
         self.focus_scene = ""
         self.route = ""
         self.robot_detail = ""
+        self.robot_detail_return = ""
         self.inspection_id = ""
+        self.factory_kind = "normal"
+        self.factory_rewards_visible = False
         self._focus_window_size = None
         self._board_reader = None
         board_at = cached.get("board_updated_at")
@@ -237,6 +253,7 @@ class GameSession:
                     "pending": self._journal if not self.trusted else [],
                     "leaderboard": self.board,
                     "board_updated_at": self.board_updated_at,
+                    "presentation": {"battle_speed": self.battle_speed, "reduced_effects": self.reduced_effects},
                 }
             )
             self._last_save = self.clock()
@@ -389,6 +406,28 @@ class GameSession:
                 self.act("feed", identity)
                 self.last_auto_feed = self.clock()
         return result
+
+    def preview_robot(self, identity, action):
+        """Only transient renderer intent. Locked and owned robots use this path."""
+        from robot_abilities import ABILITIES
+
+        actions = {"attack", "special", "ultimate", "guard", "joy", "idle"}
+        if identity == "volt":
+            actions |= {"quick", "dodge", "charge", "jump", "surprise", "anger", "dance", "inspect", "victory", "defeat"}
+        if identity not in ABILITIES or action not in actions:
+            return False
+        self.preview_identity, self.preview_action = identity, action
+        self.preview_event += 1
+        self.notify()
+        return True
+
+    def presentation(self, *, speed=None, reduced=None):
+        if speed in (1.0, 1.5, 2.0):
+            self.battle_speed = float(speed)
+        if reduced is not None:
+            self.reduced_effects = bool(reduced)
+        self.persist()
+        self.notify()
 
     def pause(self):
         self.tick()

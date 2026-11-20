@@ -206,7 +206,8 @@ class GameState:
     def __post_init__(self):
         if not self.collection:
             from collection_progress import restore as restore_collection
-            restore_collection(self,{})
+
+            restore_collection(self, {})
 
     @classmethod
     def from_dict(cls, data: dict | None) -> GameState:
@@ -394,7 +395,8 @@ class GameState:
 
         restore(state, data)
         from collection_progress import restore as restore_collection
-        restore_collection(state, data.get('collection'))
+
+        restore_collection(state, data.get("collection"))
         return state
 
     def to_dict(self) -> dict:
@@ -783,7 +785,13 @@ def train_robot(state: GameState, robot_id: str, now: float) -> ActionResult:
 
 def perform(state: GameState, name: str, args: list, now: float) -> ActionResult:
     from collection_progress import perform_collection, record_activity
-    before = dict(wins=state.arena_wins, jobs=state.jobs_done, training=state.robot_trainings, taps=state.manual_taps)
+
+    before = dict(
+        wins=state.arena_wins,
+        jobs=state.jobs_done,
+        training=state.robot_trainings,
+        taps=state.manual_taps,
+    )
     result = perform_collection(state, name, args, now)
     if result is None:
         result = _perform_core(state, name, args, now)
@@ -920,7 +928,11 @@ def start_battle(state, robot_id, now):
     state.battle_serial += 1
     state.battles_played += 1
     state.battle = new_battle(
-        robot_id, state.robot_levels[robot_id], state.arena_stage + (state.tournament.get("wins",0) if state.tournament.get("active") else 0), state.battle_serial
+        robot_id,
+        state.robot_levels[robot_id],
+        state.arena_stage
+        + (state.tournament.get("wins", 0) if state.tournament.get("active") else 0),
+        state.battle_serial,
     )
     from armory import equip_battle
 
