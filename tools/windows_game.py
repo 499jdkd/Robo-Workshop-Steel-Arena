@@ -5,6 +5,7 @@ The server and UI bind to loopback only. No game assets depend on a CDN.
 """
 
 import functools
+import base64
 import json
 import http.server
 import os
@@ -46,12 +47,73 @@ def serve_game(port):
         sys.path.insert(0, str(root / "src"))
     os.environ["CLICKER_DESKTOP_HOST"] = "1"
     os.environ["FLET_FORCE_WEB_SERVER"] = "1"
+    os.environ["FLET_SERVER_PORT"] = str(port)
+    os.environ["FLET_SERVER_IP"] = "127.0.0.1"
+    os.environ.pop("FLET_SERVER_UDS_PATH", None)
     from main import main
+
+    app = main
+    scope = os.getenv("CLICKER_WINDOWS_TEST_SCENE", "")
+    if scope:
+        if os.getenv("CLICKER_DEMO") != "1" or not os.getenv("CLICKER_WINDOWS_DATA"):
+            raise RuntimeError("Scene QA requires isolated preview data")
+
+        async def app(page):
+            session = await main(page)
+            if scope in {"workshop", "battle"}:
+                if scope == "battle":
+                    session.act("battle_start", "spark")
+                from display_mode import set_scene_focus
+
+                await set_scene_focus(page, session, scope)
+            elif scope != "normal":
+                raise ValueError("Unknown QA scene")
 
     assets = (
         root / "game_assets" if getattr(sys, "frozen", False) else root / "src/assets"
     )
-    ft.run(main, view=None, host="127.0.0.1", port=port, assets_dir=str(assets))
+    ft.run(app, view=None, host="127.0.0.1", port=port, assets_dir=str(assets))
+
+
+def watch_cli_launcher(window):
+    """Close this owned window if Flet hot reload kills its venv launcher."""
+    if not os.getenv("FLET_DISPLAY_URL_PREFIX") or getattr(sys, "frozen", False):
+        return
+    import ctypes
+
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel.OpenProcess.argtypes = [ctypes.c_uint32, ctypes.c_int, ctypes.c_uint32]
+    kernel.OpenProcess.restype = ctypes.c_void_p
+    kernel.WaitForSingleObject.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    kernel.CloseHandle.argtypes = [ctypes.c_void_p]
+    handle = kernel.OpenProcess(0x100000, False, os.getppid())
+    if not handle:
+        return
+
+    def wait():
+        try:
+            kernel.WaitForSingleObject(handle, 0xFFFFFFFF)
+            window.destroy()
+        finally:
+            kernel.CloseHandle(handle)
+
+    threading.Thread(target=wait, daemon=True).start()
+
+
+def capture_owned_window(window, destination):
+    """Capture our own WebView2 game surface through its supported CDP API."""
+    from System import Func, Object
+
+    browser = window.native.webview
+    task = browser.Invoke(
+        Func[Object](
+            lambda: browser.CoreWebView2.CallDevToolsProtocolMethodAsync(
+                "Page.captureScreenshot",
+                '{"format":"png","captureBeyondViewport":false}',
+            )
+        )
+    )
+    destination.write_bytes(base64.b64decode(json.loads(task.Result)["data"]))
 
 
 def main():
@@ -60,41 +122,62 @@ def main():
         return
     import webview
 
-    self_test = "--self-test" in sys.argv
+    self_test = "--self-test" in sys.argv or bool(
+        os.getenv("CLICKER_WINDOWS_TEST_REPORT")
+    )
     test_report = None
     if self_test:
-        index = sys.argv.index("--self-test")
-        test_report = Path(sys.argv[index + 1]).resolve()
+        test_report = (
+            Path(os.environ["CLICKER_WINDOWS_TEST_REPORT"]).resolve()
+            if os.getenv("CLICKER_WINDOWS_TEST_REPORT")
+            else Path(sys.argv[sys.argv.index("--self-test") + 1]).resolve()
+        )
         # A packaged startup check must never open the player's real save.
         if not os.getenv("CLICKER_WINDOWS_DATA"):
-            raise RuntimeError("Self-test requires a separate CLICKER_WINDOWS_DATA directory")
+            raise RuntimeError(
+                "Self-test requires a separate CLICKER_WINDOWS_DATA directory"
+            )
 
     root = bundle_root()
-    client = (
-        root / "client"
-        if getattr(sys, "frozen", False)
-        else root / "tools/game_client/build/web"
+    if not getattr(sys, "frozen", False):
+        sys.path.insert(0, str(root / "src"))
+    from desktop_startup import (
+        ensure_source_client,
+        storage_directory,
+        validate_client,
+        worker_environment,
     )
-    if not (client / "index.html").is_file():
-        raise RuntimeError(
-            "Build the Flutter game client with tools/build_windows_game.py"
-        )
-    data = Path(os.getenv("CLICKER_WINDOWS_DATA",str(Path(os.getenv("APPDATA", str(Path.home()))) / "Clicker/data")))
+
+    client = (
+        root / "client" if getattr(sys, "frozen", False) else ensure_source_client(root)
+    )
+    validate_client(client)
+    data = storage_directory(root, frozen=bool(getattr(sys, "frozen", False)))
     data.mkdir(parents=True, exist_ok=True)
     port = available_port()
     command = (
         [sys.executable]
-        + ([] if getattr(sys, "frozen", False) else [str(Path(__file__).resolve())])
-        + ["--serve", str(port)]
-    )
-    env = dict(
-        os.environ,
-        FLET_APP_STORAGE_DATA=str(data),
-        CLICKER_DESKTOP_HOST="1",
-        PYTHONUTF8="1",
-    )
+        if getattr(sys, "frozen", False)
+        else [
+            getattr(sys, "_base_executable", sys.executable),
+            "-c",
+            "import site,sys,runpy;site.addsitedir(sys.argv[1]);p=sys.argv[2];sys.argv=sys.argv[2:];runpy.run_path(p,run_name='__main__')",
+            str(Path(sys.prefix) / "Lib/site-packages"),
+            str(Path(__file__).resolve()),
+        ]
+    ) + ["--serve", str(port)]
+    env = worker_environment(data, port)
+    if not getattr(sys, "frozen", False):
+        paths = [str(Path(sys.prefix) / "Lib/site-packages"), str(root / "src")]
+        if env.get("PYTHONPATH"):
+            paths.append(env["PYTHONPATH"])
+        env["PYTHONPATH"] = os.pathsep.join(paths)
     if self_test:
         env["CLICKER_DEMO"] = "1"
+        scene_report = test_report.with_suffix(".scenes.jsonl")
+        scene_report.parent.mkdir(parents=True, exist_ok=True)
+        scene_report.write_text("", encoding="utf-8")
+        env["CLICKER_SCENE_DIAGNOSTICS"] = str(scene_report)
     log = (data / "windows-runtime.log").open("a", encoding="utf-8")
     host_token = secrets.token_urlsafe(24)
 
@@ -159,6 +242,7 @@ def main():
             min_size=(360, 520),
             background_color="#F5F7FB",
         )
+        watch_cli_launcher(window)
 
         def check_packaged_game():
             started = time.monotonic()
@@ -177,8 +261,27 @@ def main():
                     })())""")
                     if sample:
                         result.update(json.loads(sample))
-                    if result.get("canvas") and "Preview" in result.get("title", ""):
-                        time.sleep(3)
+                    scenes = [
+                        json.loads(line)
+                        for line in scene_report.read_text(
+                            encoding="utf-8"
+                        ).splitlines()
+                        if line.strip()
+                    ]
+                    expected = os.getenv("CLICKER_WINDOWS_TEST_SCENE", "normal")
+                    matching = [
+                        s
+                        for s in scenes
+                        if s.get("robot")
+                        and (expected == "normal" or s.get("expanded"))
+                        and (expected != "battle" or s.get("arena") and s.get("enemy"))
+                    ]
+                    if result.get("canvas") and matching:
+                        time.sleep(1)
+                        result["painted_scenes"] = matching
+                        screenshot = test_report.with_suffix(".png")
+                        capture_owned_window(window, screenshot)
+                        result["screenshot"] = str(screenshot)
                         result["ok"] = True
                         break
                     time.sleep(0.4)
@@ -187,12 +290,16 @@ def main():
             finally:
                 result["seconds"] = round(time.monotonic() - started, 2)
                 test_report.parent.mkdir(parents=True, exist_ok=True)
-                test_report.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+                test_report.write_text(
+                    json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8"
+                )
                 window.destroy()
 
         webview.start(
             func=check_packaged_game if self_test else None,
-            gui="edgechromium", private_mode=False, storage_path=str(data / "webview")
+            gui="edgechromium",
+            private_mode=False,
+            storage_path=str(data / "webview"),
         )
     finally:
         httpd.shutdown()

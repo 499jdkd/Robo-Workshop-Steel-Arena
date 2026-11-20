@@ -1,6 +1,5 @@
 import 'package:flet/flet.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:rive/rive.dart';
 
 import 'rive.dart';
 import 'robot_scene.dart';
@@ -13,7 +12,7 @@ class Extension extends FletExtension {
   Widget? createWidget(Key? key, Control control) {
     switch (control.type) {
       case "GameFactory":
-        return GameFactoryControl(key:key,control:control);
+        return GameFactoryControl(key: key, control: control);
       case "GameCountdown":
         return GameCountdown(key: key, control: control);
       case "GameRive":
@@ -29,6 +28,7 @@ class Extension extends FletExtension {
 
   @override
   void ensureInitialized() {
-    RiveNative.init();
+    // Rive controls initialise their own renderer when first shown. Volt's
+    // native vector control, factory and countdown need no Rive runtime.
   }
 }

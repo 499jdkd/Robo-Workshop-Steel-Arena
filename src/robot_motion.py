@@ -79,10 +79,21 @@ def workshop_activity(now, span=42):
 def robot_actor(
     robot_id, *, size=220, motion="idle", now=0, facing=1, travel=0, opponent=False
 ):
-    if robot_id not in {'spark','volt','flora','forge','nova','glacier','aegis','solar'}:
+    if robot_id not in {
+        "spark",
+        "volt",
+        "flora",
+        "forge",
+        "nova",
+        "glacier",
+        "aegis",
+        "solar",
+    }:
         # Collection/profile thumbnails are static exports of the actual Rive
         # artboard; only the focused robot consumes an animation ticker.
-        return ft.Image(ROBOT_BY_ID[robot_id].image,width=size,height=size,fit=ft.BoxFit.CONTAIN)
+        return ft.Image(
+            ROBOT_BY_ID[robot_id].image, width=size, height=size, fit=ft.BoxFit.CONTAIN
+        )
     pose = pose_for(motion, now, facing=facing)
     s = size / 240
     mobile = ROBOT_BY_ID[robot_id].mobility == "tracks"

@@ -115,7 +115,7 @@ const robotProfiles = <String, Map<String, dynamic>>{
   "cobra": {
     "construction": "serpent",
     "mobility": "segments",
-    "headY": 8,
+    "headY": 60,
     "headX": 108,
     "class": "scout"
   },

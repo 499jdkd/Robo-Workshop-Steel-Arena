@@ -78,6 +78,8 @@ void main() {
   ).listSync().whereType<File>()) {
     final name = file.uri.pathSegments.last.replaceAll('.json', '');
     if (name.startsWith('motion-')) fixtures[name] = const Size(844, 390);
+    if(name.startsWith('feature-'))fixtures[name]=name.endsWith('-landscape')?const Size(844,390):name.endsWith('-small')?const Size(320,640):const Size(390,844);
+    if(name.startsWith('interaction-'))fixtures[name]=name.endsWith('-landscape')?const Size(844,390):name.endsWith('-small')?const Size(320,640):const Size(390,844);
   }
   for (final entry in fixtures.entries) {
     testWidgets(
@@ -113,6 +115,8 @@ void main() {
                 debugShowCheckedModeBanner: false,
                 builder: (context, child) => MediaQuery(
                   data: MediaQuery.of(context).copyWith(
+                    padding: entry.key == 'arena-landscape' ? const EdgeInsets.only(bottom:24) : EdgeInsets.zero,
+                    viewPadding: entry.key == 'arena-landscape' ? const EdgeInsets.only(bottom:24) : EdgeInsets.zero,
                     textScaler: TextScaler.linear(
                       entry.key.endsWith('large-text') ? 1.4 : 1,
                     ),
@@ -150,7 +154,7 @@ void main() {
           for (var i = 0; i < 45; i++) {
             await tester.pump(const Duration(milliseconds: 16));
           }
-        } else if (entry.key.startsWith('reward-loading')) {
+        } else if (entry.key.startsWith('reward-loading') || entry.key.startsWith('feature-factory') || entry.key.startsWith('interaction-factory-')) {
           // The indeterminate ring deliberately keeps scheduling animation.
           await tester.pump(const Duration(milliseconds: 400));
         } else {
@@ -176,6 +180,28 @@ void main() {
         }
         expect(tester.takeException(), isNull);
         expect(find.byType(ErrorControl), findsNothing);
+        if (entry.key == 'interaction-energy-small' || entry.key == 'interaction-zero-small') {
+          for (final label in ['Бои', 'Рейтинг', 'PvP', 'Кланы']) {
+            final text = find.text(label).first;
+            final paragraph = tester.renderObject<RenderParagraph>(text);
+            expect(paragraph.didExceedMaxLines, isFalse,
+              reason:'Arena tab $label must fit at 320 dp');
+            expect(tester.getSize(text).height, lessThan(24),
+              reason:'Arena tab $label must stay on one line');
+            final button = find.ancestor(of:text, matching:find.byType(ElevatedButton)).first;
+            expect(tester.getSize(button).height, greaterThanOrEqualTo(48));
+          }
+        }
+        if (entry.key == 'arena-landscape') {
+          final leave = find.text('Завершить бой');
+          await tester.ensureVisible(leave);
+          await tester.pump(const Duration(milliseconds:300));
+          final button = find.ancestor(of:leave, matching:find.byType(TextButton)).first;
+          expect(tester.getRect(button).bottom, lessThanOrEqualTo(entry.value.height - 24),
+            reason:'The final battle action must stay above the Android system navigation area');
+        }
+        await tester.runAsync(()=>Future<void>.delayed(const Duration(milliseconds:120)));
+        await tester.pump(const Duration(milliseconds:16));
         if (entry.key == 'arena-help') {
           expect(find.text('Как сражаться'), findsOneWidget);
         }

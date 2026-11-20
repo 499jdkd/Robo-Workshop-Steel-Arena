@@ -1,17 +1,27 @@
 """Render the game first; restore identity and cloud state in background tasks."""
 
 import flet as ft
+from importlib import import_module
 
 from advertising import BannerFooter
-from arena_screen import arena_screen
 from display_mode import set_arena_expanded
 from game_session import GameSession, demo_requested, preview_session
 from main_screen import main_screen
-from profile_screen import profile_screen
-from scene_focus import FocusedScene
-from shop_screen import shop_screen
 from ui_shared import BG, page_gradient, tint, use_game
-from feature_screens import FeatureScreen
+
+
+def lazy_screen(module, name):
+    def render(*args, **kwargs):
+        return getattr(import_module(module), name)(*args, **kwargs)
+    return render
+
+
+arena_screen = lazy_screen("arena_screen", "arena_screen")
+profile_screen = lazy_screen("profile_screen", "profile_screen")
+shop_screen = lazy_screen("shop_screen", "shop_screen")
+FocusedScene = lazy_screen("scene_focus", "FocusedScene")
+FeatureScreen = lazy_screen("feature_screens", "FeatureScreen")
+RobotDetail = lazy_screen("collection_ui", "RobotDetail")
 
 
 @ft.component
@@ -29,8 +39,9 @@ def App(page: ft.Page, device_id: str = "", session=None, start_tab=0):
         if session.arena_expanded and index != 2:
             await set_arena_expanded(page, session, False)
         if session.ui_alive:
-            session.route=''
-            session.robot_detail=''
+            session.route = ""
+            session.robot_detail = ""
+            session.robot_detail_return = ""
             set_selected_index(index)
 
     screens = (
@@ -55,47 +66,69 @@ def App(page: ft.Page, device_id: str = "", session=None, start_tab=0):
         ),
         lambda: profile_screen(page, session.device_id, session=session),
     )
+    body = (
+        FocusedScene(page=page, session=session)
+        if expanded
+        else FeatureScreen(page=page, session=session)
+        if session.route
+        else RobotDetail(page=page, session=session, identity=session.robot_detail)
+        if session.robot_detail
+        else screens[selected_index]()
+    )
+    destination = (
+        f"{selected_index}:{session.route}:{session.robot_detail}:{session.focus_scene}"
+    )
     return ft.Column(
         controls=[
             ft.Container(
+                key=destination,
                 content=ft.SafeArea(
                     content=ft.Container(
-                        content=FocusedScene(page=page, session=session)
-                        if expanded
-                        else FeatureScreen(page=page,session=session) if session.route
-                        else screens[selected_index](),
+                        content=body,
                         padding=ft.Padding.all(5)
                         if expanded
                         else ft.Padding.only(left=14, right=14, top=12, bottom=12),
                     ),
-                    avoid_intrusions_bottom=False,
+                    avoid_intrusions_bottom=expanded,
                 ),
                 expand=True,
                 gradient=page_gradient(state.accent),
             ),
             ft.NavigationBar(
+                key="main-navigation",
                 selected_index=selected_index,
                 on_change=navigate,
                 visible=not expanded,
-                height=68,
+                height=80,
+                label_behavior=ft.NavigationBarLabelBehavior.ALWAYS_SHOW,
+                label_padding=ft.Padding.only(top=3),
                 bgcolor=tint(state.accent, 0.95),
-                indicator_color=tint(state.accent, 0.78),
+                indicator_color=tint(state.accent, 0.08),
+                border=ft.Border.only(top=ft.BorderSide(1, "#6488B3")),
                 destinations=[
                     ft.NavigationBarDestination(
-                        icon=ft.Icons.HOME_ROUNDED, label="Мастерская"
+                        icon=ft.Icon(ft.Icons.HOME_ROUNDED, size=28), label="Мастерская"
                     ),
                     ft.NavigationBarDestination(
-                        icon=ft.Icons.SMART_TOY_ROUNDED, label="Роботы"
+                        icon=ft.Icon(ft.Icons.SMART_TOY_ROUNDED, size=28), label="Роботы"
                     ),
                     ft.NavigationBarDestination(
-                        icon=ft.Icons.SPORTS_MARTIAL_ARTS_ROUNDED, label="Арена"
+                        icon=ft.Icon(ft.Icons.SPORTS_MARTIAL_ARTS_ROUNDED, size=28), label="Арена"
                     ),
                     ft.NavigationBarDestination(
-                        icon=ft.Icons.PERSON_OUTLINE_ROUNDED, label="Профиль"
+                        icon=ft.Icon(ft.Icons.PERSON_OUTLINE_ROUNDED, size=28), label="Профиль"
                     ),
                 ],
             ),
-            BannerFooter(page=page, key="advertising-footer") if not expanded and selected_index!=2 and session.route!='factory' else ft.Container(height=0),
+            ft.SafeArea(
+                content=ft.Container(
+                    BannerFooter(page=page, key="advertising-footer"),
+                    padding=ft.Padding.only(top=12),
+                    bgcolor=BG,
+                ) if selected_index != 2 and session.route != "factory" else ft.Container(height=0),
+                avoid_intrusions_top=False,
+                maintain_bottom_view_padding=True,
+            ) if not expanded else ft.Container(height=0),
         ],
         spacing=0,
         expand=True,
@@ -149,16 +182,6 @@ async def main(page: ft.Page):
 
 
 if __name__ == "__main__":
-    import os
-    import sys
-    from pathlib import Path
+    from desktop_startup import run
 
-    from flet.utils import is_embedded
-
-    if sys.platform == "win32" and not is_embedded() and not os.getenv("FLET_FORCE_WEB_SERVER") and not os.getenv("FLET_SERVER_PORT"):
-        sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-        import runpy
-
-        runpy.run_path(str(Path(__file__).resolve().parents[1] / "tools/windows_game.py"), run_name="__main__")
-    else:
-        ft.run(main)
+    run(main)

@@ -6,11 +6,19 @@ import json
 import os
 import uuid
 from pathlib import Path
+from time import monotonic
 from urllib.parse import urlparse
 
 import httpx
 
 from robot_catalog import ROBOT_BY_ID
+from network_config import arena_url, developer_network
+from combat_rules import ACTIONS, ATTACKS
+from robot_designs import DESIGNS
+
+
+class ServerStarting(ValueError):
+    """Render may briefly return a gateway error or its HTML startup page."""
 
 
 class OnlineArena:
@@ -21,8 +29,8 @@ class OnlineArena:
             if hasattr(session.store, "directory")
             else None
         )
-        self.url = os.getenv("CLICKER_ARENA_URL", "").rstrip("/")
-        if self.root:
+        self.url = arena_url()
+        if self.root and not self.url and developer_network():
             try:
                 self.url = json.loads(
                     (self.root / "arena-server.json").read_text(encoding="utf-8")
@@ -38,6 +46,12 @@ class OnlineArena:
         self.busy = False
         self.error = ""
         self.lock = asyncio.Lock()
+        self.friends = []
+        self.history = []
+        self.invitation = {}
+        self.mode = "ranked"
+        self.started = False
+        self.social_updated = 0
 
     def notify(self):
         if self.session.ui_alive:
@@ -51,27 +65,64 @@ class OnlineArena:
             / f"arena-identity-{hashlib.sha256(self.url.encode()).hexdigest()[:16]}.json"
         )
 
-    async def request(self, method, path, body=None, *, authenticated=True):
+    async def request(
+        self, method, path, body=None, *, authenticated=True, read_timeout=10
+    ):
         if not self.url:
-            raise ValueError("Укажи адрес игрового сервера")
+            raise ValueError(
+                "Онлайн-сервер пока не подключён к этой сборке. Тренировка с ботами доступна"
+            )
         headers = (
             {"Authorization": "Bearer " + self.credentials.get("token", "")}
             if authenticated
             else {}
         )
         async with httpx.AsyncClient(
-            timeout=httpx.Timeout(10, connect=4), follow_redirects=False
+            timeout=httpx.Timeout(read_timeout, connect=min(8, read_timeout)),
+            follow_redirects=False,
         ) as client:
             response = await client.request(
                 method, self.url + path, json=body, headers=headers
             )
+            warming = method == "GET" and path == "/health"
+            if warming and response.status_code in {502, 503, 504}:
+                raise ServerStarting("Сервер просыпается")
             if response.status_code >= 400:
                 try:
                     detail = response.json().get("detail", "Ошибка игрового сервера")
                 except ValueError:
                     detail = "Ответ игрового сервера не распознан"
                 raise ValueError(str(detail)[:250])
-            return response.json()
+            try:
+                return response.json()
+            except ValueError:
+                if warming and "text/html" in response.headers.get("content-type", ""):
+                    raise ServerStarting("Сервер просыпается") from None
+                raise ValueError("Ответ игрового сервера не распознан") from None
+
+    async def warm_up(self):
+        """Retry only the read-only liveness probe, never a purchase or a turn."""
+        deadline = monotonic() + 75
+        while True:
+            remaining = deadline - monotonic()
+            if remaining <= 0:
+                raise ValueError(
+                    "Сервер ещё просыпается. Попробуй подключиться чуть позже"
+                )
+            try:
+                return await self.request(
+                    "GET",
+                    "/health",
+                    authenticated=False,
+                    read_timeout=max(0.1, remaining),
+                )
+            except (ServerStarting, httpx.TimeoutException):
+                remaining = deadline - monotonic()
+                if remaining <= 0:
+                    raise ValueError(
+                        "Сервер ещё просыпается. Попробуй подключиться чуть позже"
+                    ) from None
+                await asyncio.sleep(min(3, remaining))
 
     async def connect(self, url, name):
         async with self.lock:
@@ -91,10 +142,11 @@ class OnlineArena:
                         "Укажи адрес http:// или https:// без логина и пароля"
                     )
                 self.url = url.strip().rstrip("/")
-                health = await self.request("GET", "/health", authenticated=False)
+                health = await self.warm_up()
                 if (
                     health.get("protocol") != 1
                     or health.get("opponents") != "human-only"
+                    or health.get("rules_version") != 3
                 ):
                     raise ValueError("Это не сервер сетевой арены Clicker")
                 path = self.credentials_path()
@@ -142,9 +194,12 @@ class OnlineArena:
         ):
             previous_busy = self.busy
             self.busy = True
+            visual_generation = None
             try:
                 own = old["state"][old["you"]]
                 self.session.arena_animation_id += 1
+                visual_generation = self.session.arena_animation_id
+                speed = self.session.battle_speed
                 self.session.arena_visual = {
                     "battle_id": self.view_battle()["id"],
                     "phase": "enemy-flight",
@@ -155,19 +210,28 @@ class OnlineArena:
                     else "idle",
                     "before_hp": before["player_hp"],
                     "before_enemy_hp": before["enemy_hp"],
+                    "speed": speed,
                 }
                 self.notify()
-                await asyncio.sleep(0.95)
+                await asyncio.sleep(0.72 / speed)
                 self.session.arena_visual["phase"] = "reply"
                 self.notify()
-                await asyncio.sleep(0.5)
+                await asyncio.sleep(0.25 / speed)
             finally:
-                self.session.arena_visual = {}
+                if visual_generation == self.session.arena_animation_id:
+                    self.session.arena_visual = {}
                 self.busy = previous_busy
         if match and match["result"] == "active":
             self.waiting = False
         self.ranking = await self.request("GET", "/ranking")
         self.clans = await self.request("GET", "/clans")
+        import time
+
+        if time.monotonic() - self.social_updated > 10:
+            self.friends, self.history = await asyncio.gather(
+                self.request("GET", "/friends"), self.request("GET", "/history")
+            )
+            self.social_updated = time.monotonic()
 
     async def refresh(self):
         if self.busy or not self.profile or self.session._paused:
@@ -194,14 +258,20 @@ class OnlineArena:
         # damage, save currency, reported wins or inventory levels.
         return {
             "robot": state.active_robot or "spark",
-            "weapon": gear[0] if gear else "plasma",
+            "weapon": gear[0]
+            if gear
+            else DESIGNS[state.active_robot or "spark"]["weapon"],
+            "mode": self.mode,
         }
 
     async def command(self, name, value=""):
+        if self.busy or self.lock.locked() or not self.profile:
+            return
         async with self.lock:
             if self.busy or not self.profile:
                 return
             self.busy = True
+            visual_generation = None
             self.notify()
             try:
                 if name == "queue":
@@ -211,14 +281,29 @@ class OnlineArena:
                 elif name == "cancel":
                     await self.request("DELETE", "/queue")
                     self.waiting = False
-                elif name in {
-                    "attack",
-                    "guard",
-                    "special",
-                    "dodge",
-                    "charge",
-                    "resign",
-                }:
+                elif name == "duel_create":
+                    self.invitation = await self.request(
+                        "POST", "/duels", self.queue_body()
+                    )
+                elif name == "duel_join":
+                    self.match = await self.request(
+                        "POST", "/duels/join", {**self.queue_body(), "code": value}
+                    )
+                elif name.startswith("friend_"):
+                    self.friends = await self.request(
+                        "POST",
+                        "/friends/action",
+                        {"action": name.removeprefix("friend_"), "player": value},
+                    )
+                    self.social_updated = 0
+                elif name == "clan_search":
+                    from urllib.parse import quote
+
+                    self.clans = await self.request(
+                        "GET", "/clans?search=" + quote(value)
+                    )
+                    return
+                elif name in ACTIONS | {"resign"}:
                     if not self.match:
                         raise ValueError("Бой ещё не найден")
                     result = await self.request(
@@ -231,17 +316,24 @@ class OnlineArena:
                         },
                     )
                     self.session.arena_animation_id += 1
+                    visual_generation = self.session.arena_animation_id
+                    from battle_ui import turn_timing
+
+                    prepare_seconds, flight_seconds, impact_seconds = turn_timing(name)
+                    speed = self.session.battle_speed
                     self.session.arena_visual = {
                         "battle_id": self.view_battle()["id"],
                         "phase": "approach",
                         "action": name,
+                        "speed": speed,
+                        "flight_seconds": flight_seconds,
                     }
                     self.notify()
-                    await asyncio.sleep(0.6)
-                    if name in {"attack", "special"}:
+                    await asyncio.sleep(prepare_seconds / speed)
+                    if name in ATTACKS:
                         self.session.arena_visual["phase"] = "flight"
                         self.notify()
-                        await asyncio.sleep(0.95)
+                        await asyncio.sleep(flight_seconds / speed)
                     self.match = result
                     self.session.arena_visual["phase"] = (
                         "victory"
@@ -250,7 +342,7 @@ class OnlineArena:
                         else "impact"
                     )
                     self.notify()
-                    await asyncio.sleep(0.5)
+                    await asyncio.sleep(impact_seconds / speed)
                     self.session.arena_visual = {}
                 else:
                     await self.request(
@@ -261,6 +353,8 @@ class OnlineArena:
             except (httpx.HTTPError, ValueError) as error:
                 self.error = str(error)[:250] or "Не удалось выполнить действие"
             finally:
+                if visual_generation == self.session.arena_animation_id:
+                    self.session.arena_visual = {}
                 self.busy = False
                 self.notify()
 
@@ -279,9 +373,9 @@ class OnlineArena:
             "stage": 0,
             "turn": match["revision"],
             "player_hp": own["hp"],
-            "player_max_hp": 120,
+            "player_max_hp": own.get("max_hp", 120),
             "enemy_hp": enemy["hp"],
-            "enemy_max_hp": 120,
+            "enemy_max_hp": enemy.get("max_hp", 120),
             "last_damage": last.get("damage", 0) if last.get("actor") == side else 0,
             "last_incoming": last.get("damage", 0) if last.get("actor") == other else 0,
             "last_heal": last.get("heal", 0),
@@ -302,6 +396,13 @@ class OnlineArena:
             "enemy_action": last.get("action", "idle")
             if last.get("actor") == other
             else "idle",
+            "rules_version": 3,
+            "combatants": {"a": own, "b": enemy},
+            "battery": own["energy"],
+            "max_battery": own.get("max_energy", 12),
+            "focus": own.get("focus", 0),
+            "heat": own.get("heat", 0),
+            "super_charge": own.get("super_charge", 0),
         }
 
 

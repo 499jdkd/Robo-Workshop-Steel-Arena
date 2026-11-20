@@ -32,6 +32,16 @@ def ProfileScreen(page: ft.Page, device_id: str, session=None):
     dialog, set_dialog = ft.use_state(False)
     error, set_error = ft.use_state("")
     icons_open, set_icons_open = ft.use_state(False)
+    from collection_progress import ensure
+    from cosmetic_catalog import cosmetic_name
+
+    cosmetics = ensure(state)
+
+    def set_emblem(identity):
+        async def run(_):
+            session.act("emblem_equip", identity)
+
+        return run
 
     async def toggle_icons(_):
         set_icons_open(lambda value: not value)
@@ -220,6 +230,46 @@ def ProfileScreen(page: ft.Page, device_id: str, session=None):
                 key="profile-icons-toggle",
             ),
             avatar_picker(session) if icons_open else ft.Container(height=0),
+            *(
+                [
+                    card(
+                        ft.Column(
+                            [
+                                ft.Row(
+                                    [
+                                        badge("arena", 30),
+                                        ft.Text(
+                                            cosmetic_name(
+                                                "emblem", cosmetics["selected_emblem"]
+                                            )
+                                            if cosmetics["selected_emblem"]
+                                            else "Сезонные эмблемы",
+                                            color=GOLD,
+                                            size=13,
+                                            expand=True,
+                                        ),
+                                    ],
+                                    spacing=8,
+                                ),
+                                ft.Row(
+                                    [
+                                        ft.TextButton(
+                                            cosmetic_name("emblem", item),
+                                            on_click=set_emblem(item),
+                                        )
+                                        for item in cosmetics["emblems"]
+                                    ],
+                                    wrap=True,
+                                    spacing=5,
+                                ),
+                            ],
+                            spacing=8,
+                        )
+                    )
+                ]
+                if cosmetics["emblems"]
+                else []
+            ),
             AdDiagnostics(page=page),
             project_gallery(session),
             card(

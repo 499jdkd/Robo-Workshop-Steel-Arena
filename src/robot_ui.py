@@ -27,7 +27,7 @@ def robot_scene(
     egg = ROBOT_BY_ID.get(state.egg_id)
     robot = ROBOT_BY_ID.get(state.active_robot)
     if robot is not None:
-        egg=None  # An incubating second robot must not hide the selected one.
+        egg = None  # An incubating second robot must not hide the selected one.
     image = egg.egg_image if egg else robot.image if robot else "art/egg_starter.webp"
     phase = int(session.clock()) % 2
     width = width or max(280, (getattr(session.page, "width", None) or 420) - 28)
@@ -57,9 +57,11 @@ def robot_scene(
     )
     caption = (
         ("Нажми, чтобы открыть яйцо!")
-        if state.egg_is_ready(session.clock())
+        if egg and state.egg_is_ready(session.clock())
         else f"Касайся · +{compact(state.click_power(session.clock()))} корма"
         if egg
+        else "Касание · пол — движение"
+        if robot and robot.id == "volt"
         else "Нажимай — корми и развивай робота"
     )
 
@@ -75,7 +77,9 @@ def robot_scene(
                 ft.Container(
                     ft.AnimatedSwitcher(
                         ft.Image(
-                            'art/workshop-future-v1.png' if state.stage_index>=1 else f"art/room_{state.stage_index}.webp",
+                            "art/workshop-future-v1.png"
+                            if state.stage_index >= 1
+                            else f"art/room_{state.stage_index}.webp",
                             key=f"room-{state.stage_index}",
                             fit=ft.BoxFit.COVER,
                             width=float("inf"),
@@ -88,7 +92,9 @@ def robot_scene(
                     if not expanded
                     else None,
                     image=ft.DecorationImage(
-                        src='art/workshop-future-v1.png' if state.stage_index>=1 else f"art/room_{state.stage_index}.webp",
+                        src="art/workshop-future-v1.png"
+                        if state.stage_index >= 1
+                        else f"art/room_{state.stage_index}.webp",
                         fit=ft.BoxFit.COVER,
                         alignment=ft.Alignment.BOTTOM_CENTER,
                     )
@@ -132,7 +138,7 @@ def robot_scene(
                 *(
                     [
                         ft.Container(
-                            animated_scene(session, expanded=expanded),
+                            animated_scene(session, expanded=expanded, on_robot_tap=on_tap),
                             left=0,
                             right=0,
                             top=0,
@@ -301,7 +307,7 @@ def robot_scene(
         ),
         key="robot-tap-scene",
         padding=0,
-        on_click=on_tap,
+        on_click=on_tap if egg or not robot else None,
         clip_behavior=ft.ClipBehavior.ANTI_ALIAS,
     )
 

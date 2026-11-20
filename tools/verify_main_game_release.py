@@ -63,6 +63,9 @@ def main():
         for abi in ("arm64-v8a", "armeabi-v7a", "x86_64"):
             assert f"lib/{abi}/libpython3.14.so" in package.namelist()
             assert f"lib/{abi}/librive_native.so" in package.namelist()
+            native_client = package.read(f"lib/{abi}/libapp.so")
+            for marker in (b"robot_tap", b"rig_load_ms", b"container_type", b"reducedEffects", b"demonstration"):
+                assert marker in native_client, (abi, marker)
         with zipfile.ZipFile(io.BytesIO(package.read("assets/app.zip"))) as app:
             assert app.testzip() is None
             for source in modules:
@@ -72,6 +75,11 @@ def main():
                 assert struct.unpack("<III", compiled[4:16])[2] == source.stat().st_size, name
             animation = app.read("assets/animation/game_robot.riv")
             assert animation == (ROOT / "src/assets/animation/game_robot.riv").read_bytes()
+            network = app.read("assets/config/network.json")
+            assert network == (stage / "src/assets/config/network.json").read_bytes()
+            network_url = json.loads(network)["arena_url"]
+            if network_url:
+                assert network_url.startswith("https://") and "?" not in network_url
             sounds = list((ROOT / "src/assets/audio").glob("*.wav"))
             if not sounds:
                 sounds = list((ROOT / "src/assets").rglob("*.wav"))
@@ -80,6 +88,8 @@ def main():
                 assert app.read("assets/" + source.relative_to(ROOT / "src/assets").as_posix()) == source.read_bytes()
             for source in (ROOT / "src/assets/art/arena").glob("stage_*.svg"):
                 assert app.read("assets/art/arena/" + source.name) == source.read_bytes()
+            for source in (ROOT / "src/assets/art/containers").glob("*.svg"):
+                assert app.read("assets/art/containers/" + source.name) == source.read_bytes()
             for name, ad_id in (("advertising.pyc", b"ca-app-pub-3940256099942544/6300978111"),
                                ("rewarded_ads.pyc", b"ca-app-pub-3940256099942544/5224354917")):
                 assert ad_id in app.read(name), name
@@ -93,7 +103,8 @@ def main():
                   sha256=hashlib.sha256(apk.read_bytes()).hexdigest(), version_code=args.build_number,
                   certificate_sha256=certificate, modules=len(modules),
                   published_rive_bytes=len(animation), sound_assets=len(sounds),
-                  native_libraries_16kb=len(native), abis=3, test_ads=True, phone_tested=False)
+                  native_libraries_16kb=len(native), abis=3, test_ads=True, phone_tested=False,
+                  arena_url=network_url)
     (logs / "summary.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(json.dumps(report, indent=2))
 

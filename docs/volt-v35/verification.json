@@ -1,0 +1,363 @@
+{
+  "build": 35,
+  "version": "0.2.0",
+  "status": "source_and_apk_verified_before_publication",
+  "baseline_commit": "141dbe3e4690fa58348d4b6ae08385d630eb70ed",
+  "features": {
+    "volt_geometry": {
+      "shapes": 381,
+      "nodes": 511,
+      "unique_paths": 198,
+      "unique_materials": 173
+    },
+    "independent_new_mechanisms": {
+      "joint7": "counter-rotating core ring",
+      "joint10": "mechanical iris",
+      "joint11": "visor actuator",
+      "joint12": "left radiator louvers",
+      "joint13": "right radiator louvers"
+    },
+    "character_audio": {
+      "robot_voices": 32,
+      "new_original_wavs": 18,
+      "external_samples": false,
+      "total_bytes": 193954
+    }
+  },
+  "scope": {
+    "counts": {
+      "other_robot_portraits": 31,
+      "other_ability_rows": 31,
+      "other_artboards": 31,
+      "other_view_models": 31,
+      "unchanged_existing_audio": 28,
+      "new_volt_audio": 0,
+      "new_robot_audio": 18,
+      "unchanged_combat_files": 3
+    },
+    "existing_rive": {
+      "sha256": "4e01c982c53d7704e6dce14b62094bc74118cd53304df0975ce63a9a4b7cb8fd",
+      "bytes": 850270,
+      "unchanged": true
+    },
+    "combat_resolvers": {
+      "combat_rules.py": {
+        "sha256": "5b7982a91c47e5692ec8ad717e50ed2aad7273fb0fd5b2000506daaae74bdbb0",
+        "bytes": 20491,
+        "unchanged": true
+      },
+      "robot_arena.py": {
+        "sha256": "2ee815b4ef12d894952cdf699172b2c4f37ad0bac4ac60bc70c95bb13dc7daa5",
+        "bytes": 23335,
+        "unchanged": true
+      },
+      "armory.py": {
+        "sha256": "07e1d280432497420ad8dbce646c939f839987f2896b9d07266beae5ed4f5b8e",
+        "bytes": 17569,
+        "unchanged": true
+      }
+    }
+  },
+  "checks": {
+    "python": {
+      "total": 287,
+      "passed": 277,
+      "skipped": 10,
+      "skip_reason": "Optional local PostgreSQL not configured",
+      "seconds": 23.079
+    },
+    "audio_native_tests": {
+      "passed": 17
+    },
+    "assembly_cache_native_tests": {
+      "passed": 8
+    },
+    "geometry_native_tests": {
+      "passed": 5,
+      "silhouette_iou": 0.9950643355269619,
+      "foreground_rgb_mae": 5.286072095079069
+    },
+    "official_rive_verify": {
+      "passed": true,
+      "errors": 0,
+      "warnings": 0,
+      "compiled_riv_replaced": false
+    },
+    "native_integration": {
+      "passed": 141,
+      "failed": 0,
+      "serial": true,
+      "covers": "32 workshop voices, 31 preview attacks, battle-phase continuity, mute/context, Volt mechanisms, native controls, route transitions, 64 robot signature renders"
+    },
+    "desktop_paired_profile": {
+      "passed": true,
+      "scenarios": 4,
+      "windows": {
+        "before-workshop": 25,
+        "after-workshop": 26,
+        "before-combat": 25,
+        "after-combat": 25
+      },
+      "physical_android": false
+    },
+    "apk_package_and_signature": {
+      "apk": "C:\\Clicker\\build\\apk-game-v35\\clicker.apk",
+      "bytes": 177551626,
+      "sha256": "fb5e31a3454469eb1948795c26569850afeeedddef977415b7386c917e2106b6",
+      "version_code": 35,
+      "certificate_sha256": "67f16d1bdbaa503c69f514076d056a21a14b5c7e9db7e00b3b485491f9421e85",
+      "modules": 48,
+      "published_rive_bytes": 850270,
+      "sound_assets": 46,
+      "native_libraries_16kb": 128,
+      "abis": 3,
+      "test_ads": true,
+      "phone_tested": false,
+      "arena_url": "https://robo-workshop-arena.onrender.com"
+    },
+    "packaged_python_imports": {
+      "python": "3.14.7",
+      "apk_module_imports": 18,
+      "save_load": "passed",
+      "physical_android": false,
+      "arena_url": "https://robo-workshop-arena.onrender.com",
+      "public_https_checked": true
+    },
+    "main_game_pointer_check": {
+      "build": 35,
+      "main_packaged_game": false,
+      "main_game_source": true,
+      "robot": "volt",
+      "client": "Current main-game worker and compiled Flutter client, Chrome headless",
+      "floor_awards": 0,
+      "long_press_awards": 0,
+      "rapid_robot_taps": 5,
+      "recorded_taps": 5,
+      "coins_from_taps": 5,
+      "passive_coins_preserved": 19,
+      "automatic_feeding_preserved": true,
+      "isolated_data": "C:\\Clicker\\.cache\\interaction-v27\\packaged-input-v35\\data",
+      "real_player_save_opened": false,
+      "android_device": false
+    },
+    "public_release_download": {
+      "status": "performed_after_tag_creation",
+      "expected_sha256": "fb5e31a3454469eb1948795c26569850afeeedddef977415b7386c917e2106b6",
+      "expected_bytes": 177551626
+    },
+    "main_game_layouts": {
+      "passed": 9,
+      "widths": [
+        320,
+        390,
+        844
+      ]
+    },
+    "dart_analysis": {
+      "files": 6,
+      "issues": 0
+    },
+    "native_distinct_cases": 158,
+    "apk_scope_and_assets": {
+      "passed": true,
+      "verified_assets": 79,
+      "markers_per_abi": 9,
+      "abis": 3
+    }
+  },
+  "performance": {
+    "canvas_recording_cpu": {
+      "measurement": "Native Flutter test engine; Dart/Canvas command recording CPU only. No Android execution or FPS claim.",
+      "samples_per_mode": 360,
+      "warm_ms": 1.022,
+      "uncached_recording_ms": {
+        "p50": 0.416,
+        "p95": 0.66
+      },
+      "assembly_picture_recording_ms": {
+        "p50": 0.261,
+        "p95": 0.494
+      },
+      "cache": {
+        "sourceShapes": 381,
+        "paths": 198,
+        "materialsPerAccent": 173,
+        "accentVariants": 1,
+        "staticAssemblies": 34,
+        "staticShapes": 230,
+        "pictureAccentVariants": 1,
+        "assemblyPictures": 34,
+        "pictureBytes": 58304,
+        "pictureBudgetBytes": 2097152,
+        "maxAccentVariants": 8,
+        "maxAssembliesPerAccent": 64,
+        "recordedAssemblies": 34
+      },
+      "gpu_raster_improvement_verified": false
+    },
+    "desktop_profile": {
+      "before-workshop": {
+        "platform": "Windows Chrome headless / Flutter profile",
+        "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+        "samples_after_warmup": 25,
+        "median_unique_vsync_fps": 92.07675642216032,
+        "minimum_unique_vsync_fps": 59.33090691529142,
+        "median_raw_fps": 92.07675642216032,
+        "maximum_ui_p95_ms": 12.4,
+        "maximum_raster_p95_ms": 9.5,
+        "viewport": [
+          390,
+          844
+        ],
+        "flutter_errors": [],
+        "physical_android_tested": false,
+        "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+        "first_render": {
+          "python_first_render_ms": 137.6174000033643
+        },
+        "first_native_paint": {
+          "robot": "volt",
+          "enemy": "",
+          "renderer": "flutter",
+          "model_renderer": "flutter-canvas-articulated",
+          "rig_load_ms": 0,
+          "model_warm_ms": 3.2,
+          "since_session_ms": 421.6235000058077
+        },
+        "dpr": 3,
+        "capture": "volt-polish-v35-before-workshop"
+      },
+      "after-workshop": {
+        "platform": "Windows Chrome headless / Flutter profile",
+        "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+        "samples_after_warmup": 26,
+        "median_unique_vsync_fps": 86.82296971425512,
+        "minimum_unique_vsync_fps": 55.516678329834384,
+        "median_raw_fps": 86.82296971425512,
+        "maximum_ui_p95_ms": 12.2,
+        "maximum_raster_p95_ms": 15.2,
+        "viewport": [
+          390,
+          844
+        ],
+        "flutter_errors": [],
+        "physical_android_tested": false,
+        "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+        "first_render": {
+          "python_first_render_ms": 91.79299999959767
+        },
+        "first_native_paint": {
+          "robot": "volt",
+          "enemy": "",
+          "renderer": "flutter",
+          "model_renderer": "flutter-canvas-articulated",
+          "rig_load_ms": 0,
+          "model_warm_ms": 14.7,
+          "since_session_ms": 329.2243000032613
+        },
+        "dpr": 3,
+        "capture": "volt-polish-v35-after-workshop"
+      },
+      "before-combat": {
+        "platform": "Windows Chrome headless / Flutter profile",
+        "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+        "samples_after_warmup": 25,
+        "median_unique_vsync_fps": 99.86572675394427,
+        "minimum_unique_vsync_fps": 91.95579939726451,
+        "median_raw_fps": 99.86572675394427,
+        "maximum_ui_p95_ms": 9.299,
+        "maximum_raster_p95_ms": 5.699,
+        "viewport": [
+          844,
+          390
+        ],
+        "flutter_errors": [],
+        "physical_android_tested": false,
+        "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+        "first_render": {
+          "python_first_render_ms": 420.93909999675816
+        },
+        "first_native_paint": {
+          "robot": "volt",
+          "enemy": "spark",
+          "renderer": "rive",
+          "model_renderer": "flutter-canvas-articulated",
+          "rig_load_ms": 678.5,
+          "since_session_ms": 1383.2413999989512
+        },
+        "dpr": 2,
+        "capture": "volt-polish-v35-before-combat"
+      },
+      "after-combat": {
+        "platform": "Windows Chrome headless / Flutter profile",
+        "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+        "samples_after_warmup": 25,
+        "median_unique_vsync_fps": 103.10171547392133,
+        "minimum_unique_vsync_fps": 85.60535213294007,
+        "median_raw_fps": 103.10171547392133,
+        "maximum_ui_p95_ms": 8.2,
+        "maximum_raster_p95_ms": 9,
+        "viewport": [
+          844,
+          390
+        ],
+        "flutter_errors": [],
+        "physical_android_tested": false,
+        "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+        "first_render": {
+          "python_first_render_ms": 237.5474000000395
+        },
+        "first_native_paint": {
+          "robot": "volt",
+          "enemy": "spark",
+          "renderer": "rive",
+          "model_renderer": "flutter-canvas-articulated",
+          "rig_load_ms": 785.8,
+          "since_session_ms": 1350.8912999968743
+        },
+        "dpr": 2,
+        "capture": "volt-polish-v35-after-combat"
+      }
+    }
+  },
+  "physical_android_tested": false,
+  "physical_audio_auditioned": false,
+  "android_60_fps_measured": false,
+  "limitations": [
+    "No connected Android device; stability, thermal behavior, speaker playback and Android FPS remain unmeasured.",
+    "Canvas recording benchmark measures Dart CPU command recording, not GPU raster time or application FPS."
+  ],
+  "screenshots": {
+    "authored_native": "volt-authored-native.png",
+    "open": "volt-open.png",
+    "focus": "volt-focus.png",
+    "closed": "volt-closed.png"
+  },
+  "apk": null,
+  "github_release": null,
+  "runtime_sha256": {
+    "extensions/flet_rive/lib/flet_rive.dart": "f07c7cf423dd9e69176230c858a002cda1b0f10f1c34c741dc1b7ac62247511a",
+    "extensions/flet_rive/lib/src/extension.dart": "b889c129742d64fcace1d97037488f3d7551315221114fe768a135ae858a5fdd",
+    "extensions/flet_rive/lib/src/game_countdown.dart": "e9a3a06d497add6457f57c0c523134d41f9c5eac6c9971b980516b33b3b9cc32",
+    "extensions/flet_rive/lib/src/game_factory.dart": "ed83748db34f89ec6e1d04e46ef918cf5216f9bf113ac0366145747c4ec6b005",
+    "extensions/flet_rive/lib/src/game_scene.dart": "f6a3e6535dda3b10ce1465a25ce2c2b0184769a557bc0f26f391047614c79f69",
+    "extensions/flet_rive/lib/src/rive.dart": "2043b9292ce41538e8693f2ce38a346f2787fe93be260cbcea6a35ca93109c98",
+    "extensions/flet_rive/lib/src/robot_scene.dart": "ace54cc46145a869b64ad2f7aa44da729997813a8fa7197386a03993000dc55a",
+    "extensions/flet_rive/lib/src/robot/game_motion.dart": "bc5e69281d393a989fd8ee97d70cc67af8dd30f5168999c9ff2e34cb65003359",
+    "extensions/flet_rive/lib/src/robot/motion_model.dart": "cd3d5cade0608dd51163794688dbfe7ecdae4bc038b0dd78a7b620999f052ce5",
+    "extensions/flet_rive/lib/src/robot/rig_cache.dart": "ba7f8dfb28f5e9ffcf2c78fc86d60c911bbdc083a094f8fc53960f350bf8bdc4",
+    "extensions/flet_rive/lib/src/robot/robot_audio.dart": "44e779068aba0e0dca47aeda617d255f8ed2103fbe0851a45b67ccaa6e456ca5",
+    "extensions/flet_rive/lib/src/robot/robot_profiles.dart": "59286e89f309ccabfe7cc50f5e1926a34e872b1f79793c3ca91cf8d04e32a80e",
+    "extensions/flet_rive/lib/src/robot/scene_audio.dart": "9e99381baddf113cdfaaa2b236c14488e62b5ed618a5cef9086d8cdd34d52bd4",
+    "extensions/flet_rive/lib/src/robot/scene_loading.dart": "1f3f9f7867b18cc99625999404ff3fdcf87b9b395c9466f474e1b06cad7d145a",
+    "extensions/flet_rive/lib/src/robot/signature_motion.dart": "fce85ba3ca69b78d2bc94607c56d530c4f98edf008d0372de63c80dadb58754e",
+    "extensions/flet_rive/lib/src/robot/volt_geometry.dart": "c1419dc8de6116e044c0049946d78bfb28fff15823251b78563fdd6ece6fca48",
+    "extensions/flet_rive/lib/src/robot/volt_model.dart": "186bd14ee970278a23fc90cd2150b69b287d12ae1570b158d5e83ce2e7ed151b",
+    "extensions/flet_rive/lib/src/robot/volt_motion.dart": "c8aafc9c5ef7bcf9691d61b2509781154e3e0961cb563a90ce71497b8b19281a"
+  },
+  "release": {
+    "tag": "volt-v0.2.0-35",
+    "url": "https://github.com/499jdkd/Robo-Workshop-Steel-Arena/releases/tag/volt-v0.2.0-35",
+    "asset_name": "Robo-Workshop-Volt-v35.apk"
+  }
+}

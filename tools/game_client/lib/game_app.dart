@@ -1,19 +1,15 @@
 import 'package:flet/flet.dart';
 import 'package:flet_rive/flet_rive.dart' as robot;
 import 'package:flutter/material.dart';
-import 'package:rive/rive.dart' as rive;
 import 'frame_budget.dart';
 import 'profile_report.dart';
 
 Future<void> startGame() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await rive.RiveNative.init();
+  const configuredServer = String.fromEnvironment('CLICKER_SERVER');
   final server =
       Uri.base.queryParameters['server'] ??
-      const String.fromEnvironment(
-        'CLICKER_SERVER',
-        defaultValue: 'http://127.0.0.1:8550',
-      );
+      (configuredServer.isNotEmpty ? configuredServer : Uri.base.origin);
   if (const bool.fromEnvironment('RIVE_LOG_FPS')) {
     final previous = FlutterError.onError;
     FlutterError.onError = (details) {

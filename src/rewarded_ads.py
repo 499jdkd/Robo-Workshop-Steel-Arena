@@ -426,7 +426,20 @@ def RewardPanel(page, session, compact=False):
                     )
                 )
 
-        kinds = ("food",) if compact else ("food", "boost", "training", "incubator",'gold','container','order_speed','season_xp')
+        kinds = (
+            ("food",)
+            if compact
+            else (
+                "food",
+                "boost",
+                "training",
+                "incubator",
+                "gold",
+                "container",
+                "order_speed",
+                "season_xp",
+            )
+        )
         for kind in () if busy else kinds:
             offer = video_offer(state, kind, state.active_robot, session.clock())
             if not offer:

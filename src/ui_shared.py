@@ -15,9 +15,12 @@ EDGE = "#416B9D"
 
 def tint(color, white=0.9):
     color = color.lstrip("#")[-6:]
-    base=(12,28,51)
-    weight=.14+(1-white)*.65
-    return "#" + "".join(f"{round(int(color[i:i+2],16)*weight+base[j]*(1-weight)):02X}" for j,i in enumerate((0,2,4)))
+    base = (12, 28, 51)
+    weight = 0.14 + (1 - white) * 0.65
+    return "#" + "".join(
+        f"{round(int(color[i : i + 2], 16) * weight + base[j] * (1 - weight)):02X}"
+        for j, i in enumerate((0, 2, 4))
+    )
 
 
 def page_gradient(accent):
@@ -58,16 +61,24 @@ def use_game(session):
 
 def card(content, *, padding=16, bgcolor="white", **kwargs):
     if bgcolor in {"white", "#FFFFFF"}:
-        bgcolor=PANEL
-    elif bgcolor.startswith('#') and len(bgcolor)==7:
-        rgb=[int(bgcolor[i:i+2],16) for i in (1,3,5)]
-        if sum(rgb)>510:bgcolor=tint(bgcolor,.84)
+        bgcolor = PANEL
+    elif bgcolor.startswith("#") and len(bgcolor) == 7:
+        rgb = [int(bgcolor[i : i + 2], 16) for i in (1, 3, 5)]
+        if sum(rgb) > 510:
+            bgcolor = tint(bgcolor, 0.84)
     return ft.Container(
         content=content,
         bgcolor=bgcolor,
         border_radius=16,
-        border=kwargs.pop('border',ft.Border.all(1,EDGE)),
-        gradient=kwargs.pop('gradient',ft.LinearGradient(begin=ft.Alignment.TOP_LEFT,end=ft.Alignment.BOTTOM_RIGHT,colors=[bgcolor,"#10233E"])),
+        border=kwargs.pop("border", ft.Border.all(1, EDGE)),
+        gradient=kwargs.pop(
+            "gradient",
+            ft.LinearGradient(
+                begin=ft.Alignment.TOP_LEFT,
+                end=ft.Alignment.BOTTOM_RIGHT,
+                colors=[bgcolor, "#10233E"],
+            ),
+        ),
         padding=padding,
         shadow=kwargs.pop(
             "shadow",
@@ -78,19 +89,26 @@ def card(content, *, padding=16, bgcolor="white", **kwargs):
 
 
 def button_style(accent, *, secondary=False):
-    rgb=[int(accent.lstrip('#')[-6:][i:i+2],16) for i in (0,2,4)]
-    foreground='#102443' if sum(channel*weight for channel,weight in zip(rgb,(.2126,.7152,.0722)))>160 else '#FFFFFF'
+    rgb = [int(accent.lstrip("#")[-6:][i : i + 2], 16) for i in (0, 2, 4)]
+    foreground = (
+        "#102443"
+        if sum(
+            channel * weight for channel, weight in zip(rgb, (0.2126, 0.7152, 0.0722))
+        )
+        > 160
+        else "#FFFFFF"
+    )
     return ft.ButtonStyle(
         bgcolor=tint(accent, 0.91) if secondary else accent,
         color=INK if secondary else foreground,
         elevation=3 if not secondary else 1,
         shadow_color="#050E21",
         side=ft.BorderSide(1, "#588DBD" if secondary else "#A4D8FF"),
-        shape=ft.RoundedRectangleBorder(
-            radius=10
-        ),
+        shape=ft.RoundedRectangleBorder(radius=10),
         padding=ft.Padding.symmetric(horizontal=12, vertical=10),
-        text_style=ft.TextStyle(size=12,weight=ft.FontWeight.BOLD,font_family='Roboto'),
+        text_style=ft.TextStyle(
+            size=12, weight=ft.FontWeight.BOLD, font_family="Roboto"
+        ),
     )
 
 

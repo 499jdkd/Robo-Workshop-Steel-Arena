@@ -1,11 +1,13 @@
 @echo off
 setlocal
-pushd "%~dp0" || exit /b 1
-
-set "PYTHONUTF8=1"
-set "PYTHONIOENCODING=utf-8"
-
-uv run python -u src\main.py
-set "CLICKER_RUN_EXIT_CODE=%errorlevel%"
-popd
-exit /b %CLICKER_RUN_EXIT_CODE%
+cd /d "%~dp0"
+set PYTHONUTF8=1
+set PYTHONIOENCODING=utf-8
+where uv >nul 2>nul
+if not errorlevel 1 (
+    uv run python src\main.py
+) else (
+    .venv\Scripts\python.exe src\main.py
+)
+if errorlevel 1 pause
+endlocal

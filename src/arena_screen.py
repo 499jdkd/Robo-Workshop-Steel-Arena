@@ -113,233 +113,161 @@ def route_map(state):
     )
 
 
-def hints_tooltip(action):
-    return {
-        "attack": "Урон и +1 фокус; чередуй действия, чтобы не перегреваться",
-        "guard": "Снижает ответный урон и восстанавливает фокус",
-        "dodge": "1 фокус; избегает рывка и луча, но не энергокольца",
-        "charge": "+2 фокуса и усиление следующей атаки",
-    }.get(action, "")
-
-
 @ft.component
 def BattleHelp(session):
+    from combat_info import ACTION_TITLES
+
     opened, set_opened = ft.use_state(False)
-    battle = session.state.battle
-    special = SPECIALS.get(battle.get("robot_id", "spark"), SPECIALS["spark"])
+    step, set_step = ft.use_state(0)
+    answer, set_answer = ft.use_state("")
+    lessons = [
+        ("Энергия закончилась. Как продолжить бой?", ["charge", "special"], "charge",
+         "Фокус бесплатный: +6 энергии при восстановлении 3 и +2 фокуса. Щит тоже бесплатный: +3 энергии и +1 фокус."),
+        ("Соперник готовит сильный удар. Как прервать подготовку?", ["quick", "attack"], "quick",
+         "Быстрый удар прерывает подготовку. Обычный удар даёт больше урона, но не прерывает её."),
+        ("Соперник включил щит. Чем отключить его?", ["emp", "attack"], "emp",
+         "EMP — электромагнитный импульс. Он снимает щит и отключает его на 2 хода; изоляция сокращает эффект до 1 хода."),
+        ("Суперзаряд 100%, но энергии 1/12. Что делать?", ["ultimate", "guard"], "guard",
+         "Супер требует ещё 4 энергии. Щит восстановит 3: на следующем ходу будет 4/12. Фокус восстанавливает ещё больше, но делает тебя уязвимее."),
+    ]
+    question, choices, correct, explanation = lessons[step]
 
     async def show(_):
+        set_step(0)
+        set_answer("")
         set_opened(True)
 
     async def close(_):
         set_opened(False)
-        session.act("tutorial_done")
+
+    async def next_step(_):
+        if step + 1 == len(lessons):
+            session.act("tutorial_done")
+            set_opened(False)
+        else:
+            set_step(step + 1)
+            set_answer("")
+
+    def choose(action):
+        async def selected(_):
+            set_answer(action)
+        return selected
 
     ft.use_dialog(
         ft.AlertDialog(
             title=ft.Text("Как сражаться", size=20),
-            content=ft.Column(
-                [
-                    ft.Text(
-                        "Смотри намерение над кнопками: соперник заранее показывает следующий ответ.",
-                        size=13,
-                        color=INK,
-                    ),
-                    ft.Text(
-                        "Удар: урон и +1 фокус. Три удара подряд перегревают мотор.",
-                        size=12,
-                        color=INK,
-                    ),
-                    ft.Text(
-                        "Щит: снижает урон и даёт фокус. Уворот: 1 фокус, избегает рывка и луча.",
-                        size=12,
-                        color=INK,
-                    ),
-                    ft.Text(
-                        "Против энергокольца нужен щит. Фокус усиливает следующий удар.",
-                        size=12,
-                        color=INK,
-                    ),
-                    ft.Text(
-                        f"Твой навык — {special[0]}",
-                        size=14,
-                        color=session.state.accent,
-                        weight=ft.FontWeight.BOLD,
-                    ),
-                    ft.Text(
-                        special[1]
-                        + ". Требуется 2 фокуса; затем два промежуточных хода перезарядки.",
-                        size=12,
-                        color=INK,
-                    ),
-                    ft.Text(
-                        "Снаряд летит около секунды. Дождись ответа роботов перед следующим ходом.",
-                        size=11,
-                        color=MUTED,
-                    ),
-                ],
-                spacing=12,
-                tight=True,
-                width=300,
-                scroll=ft.ScrollMode.AUTO,
-            ),
-            actions=[ft.TextButton("Понятно", on_click=close)],
+            content=ft.Column([
+                ft.Text(f"Тренировка {step + 1} / {len(lessons)} · без расхода ресурсов", size=12, color=MUTED),
+                ft.ProgressBar(value=(step + 1) / len(lessons), color=GOLD),
+                ft.Text(question, size=17, color=INK, weight=ft.FontWeight.BOLD),
+                *[ft.Button(ACTION_TITLES[action], on_click=choose(action), height=50,
+                            style=button_style(session.state.accent), width=float("inf")) for action in choices],
+                *([ft.Text("Верно! " + explanation if answer == correct else "Попробуй другой приём. " + explanation,
+                           size=13, color=GREEN if answer == correct else GOLD)] if answer else []),
+                ft.Text("Энергия оплачивает приёмы. Фокус нужен навыку. Нагрев ослабляет повторные удары. Суперзаряд накапливается от действий и попаданий.", size=12, color=MUTED),
+            ], spacing=12, tight=True, width=310, scroll=ft.ScrollMode.AUTO),
+            actions=[ft.TextButton("Позже", on_click=close),
+                     ft.Button("В бой" if step == 3 else "Далее", on_click=next_step, disabled=answer != correct, height=48)],
             on_dismiss=close,
-        )
-        if opened
-        else None
+        ) if opened else None
     )
-    return ft.IconButton(
-        icon=ft.Icons.HELP_OUTLINE_ROUNDED,
-        tooltip="Как играть",
-        on_click=show,
-        key="arena-help",
-    )
+    return ft.IconButton(ft.Icons.HELP_OUTLINE_ROUNDED, tooltip="Пройти короткое обучение",
+                         on_click=show, key="arena-help", width=48, height=48)
+
+
+def battle_settings(session):
+    async def speed(_):
+        speeds = (1.0, 1.5, 2.0)
+        session.presentation(speed=speeds[(speeds.index(session.battle_speed) + 1) % len(speeds)])
+
+    async def effects(event):
+        session.presentation(reduced=event.control.value)
+
+    return ft.Row([
+        ft.TextButton(f"Скорость ×{session.battle_speed:g}", on_click=speed,
+                      icon=ft.Icons.SPEED_ROUNDED, height=48, key="battle-speed",
+                      disabled=session.arena_animating),
+        ft.Switch(label="Меньше эффектов", value=session.reduced_effects,
+                  on_change=effects, label_text_style=ft.TextStyle(size=11), key="battle-effects"),
+    ], spacing=5, wrap=True)
 
 
 def action_panel(session, *, wide=False):
+    from copy import deepcopy
+    from combat_rules import allowed, current_actor, fighter
+    from combat_info import action_control
+    from battle_ui import battle_action_error
+    from robot_abilities import ABILITIES
+    from robot_designs import DESIGNS
+
     battle, state = session.state.battle, session.state
     identity, turn = battle["id"], battle["turn"]
-    active = battle["result"] == "active"
-    busy = session.arena_animating
+    active, busy = battle["result"] == "active", session.arena_animating
+    modern = battle.get("rules_version") == 3
+    if modern:
+        actor = current_actor(battle)
+        target = deepcopy(battle["combatants"]["b"])
+        intent = enemy_intent(battle)
+        target["guard"] = intent == "guard" and not target["emp"]
+        target["preparing"] = intent == "windup"
+    else:
+        from armory import equipped_weapon
+        gear, _ = equipped_weapon(battle)
+        actor = fighter(battle["robot_id"], gear.id if gear else DESIGNS[battle["robot_id"]]["weapon"])
+        actor.update(energy=battle.get("battery", 12), focus=battle.get("focus", 2),
+                     heat=battle.get("heat", 0), cooldown=battle.get("cooldown", 0),
+                     dodge_cooldown=battle.get("dodge_cooldown", 0))
+        target = None
+    choices = ["attack", "guard", "special", "dodge", "charge"]
+    if modern:
+        choices += [a for a in ("quick", "pierce", "burst", "emp", "ultimate") if a in allowed(actor)]
+    if actor["energy"] < 2 or actor.get("stun"):
+        choices = ["charge", "guard"] + [a for a in choices if a not in {"charge", "guard"}]
+    blocked = "Роботы выполняют ход…" if busy else "Бой завершён" if not active else ""
     buttons = []
-    choices = [
-        ("attack", "Удар", ft.Icons.BOLT_ROUNDED),
-        ("guard", "Щит", ft.Icons.SHIELD_ROUNDED),
-        ("special", "Навык", ft.Icons.AUTO_AWESOME_ROUNDED),
-        ("dodge", "Уворот", ft.Icons.DOUBLE_ARROW_ROUNDED),
-        ("charge", "Фокус", ft.Icons.CENTER_FOCUS_STRONG_ROUNDED),
-    ]
-    if battle.get('rules_version')==3:
-        from combat_rules import allowed,current_actor
-        actor=current_actor(battle)
-        choices += [(a,label,icon) for a,label,icon in [
-            ('quick','Быстрый',ft.Icons.SPEED_ROUNDED),('pierce','Пробитие',ft.Icons.GPS_FIXED_ROUNDED),
-            ('burst','Серия',ft.Icons.GRAIN_ROUNDED),('emp','EMP',ft.Icons.WIFI_OFF_ROUNDED),('ultimate','Супер',ft.Icons.AUTO_AWESOME_ROUNDED)] if a in allowed(actor)]
-    for action,label,icon in choices:
-
+    for action in choices:
         async def act(_, move=action, battle_id=identity, expected=turn):
             await animate_turn(session, move, battle_id, expected)
+        control = action_control(actor, action, act, state.accent, target=target,
+                                 blocked=blocked or battle_action_error(battle, action))
+        buttons.append(control)
 
-        unavailable = not active or busy
-        if battle.get('rules_version')==3:
-            from combat_rules import action_error,current_actor
-            unavailable |= bool(action_error(current_actor(battle),action))
-        if action == "special":
-            unavailable |= battle["cooldown"] > 0 or battle.get("focus", 2) < 2
-        if action == "dodge":
-            unavailable |= (
-                battle.get("dodge_cooldown", 0) > 0 or battle.get("focus", 2) < 1
-            )
-        style = button_style(state.accent, secondary=action in {"guard", "charge"})
-        style.text_style = ft.TextStyle(
-            size=12, weight=ft.FontWeight.W_600, font_family="Roboto"
-        )
-        style.icon_size = 18
-        style.padding = ft.Padding.symmetric(horizontal=8, vertical=11)
-        narrow = (getattr(session.page, "width", None) or 420) < 360
-        buttons.append(
-            ft.Container(
-                ft.Button(
-                    label,
-                    icon=icon,
-                    key=f"arena-{action}",
-                    on_click=act,
-                    disabled=unavailable,
-                    tooltip=SPECIALS[battle["robot_id"]][1]
-                    if action == "special"
-                    else hints_tooltip(action),
-                    style=style,
-                    width=float("inf"),
-                ),
-                col=6 if wide or narrow else 4,
-            )
-        )
-    intent = enemy_intent(battle)
-    text = INTENT_NAMES[intent]
-    if busy:
-        text = "Роботы выполняют ход…"
-    hints = {
-        "attack": "Удар восстанавливает 1 фокус",
-        "guard": "Щит снизит сильный ответ",
-        "special": "Сейчас можно использовать приём",
-        "dodge": "Уклонение поможет избежать атаки",
-        "charge": "В защитную стойку лучше не бить",
-        'quick':'Быстрый удар прервёт подготовку',
-        'pierce':'Пробитие разрушит стойку',
-        'burst':'Серия осложнит уклонение',
-        'emp':'EMP отключит энергетический щит',
-        'ultimate':'Суперспособность полностью заряжена',
-    }
+    def meter(label, value, maximum, color, hint):
+        return ft.Container(ft.Column([
+            ft.Text(f"{label} {value}/{maximum}", size=12, color=color, weight=ft.FontWeight.BOLD),
+            ft.ProgressBar(value=value / max(1, maximum), color=color, bgcolor="#253A56", height=5, border_radius=4),
+            ft.Text(hint, size=10, color=MUTED),
+        ], spacing=4), col=6)
+
+    ability = ABILITIES[battle["robot_id"]]
     controls = [
-        ft.Row(
-            [
-                ft.Icon(ft.Icons.VISIBILITY_ROUNDED, color=state.accent, size=20),
-                ft.Text(
-                    text, size=12, color=INK, weight=ft.FontWeight.BOLD, expand=True
-                ),
-                BattleHelp(session=session),
-            ],
-            spacing=7,
-        ),
-        ft.Row(
-            [
-                ft.Text("Фокус", size=10, color=MUTED),
-                *(
-                    [
-                        ft.Text(
-                            f"⚡ {battle.get('battery', 12)}/12",
-                            size=10,
-                            color=state.accent,
-                        )
-                    ]
-                    if battle.get("equipment")
-                    else []
-                ),
-                *[
-                    ft.Icon(
-                        ft.Icons.CIRCLE,
-                        size=12,
-                        color=state.accent if i < battle.get("focus", 2) else "#DCE3EF",
-                    )
-                    for i in range(3)
-                ],
-                ft.Text(
-                    "Перегрев!"
-                    if battle.get("heat", 0) >= 2
-                    else f"Нагрев {battle.get('heat', 0)}/3",
-                    size=10,
-                    color="#C66C55" if battle.get("heat", 0) >= 2 else MUTED,
-                    expand=True,
-                    text_align=ft.TextAlign.RIGHT,
-                ),
-            ],
-            spacing=5,
-        ),
-        ft.ResponsiveRow(buttons, spacing=6, run_spacing=7),
-        *([ft.Text(f'Суперспособность: {battle.get("super_charge",0)}% · Энергия {battle.get("battery",12)}/{battle.get("max_battery",12)}',color=GOLD,size=11),ft.ProgressBar(value=battle.get('super_charge',0)/100,color=GOLD,bgcolor='#294260',height=7,border_radius=4)] if battle.get('rules_version')==3 else []),
-        ft.Text(
-            f"{SPECIALS[battle['robot_id']][0]} · "
-            + (
-                f"готов через {battle['cooldown']} хода"
-                if battle["cooldown"]
-                else "2 фокуса"
-            ),
-            size=10,
-            color=state.accent,
-        ),
-        ft.Text(
-            hints[suggested_action(battle)]
-            if battle["stage"] < 3
-            else "Чередуй действия, учитывай стихию и намерение соперника",
-            size=10,
-            color=MUTED,
-        ),
-        ft.Text(SPECIALS[battle["robot_id"]][1], size=10, color=MUTED),
+        ft.Row([
+            ft.Icon(ft.Icons.VISIBILITY_ROUNDED, color=state.accent, size=22),
+            ft.Text(blocked or INTENT_NAMES[enemy_intent(battle)], size=13, color=INK,
+                    weight=ft.FontWeight.BOLD, expand=True),
+            BattleHelp(session=session),
+        ], spacing=7),
+        ft.ResponsiveRow([
+            meter("Энергия", actor["energy"], actor["max_energy"], "#74DFFF", "Расход на приёмы"),
+            meter("Фокус", actor["focus"], 3, "#C3A7FF", "Навык требует 2"),
+            meter("Нагрев", actor["heat"], 3, "#FFAF78", "Щит и фокус охлаждают"),
+            meter("Супер", actor["super_charge"], 100, GOLD, "Нужно 100% и 4 энергии"),
+        ], spacing=9, run_spacing=9),
     ]
-    return card(
-        ft.Column(controls, spacing=9), padding=12, bgcolor=tint(state.accent, 0.97)
-    )
+    if modern and actor["energy"] < 2 and active and not busy:
+        controls.append(ft.Text(f"Мало энергии. Фокус: +{min(actor['max_energy']-actor['energy'], actor['regen']+3)} энергии. Щит: +{min(actor['max_energy']-actor['energy'], actor['regen'])} энергии. Оба действия бесплатны.", color=GREEN, size=12))
+    if actor.get("stun"):
+        controls.append(ft.Text("Робот оглушён: выбери бесплатный щит или фокус, чтобы пропустить этот ход.", color=GOLD, size=12))
+    if actor["heat"] >= 2:
+        controls.append(ft.Text("Нагрев ослабит следующий повторный удар. Щит или фокус полностью охладят корпус.", color="#FFB378", size=12))
+    controls += [
+        ft.ResponsiveRow(buttons, spacing=7, run_spacing=9),
+        ft.Text("Супер · " + ability.title, size=13, color=GOLD, weight=ft.FontWeight.BOLD),
+        ft.Text(ability.effect, size=12, color=MUTED),
+        ft.Text("Удерживай кнопку для подробностей: эффект, требования, перезарядка и контрприём. Урон примерный, без случайного критического попадания.", size=11, color=MUTED),
+        battle_settings(session),
+    ]
+    return card(ft.Column(controls, spacing=10), padding=12, bgcolor=tint(state.accent, 0.97))
 
 
 @ft.component
@@ -534,13 +462,23 @@ def ArenaBattles(page, device_id, session=None, on_home=None):
             )
         )
     controls.append(ft.Row(choices, spacing=8, scroll=ft.ScrollMode.AUTO))
-    preview = new_battle(selected, state.robot_levels[selected], state.arena_stage + (state.tournament.get("wins",0) if state.tournament.get("active") else 0), 0)
+    preview = new_battle(
+        selected,
+        state.robot_levels[selected],
+        state.arena_stage
+        + (state.tournament.get("wins", 0) if state.tournament.get("active") else 0),
+        0,
+    )
     from armory import equip_battle
 
-    equip_battle(state,preview)
+    equip_battle(state, preview)
     controls.append(battle_scene(page, session, preview, preview=True))
-    enemy = enemy_for(preview['stage'])
-    enemy.update(health=preview['enemy_max_hp'],attack=preview['enemy_attack'],reward=preview['reward'])
+    enemy = enemy_for(preview["stage"])
+    enemy.update(
+        health=preview["enemy_max_hp"],
+        attack=preview["enemy_attack"],
+        reward=preview["reward"],
+    )
     affinity = element_multiplier(selected, enemy["robot_id"])
     health, attack = robot_stats(selected, state.robot_levels[selected])
     controls.append(
@@ -610,6 +548,25 @@ def ArenaBattles(page, device_id, session=None, on_home=None):
 
 
 @ft.component
+def RankingScreen(page, session):
+    from game_ui import tabs
+
+    selected, set_selected = ft.use_state(0)
+    return ft.Column(
+        [
+            tabs(["Рейтинговые бои", "Мастерские"], selected, set_selected),
+            OnlineScreen(page=page, session=session, ranking=True)
+            if selected == 0
+            else LeaderboardScreen(
+                page=page, device_id=session.device_id, session=session
+            ),
+        ],
+        expand=True,
+        spacing=9,
+    )
+
+
+@ft.component
 def ArenaScreen(page, device_id, session=None, on_home=None):
     session = session or preview_session(page, device_id)
     state = use_game(session)
@@ -632,41 +589,31 @@ def ArenaScreen(page, device_id, session=None, on_home=None):
     body = (
         ArenaBattles(page=page, device_id=device_id, session=session, on_home=on_home)
         if tab == 0
-        else LeaderboardScreen(page=page, device_id=device_id, session=session)
+        else RankingScreen(page=page, session=session)
         if tab == 1
         else OnlineScreen(page=page, session=session, clans=tab == 3)
     )
+
+    def arena_tab(label, index, handler, key):
+        style = button_style(state.accent, secondary=tab != index)
+        style.padding = ft.Padding.symmetric(horizontal=6, vertical=10)
+        return ft.Button(
+            ft.Text(label, size=12, weight=ft.FontWeight.BOLD, no_wrap=True),
+            on_click=handler,
+            key=key,
+            height=48,
+            style=style,
+            expand=True,
+        )
+
     return ft.Column(
         [
             ft.Row(
                 [
-                    ft.Button(
-                        "Арены",
-                        on_click=battles,
-                        icon=ft.Icons.SPORTS_MARTIAL_ARTS_ROUNDED,
-                        style=button_style(state.accent, secondary=tab != 0),
-                        expand=True,
-                    ),
-                    ft.Button(
-                        "Рейтинг",
-                        on_click=ranking,
-                        style=button_style(state.accent, secondary=tab != 1),
-                        expand=True,
-                    ),
-                    ft.Button(
-                        "PvP",
-                        on_click=online,
-                        key="pvp-tab",
-                        style=button_style(state.accent, secondary=tab != 2),
-                        expand=True,
-                    ),
-                    ft.Button(
-                        "Кланы",
-                        on_click=clans,
-                        key="clans-tab",
-                        style=button_style(state.accent, secondary=tab != 3),
-                        expand=True,
-                    ),
+                    arena_tab("Бои", 0, battles, "arena-tab-battles"),
+                    arena_tab("Рейтинг", 1, ranking, "arena-tab-ranking"),
+                    arena_tab("PvP", 2, online, "pvp-tab"),
+                    arena_tab("Кланы", 3, clans, "clans-tab"),
                 ],
                 spacing=6,
             ),
