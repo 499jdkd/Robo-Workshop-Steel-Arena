@@ -1,5 +1,22 @@
 """Render the game first; restore identity and cloud state in background tasks."""
 
+# Editors may run this file with system Python instead of the project environment.
+# Switch before importing optional Flet extensions; packaged apps keep their runtime.
+if __name__ == "__main__":
+    import importlib.util
+    import os
+    from pathlib import Path
+    import sys
+
+    if sys.platform == "win32" and not getattr(sys, "frozen", False):
+        project_python = Path(__file__).resolve().parents[1] / ".venv/Scripts/python.exe"
+        if (
+            project_python.is_file()
+            and Path(sys.executable).resolve() != project_python.resolve()
+            and importlib.util.find_spec("flet_ads") is None
+        ):
+            os.execv(str(project_python), [str(project_python), str(Path(__file__).resolve()), *sys.argv[1:]])
+
 import flet as ft
 from importlib import import_module
 
