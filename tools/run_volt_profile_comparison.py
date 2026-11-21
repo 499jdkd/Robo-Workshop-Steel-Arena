@@ -30,7 +30,7 @@ def main():
     parser.add_argument('--before-client', type=Path, default=ROOT / '.cache/volt-refinement/before-profile-client')
     parser.add_argument('--after-client', type=Path, default=ROOT / '.cache/volt-refinement/after-profile-client')
     parser.add_argument('--revision', choices=['all','before','after'], default='all')
-    parser.add_argument('--scenarios', nargs='+', choices=['workshop','combat','ultimate'], default=['workshop','combat'])
+    parser.add_argument('--scenarios', nargs='+', choices=['workshop','combat','ultimate','skill','shield'], default=['workshop','combat'])
     args = parser.parse_args()
     output = args.out.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -39,6 +39,8 @@ def main():
         ("before", "workshop"), ("after", "workshop"),
         ("before", "combat"), ("after", "combat"),
         ("before", "ultimate"), ("after", "ultimate"),
+        ("before", "skill"), ("after", "skill"),
+        ("before", "shield"), ("after", "shield"),
     )):
         if args.revision != 'all' and revision != args.revision:
             continue
@@ -51,6 +53,8 @@ def main():
         metrics = folder / "frames.jsonl"
         source = args.baseline_source.resolve() if revision == "before" else ROOT / "src"
         client = (args.before_client if revision == 'before' else args.after_client).resolve()
+        showcase = {'ultimate': 'ultimate', 'skill': 'special', 'shield': 'guard'}.get(scenario)
+        mode = 'robot' if showcase else 'battle' if scenario == 'combat' else 'workshop'
         assert (client / "main.dart.js").is_file(), client
         env = dict(os.environ, PYTHONUTF8="1")
         children, streams = [], []
@@ -58,8 +62,8 @@ def main():
             for label, command in [
                 ("metrics", python("collect_volt_metrics.py", "--out", metrics)),
                 ("server", python("profile_interactive_game.py", "--source", source,
-                                  "--out", folder, "--port", port, "--mode", "battle" if scenario == "combat" else "robot" if scenario == "ultimate" else "workshop",
-                                  "--robot", "volt", "--silent", *(['--showcase-action','ultimate'] if scenario == 'ultimate' else []))),
+                                  "--out", folder, "--port", port, "--mode", mode,
+                                  "--robot", "volt", "--silent", *(['--showcase-action', showcase] if showcase else []))),
             ]:
                 stream = (folder / f"{label}.log").open("w", encoding="utf-8")
                 streams.append(stream)

@@ -701,7 +701,7 @@ void paintVoltMotionEchoes(
   }
 }
 
-/// At most 8 bolts Р“вЂ” 12 segments plus bounded beam/orb paths; no extra timers,
+/// At most 8 bolts of 12 segments plus bounded beam/orb paths; no extra timers,
 /// saveLayer or blur
 /// filters are allocated. Reduced effects keep the discharge readable with
 /// fewer branches and no screen wash, idle sparks or smoke.
@@ -864,7 +864,7 @@ void paintVoltEffects(
     if (storm || skill) {
       bolt(left, crown, frame.charge, 0, width: storm ? 6.5 : 2.8, bow: 12);
       bolt(right, crown, frame.charge, 1, width: storm ? 6.5 : 2.8, bow: 12);
-      energy.capacitor(crown, frame.charge, storm: storm);
+      if (!skill) energy.capacitor(crown, frame.charge, storm: storm);
     } else {
       bolt(left, right, frame.charge * .7, 0, width: 2.4);
     }
@@ -882,6 +882,7 @@ void paintVoltEffects(
       }
     }
   }
+  if (skill) energy.skillLens(crown, frame.charge, frame.discharge);
   if (frame.action == 'attack' || frame.action == 'quick') {
     energy.muzzle(
       right,
@@ -908,13 +909,17 @@ void paintVoltEffects(
         frame.discharge * _ramp(t, .4, .48),
       );
     } else if (storm || skill) {
-      energy.beam(
-        crown,
-        target,
-        storm ? VoltStorm(t).extension : _ramp(t, .46, .89),
-        frame.discharge,
-        storm: storm,
-      );
+      if (skill) {
+        energy.skillBeam(crown, target, _ramp(t, .46, .76), frame.discharge);
+      } else {
+        energy.beam(
+          crown,
+          target,
+          storm ? VoltStorm(t).extension : _ramp(t, .46, .89),
+          frame.discharge,
+          storm: storm,
+        );
+      }
       bolt(
         left,
         crown,

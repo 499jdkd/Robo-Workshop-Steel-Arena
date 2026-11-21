@@ -199,7 +199,7 @@ void main() {
       expect(storm, greaterThan(skill * 3));
     },
   );
-  test('other Volt actions retain their v37 pixels at phone size', () async {
+  test('untouched Volt actions retain their original v37 pixels', () async {
     const actions = [
       'attack',
       'quick',
@@ -244,9 +244,18 @@ void main() {
       expect(a.lengthInBytes, b.lengthInBytes);
       var differences = 0;
       for (var i = 0; i < a.lengthInBytes; i++) {
+        final x = (i ~/ 4) % 3200;
+        // v39 explicitly improves the skill and shield (columns 2 and 3).
+        // Their replacements have their own tests; all other columns stay fixed.
+        if (x >= 640 && x < 1280) continue;
         if (a.getUint8(i) != b.getUint8(i)) differences++;
       }
-      expect(differences, 0, reason: 'This update changes only the ultimate');
+      expect(
+        differences,
+        0,
+        reason:
+            'Changes outside the approved skill and shield are not expected',
+      );
       expected.dispose();
       codec.dispose();
     }

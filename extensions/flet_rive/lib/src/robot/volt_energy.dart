@@ -194,6 +194,114 @@ class VoltEnergyPainter {
     );
   }
 
+  /// The skill builds a rotating focusing lens; the ultimate keeps its
+  /// separate spherical reactor and its existing rendering unchanged.
+  void skillLens(Offset center, double charge, double release) {
+    final strength = unit(charge + release * .6);
+    if (strength < .02) return;
+    final radius = 12 + 20 * charge;
+    disc(center, radius * 1.45, blue, strength * .22);
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(t * 5);
+    final diamond = Path()
+      ..moveTo(0, -radius * scale)
+      ..lineTo(radius * .68 * scale, 0)
+      ..lineTo(0, radius * scale)
+      ..lineTo(-radius * .68 * scale, 0)
+      ..close();
+    canvas.drawPath(
+      diamond,
+      paint
+        ..style = PaintingStyle.fill
+        ..color = cyan.withValues(alpha: strength * .55),
+    );
+    stroke(diamond, 3.2, white, strength);
+    for (var i = 0; i < 4; i++) {
+      canvas.save();
+      canvas.rotate(i * math.pi / 2);
+      final open = release * 7;
+      final plate = Path()
+        ..moveTo(-12 * scale, -(radius + 5 + open) * scale)
+        ..lineTo(0, -(radius + 12 + open) * scale)
+        ..lineTo(12 * scale, -(radius + 5 + open) * scale);
+      stroke(plate, 4.2, cyan, strength * .9);
+      stroke(plate, 1.4, gold, strength);
+      canvas.restore();
+    }
+    ring(
+      Offset.zero,
+      radius * 1.12,
+      strength * .9,
+      squash: .62,
+      width: 2.6,
+      color: gold,
+    );
+    canvas.restore();
+    disc(center, 4.5 + 5 * charge, white, strength);
+    for (final side in [-1, 1]) {
+      final angle = t * 12 + side * math.pi / 2;
+      final position =
+          center +
+          Offset(math.cos(angle), math.sin(angle) * .65) * (radius + 7) * scale;
+      disc(position, 4.2, cyan, strength);
+      disc(position, 2, white, strength);
+    }
+  }
+
+  /// Two braided electrical rails with travelling rings distinguish the
+  /// channelled skill from a compact pulse and the ultimate's thick beam.
+  void skillBeam(
+    Offset from,
+    Offset target,
+    double extension,
+    double strength,
+  ) {
+    if (strength < .02) return;
+    final end = Offset.lerp(from, target, unit(extension))!;
+    final delta = end - from;
+    if (delta.distance < .1) return;
+    final normal = Offset(-delta.dy, delta.dx) / delta.distance;
+    line(from, end, 32, blue, strength * .22);
+    line(from, end, 11, const Color(0xFF073E80), strength * .65);
+    line(from, end, 3.4, white, strength * .8);
+    for (final side in [-1.0, 1.0]) {
+      final rail = Path()..moveTo(from.dx, from.dy);
+      for (var i = 1; i <= 16; i++) {
+        final u = i / 16;
+        final point =
+            Offset.lerp(from, end, u)! +
+            normal *
+                side *
+                (7 + 5 * math.sin(u * math.pi * 5 - t * 36)) *
+                math.sin(u * math.pi) *
+                scale;
+        rail.lineTo(point.dx, point.dy);
+      }
+      stroke(rail, 8, blue, strength * .4);
+      stroke(rail, 4.8, cyan, strength);
+      stroke(rail, 1.7, white, strength);
+    }
+    for (var i = 0; i < (reduced ? 1 : 3); i++) {
+      final phase = (t * 3.6 + i / 3) % 1;
+      final center = Offset.lerp(from, end, phase)!;
+      canvas.save();
+      canvas.translate(center.dx, center.dy);
+      canvas.rotate(math.atan2(delta.dy, delta.dx) + math.pi / 2);
+      ring(
+        Offset.zero,
+        12,
+        strength * math.sin(phase * math.pi),
+        squash: .4,
+        width: 2.6,
+        color: gold,
+      );
+      canvas.restore();
+    }
+    disc(end, 13, cyan, strength * .8);
+    disc(end, 6, white, strength);
+  }
+
   void muzzle(Offset point, double load, double release, double facing) {
     if (load + release < .02) return;
     for (var i = 0; i < 3; i++) {
@@ -357,10 +465,40 @@ class VoltEnergyPainter {
       shell,
       paint
         ..style = PaintingStyle.fill
-        ..color = blue.withValues(alpha: (.12 + .1 * hit) * strength),
+        ..color = blue.withValues(alpha: (.19 + .1 * hit) * strength),
     );
-    stroke(shell, 10 + 6 * hit, cyan, strength * (.2 + .16 * hit));
-    stroke(shell, 3.8 + 2 * hit, hit > .3 ? white : cyan, strength * .94);
+    stroke(shell, 15 + 6 * hit, blue, strength * .42);
+    stroke(shell, 9 + 4 * hit, const Color(0xFF064F94), strength * .8);
+    stroke(shell, 5.7 + 2 * hit, cyan, strength);
+    stroke(shell, 2 + 1.5 * hit, white, strength * .95);
+    // A broad luminous ribbon inside the field stays visible even with
+    // reduced effects. Keep it below the visor so the face remains readable.
+    canvas.save();
+    canvas.clipPath(shell);
+    final bandY = center.dy + (28 + 17 * math.sin(t * math.pi * 1.6)) * scale;
+    final band = Path()
+      ..moveTo(center.dx - radius * scale, bandY)
+      ..quadraticBezierTo(
+        center.dx,
+        bandY - (24 + hit * 10) * scale,
+        center.dx + radius * scale,
+        bandY,
+      );
+    stroke(band, 18, blue, strength * .4);
+    stroke(band, 8.5, cyan, strength * .82);
+    stroke(band, 2.4, white, strength * .97);
+    if (!reduced) {
+      final lower = Path()
+        ..moveTo(center.dx - radius * scale, bandY + 13 * scale)
+        ..quadraticBezierTo(
+          center.dx,
+          bandY - 5 * scale,
+          center.dx + radius * scale,
+          bandY + 13 * scale,
+        );
+      stroke(lower, 1.8, cyan, strength * .7);
+    }
+    canvas.restore();
     if (!reduced) {
       canvas.save();
       canvas.clipPath(shell);

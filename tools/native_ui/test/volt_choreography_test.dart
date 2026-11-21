@@ -113,7 +113,8 @@ void main() {
         (dash.pose.extra['voltLegLY']! - dash.pose.extra['voltLegRY']!).abs(),
         greaterThan(10),
       );
-      expect(skill.pose.armL, greaterThan(1.5));
+      expect(skill.pose.armL, lessThan(-2.2));
+      expect(skill.pose.armR, greaterThan(2.2));
       expect(guard.pose.foreR, greaterThan(1));
       expect(storm.pose.armL, greaterThan(2));
       expect(storm.pose.y, lessThan(-65));

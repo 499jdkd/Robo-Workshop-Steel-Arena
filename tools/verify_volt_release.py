@@ -2,7 +2,7 @@
 
 These are static source/package checks, not Android execution or FPS tests.
 Builds before v35 use the snapshot taken before the Volt task; v35 uses the
-v34 snapshot, v36 uses v35, v37 uses v36 and v38 uses v37.
+v34 snapshot, v36 uses v35, v37 uses v36, v38 uses v37 and v39 uses v38.
 --baseline selects another snapshot. Animation-only builds preserve Volt's art.
 Existing audio and the other 31 robot visuals remain byte/structure checked.
 """
@@ -25,6 +25,7 @@ POLISH_BASELINE = ROOT / ".cache/volt-polish-v35/baseline"
 MOTION_BASELINE = ROOT / ".cache/volt-motion-v36/baseline"
 READABILITY_BASELINE = ROOT / ".cache/volt-readability-v37/baseline"
 STORM_BASELINE = ROOT / ".cache/volt-super-v38/baseline"
+SKILL_SHIELD_BASELINE = ROOT / ".cache/volt-skill-shield-v39/baseline"
 MUSIC_SOUNDS = ('music_workshop.ogg','music_arena.ogg','music_victory.ogg')
 ABIS = ("arm64-v8a", "armeabi-v7a", "x86_64")
 MARKERS = ("flutter-canvas-articulated", "voltPower", "volt_pulse", "volt_charge", "volt_storm", "volt_shutdown")
@@ -249,7 +250,7 @@ def main():
     try:
         apk = ROOT / f"build/apk-game-v{args.build_number}/clicker.apk"
         require(apk.is_file(), "Final APK is not ready")
-        baseline = args.baseline or (STORM_BASELINE if args.build_number >= 38 else READABILITY_BASELINE if args.build_number >= 37 else MOTION_BASELINE if args.build_number >= 36 else POLISH_BASELINE if args.build_number >= 35 else BASELINE)
+        baseline = args.baseline or (SKILL_SHIELD_BASELINE if args.build_number >= 39 else STORM_BASELINE if args.build_number >= 38 else READABILITY_BASELINE if args.build_number >= 37 else MOTION_BASELINE if args.build_number >= 36 else POLISH_BASELINE if args.build_number >= 35 else BASELINE)
         report["scope"] = verify_scope(baseline=baseline, character_audio=args.build_number >= 35, application_music=args.build_number >= 36, animation_only=args.build_number >= 38)
         report["package"] = verify_package(apk, report["scope"])
         report["status"] = "passed"
