@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'game_motion.dart';
 import 'volt_choreography.dart';
 import 'volt_energy.dart';
+import 'volt_storm.dart';
 
 /// Volt is animated from semantic actions on the local Flutter clock. All
 /// values are sampled from absolute time, so a dropped frame cannot accumulate
@@ -229,21 +230,22 @@ VoltFrame applyVoltPose(
       p.eyeY = 1 - .4 * connect;
       p.smile = 1;
     case 'ultimate':
+      final storm = VoltStorm(t);
       final flight = _hold(t, .1, .34, .74, 1);
       final open = _hold(t, .17, .44, .76, .99);
       p.mode = t < .62 ? 4 : 2;
-      f['joint2'] = 1.12 * open;
-      f['joint3'] = -1.12 * open;
-      f['joint4'] = clock * .35 + 7 * t * open;
-      f['joint5'] = -.7 * open;
-      f['joint6'] = .7 * open;
+      f['joint2'] = 1.35 * open;
+      f['joint3'] = -1.35 * open;
+      f['joint4'] = clock * .35 + 13 * t * open;
+      f['joint5'] = -.85 * open;
+      f['joint6'] = .85 * open;
       f['jet'] = 1 + .8 * flight;
-      charge = _hold(t, .12, .57, .62, .78);
-      discharge = _hold(t, .62, .65, .91, 1);
+      charge = storm.charge;
+      discharge = storm.discharge;
       light += .9 * open;
       core += .9 * charge;
       wave = t > .88 && t < 1 ? _ring(t, .88, 1) : 0;
-      flash = pulse(t, .62, .72);
+      flash = storm.ignition;
       sparks = open;
       p.focus = open;
       p.smile = 1 - open;
@@ -399,7 +401,12 @@ VoltFrame applyVoltPose(
       {'attack', 'quick', 'special', 'ultimate', 'playful'}.contains(action)
       ? unit(math.max(charge, discharge))
       : 0.0;
-  f['voltEmitterTravel'] = -6 - 12 * emitter;
+  f['voltEmitterTravel'] = -6 - (action == 'ultimate' ? 18 : 12) * emitter;
+  if (action == 'ultimate') {
+    final pressure = VoltStorm(t).pressure;
+    f['joint0'] = f['joint0']! + .025 * pressure * math.sin(clock * 43);
+    f['joint1'] = f['joint1']! - .025 * pressure * math.sin(clock * 43 + .4);
+  }
   f['voltEmitterGlow'] = emitter * power;
   f['voltEmitterAimR'] =
       (action == 'attack'
@@ -453,9 +460,11 @@ VoltFrame applyVoltPose(
     sparks: sparks,
     power: power,
     shieldHit: hit,
-    camera: action == 'ultimate' ? unit(discharge * .5 + flash * .5) : hit * .2,
+    camera: action == 'ultimate'
+        ? unit(discharge * .8 + flash * .75 + VoltStorm(t).arrival * .65)
+        : hit * .2,
     cameraZoom: action == 'ultimate' ? unit((baseY - p.y) / 83) : 0,
-    energyField: action == 'ultimate' ? .7 * _hold(t, .23, .48, .62, .82) : 0,
+    energyField: action == 'ultimate' ? .95 * VoltStorm(t).charge : 0,
   );
 }
 
@@ -550,6 +559,29 @@ class VoltAnchors {
   }) : leftEmitter = leftEmitter ?? leftCoil,
        rightEmitter = rightEmitter ?? rightCoil;
   final Offset leftCoil, rightCoil, core, leftEmitter, rightEmitter;
+}
+
+/// The large charge stays in front of the visor and within a phone scene.
+Offset voltStormCenter(
+  VoltAnchors anchors,
+  VoltFrame frame,
+  double scale, {
+  double facing = 1,
+  Rect? viewport,
+}) {
+  final mid = Offset.lerp(anchors.leftEmitter, anchors.rightEmitter, .5)!;
+  final inset = VoltStorm.boundsRadius * scale + 8;
+  var x = mid.dx + facing * (42 + 104 * frame.cameraZoom) * scale;
+  var y = math.max(mid.dy - 28 * scale, (viewport?.top ?? 0) + inset);
+  if (viewport != null) {
+    x = viewport.width > inset * 2
+        ? x.clamp(viewport.left + inset, viewport.right - inset)
+        : viewport.center.dx;
+    y = viewport.height > inset * 2
+        ? y.clamp(viewport.top + inset, viewport.bottom - inset)
+        : viewport.center.dy;
+  }
+  return Offset(x, y);
 }
 
 /// [origin] is the Robot root, i.e. actor.center / floor+(pose.y-126)*scale.
@@ -683,6 +715,7 @@ void paintVoltEffects(
   bool reduced = false,
   double facing = 1,
   bool preview = false,
+  Rect? viewport,
 }) {
   if (scale <= 0 || !scale.isFinite) return;
   const cyan = Color(0xFF45DFFF), white = Color(0xFFE8FCFF);
@@ -784,25 +817,21 @@ void paintVoltEffects(
   final skill = frame.action == 'special';
   final mid = Offset.lerp(left, right, .5)!;
   // Fit the complete capacitor inside a short phone scene during flight.
-  final crown = Offset(
-    mid.dx + (storm ? facing * (30 + 60 * frame.cameraZoom) * scale : 0),
-    math.max(
-      mid.dy -
-          (storm
-                  ? 32
-                  : skill
-                  ? 34
-                  : 0) *
-              scale,
-      (storm
-                  ? 64
-                  : skill
-                  ? 46
-                  : 0) *
-              scale +
-          8,
-    ),
-  );
+  final crown = storm
+      ? voltStormCenter(
+          anchors,
+          frame,
+          scale,
+          facing: facing,
+          viewport: viewport,
+        )
+      : Offset(
+          mid.dx,
+          math.max(
+            mid.dy - (skill ? 34 : 0) * scale,
+            (skill ? 46 : 0) * scale + 8,
+          ),
+        );
   final flight = unit(
     (t -
             (storm
@@ -823,8 +852,8 @@ void paintVoltEffects(
       final u = (t * 2 + i / 3) % 1;
       ring(
         anchors.core + Offset(0, (u - .5) * 160 * scale),
-        84 + 14 * math.sin(u * math.pi),
-        frame.energyField * .55 * math.sin(u * math.pi),
+        126 + 18 * math.sin(u * math.pi),
+        frame.energyField * .7 * math.sin(u * math.pi),
         squash: .38,
         width: 2.8,
       );
@@ -833,8 +862,8 @@ void paintVoltEffects(
   if (frame.charge > .02) {
     energy.transfer(anchors.core, left, right, frame.charge * .8);
     if (storm || skill) {
-      bolt(left, crown, frame.charge, 0, width: storm ? 4 : 2.8, bow: 12);
-      bolt(right, crown, frame.charge, 1, width: storm ? 4 : 2.8, bow: 12);
+      bolt(left, crown, frame.charge, 0, width: storm ? 6.5 : 2.8, bow: 12);
+      bolt(right, crown, frame.charge, 1, width: storm ? 6.5 : 2.8, bow: 12);
       energy.capacitor(crown, frame.charge, storm: storm);
     } else {
       bolt(left, right, frame.charge * .7, 0, width: 2.4);
@@ -882,7 +911,7 @@ void paintVoltEffects(
       energy.beam(
         crown,
         target,
-        _ramp(t, storm ? .62 : .46, .89),
+        storm ? VoltStorm(t).extension : _ramp(t, .46, .89),
         frame.discharge,
         storm: storm,
       );
@@ -891,7 +920,7 @@ void paintVoltEffects(
         crown,
         frame.discharge * .85,
         2,
-        width: storm ? 4 : 2.5,
+        width: storm ? 6 : 2.5,
         bow: 10,
       );
       bolt(
@@ -899,11 +928,11 @@ void paintVoltEffects(
         crown,
         frame.discharge * .85,
         3,
-        width: storm ? 4 : 2.5,
+        width: storm ? 6 : 2.5,
         bow: 10,
       );
       if (storm) {
-        final blast = pulse(t, .62, .77);
+        final blast = VoltStorm(t).ignition;
         energy.impact(crown, blast, unit((t - .62) / .15), storm: true);
         if (!reduced) {
           for (var i = 0; i < 3; i++) {
@@ -969,7 +998,7 @@ void paintVoltEffects(
   if (frame.shockwave > 0) {
     ring(
       Offset(target.dx, ground),
-      20 + 155 * frame.shockwave,
+      20 + (storm ? 260 : 155) * frame.shockwave,
       (1 - frame.shockwave) * .85,
       squash: .3,
       width: 4 * (1 - frame.shockwave) + 1,
@@ -977,7 +1006,7 @@ void paintVoltEffects(
     if (!reduced)
       ring(
         Offset(target.dx, ground),
-        15 + 110 * frame.shockwave,
+        15 + (storm ? 195 : 110) * frame.shockwave,
         (1 - frame.shockwave) * .5,
         squash: .3,
         width: 1.5,
@@ -986,10 +1015,10 @@ void paintVoltEffects(
   if (!reduced && frame.flash > .01) {
     canvas.drawCircle(
       target,
-      (38 + frame.flash * 65) * scale,
+      (storm ? 70 + frame.flash * 145 : 38 + frame.flash * 65) * scale,
       paint
         ..style = PaintingStyle.fill
-        ..color = white.withValues(alpha: .14 * frame.flash),
+        ..color = white.withValues(alpha: (storm ? .18 : .14) * frame.flash),
     );
   }
   if (!reduced && frame.sparks > .01) {

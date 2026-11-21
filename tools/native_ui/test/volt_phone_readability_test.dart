@@ -66,6 +66,7 @@ void paintPhone(
     s,
     preview: true,
     reduced: scene.reduced,
+    viewport: const Rect.fromLTWH(0, 0, 320, 230),
   );
 }
 
@@ -166,7 +167,7 @@ void main() {
         'ultimate',
       ];
       const phases = [.15, .36, .55, .73, .91];
-      final out = Directory('../../.cache/volt-readability-v37/phone')
+      final out = Directory('../../.cache/volt-super-v38/phone')
         ..createSync(recursive: true);
       final recorder = ui.PictureRecorder(), canvas = Canvas(recorder);
       for (var row = 0; row < actions.length; row++) {
@@ -244,7 +245,7 @@ void main() {
       final picture = recorder.endRecording(),
           image = await picture.toImage(960, 460);
       final data = (await image.toByteData(format: ui.ImageByteFormat.png))!;
-      final out = Directory('../../.cache/volt-readability-v37/phone')
+      final out = Directory('../../.cache/volt-super-v38/phone')
         ..createSync(recursive: true);
       File(
         '${out.path}/workshop-effects.png',

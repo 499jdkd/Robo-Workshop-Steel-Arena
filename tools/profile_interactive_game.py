@@ -22,6 +22,7 @@ parser.add_argument("--mode", choices=("workshop", "battle", "robot"), default="
 parser.add_argument("--robot", default="volt")
 parser.add_argument("--silent", action="store_true")
 parser.add_argument("--music-check", action="store_true", help="Exercise real main-game music with isolated data")
+parser.add_argument("--showcase-action", choices=("attack", "quick", "special", "ultimate", "guard", "dodge", "charge"))
 args = parser.parse_args()
 if args.music_check:
     args.mode='robot'
@@ -70,6 +71,8 @@ async def main(page):
         session.focus_scene = "battle"
         session.act("battle_start", args.robot)
     if args.mode == "robot":
+        import robot_preview
+        robot_preview.animated_scene = instrumented
         session.robot_detail = args.robot
     with patch.object(game, "BannerFooter", lambda **_: ft.Container(height=0)):
         page.render(game.App, page=page, device_id="synthetic-profile-v27", session=session)
@@ -106,7 +109,7 @@ async def main(page):
             mark('complete')
         elif args.mode == "robot":
             while session.ui_alive:
-                for action in ("attack", "special", "ultimate", "guard"):
+                for action in ([args.showcase_action] if args.showcase_action else ("attack", "special", "ultimate", "guard")):
                     session.preview_robot(args.robot, action)
                     await asyncio.sleep(2.8)
         elif args.mode == "battle":

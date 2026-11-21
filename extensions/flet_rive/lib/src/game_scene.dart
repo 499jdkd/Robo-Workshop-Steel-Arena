@@ -471,9 +471,19 @@ class GameSceneClock extends ChangeNotifier {
       ? Offset.zero
       : Offset(
           math.sin(age * 103) * (ultimate ? 12 : 6) * impact +
-              math.sin(clock * 91) * 3.5 * voltCamera,
+              math.sin(clock * 91) *
+                  (playerVoltFrame?.action == 'ultimate' ||
+                          enemyVoltFrame?.action == 'ultimate'
+                      ? 5.8
+                      : 3.5) *
+                  voltCamera,
           math.cos(age * 137) * (ultimate ? 7 : 3) * impact +
-              math.cos(clock * 113) * 2 * voltCamera,
+              math.cos(clock * 113) *
+                  (playerVoltFrame?.action == 'ultimate' ||
+                          enemyVoltFrame?.action == 'ultimate'
+                      ? 3.5
+                      : 2) *
+                  voltCamera,
         );
 
   void update(Map<String, dynamic> next) {
@@ -1309,6 +1319,7 @@ class GameSceneClock extends ChangeNotifier {
       audio.play(
         mountedShot ? mounted : cue,
         channel: opponent ? 'enemy:action' : 'player:action',
+        rate: name == 'ultimate' && cue == 'volt_storm' ? .82 : 1,
       );
     }
     playback.cueT = sample.t;
@@ -2094,6 +2105,7 @@ class GameEffectsPainter extends CustomPainter {
         reduced: scene.reduced,
         facing: actor.facing,
         preview: !scene.arena,
+        viewport: Offset.zero & size,
       );
     }
 

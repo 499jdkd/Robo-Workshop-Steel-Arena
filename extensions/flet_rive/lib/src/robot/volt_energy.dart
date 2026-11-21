@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'volt_storm.dart';
 
 /// Screen-readable electrical shapes. All geometry is bounded and sampled
 /// from the scene clock: no extra tickers, images, blur layers or particle pool.
@@ -91,6 +92,10 @@ class VoltEnergyPainter {
   /// A contained capacitor, with circulating rings that contract at release.
   void capacitor(Offset center, double charge, {required bool storm}) {
     if (charge < .015) return;
+    if (storm) {
+      stormCapacitor(center, charge);
+      return;
+    }
     final radius = (storm ? 15 + 29 * charge : 9 + 18 * charge);
     disc(center, radius * 1.7, blue, charge * .15);
     disc(center, radius * 1.25, cyan, charge * .2);
@@ -128,6 +133,65 @@ class VoltEnergyPainter {
         charge * .65,
       );
     }
+  }
+
+  /// A large reactor that visibly gathers, swells, compresses and ruptures.
+  /// Fixed counts keep repeated casts independent of session duration.
+  void stormCapacitor(Offset center, double charge) {
+    final phase = VoltStorm(t);
+    final radius = phase.radius;
+    disc(center, radius * 1.75, blue, charge * .2);
+    disc(center, radius * 1.31, const Color(0xFF062A60), charge * .55);
+    disc(center, radius * 1.12, cyan, charge * .23);
+    disc(center, radius, blue, charge * .76);
+    disc(center, radius * .82, cyan, charge * .83);
+    disc(center, radius * (.48 + .12 * phase.pressure), white, charge);
+    final corona = Path();
+    for (var i = 0; i <= 24; i++) {
+      final angle = i * math.pi / 12;
+      final r = radius * (1.06 + .065 * math.sin(i * 2.7 + t * 61));
+      final p = center + Offset(math.cos(angle), math.sin(angle)) * r * scale;
+      if (i == 0) {
+        corona.moveTo(p.dx, p.dy);
+      } else {
+        corona.lineTo(p.dx, p.dy);
+      }
+    }
+    stroke(corona, 7, cyan, charge * .4);
+    stroke(corona, 2.7, white, charge);
+    final rings = reduced ? 2 : 4;
+    for (var i = 0; i < rings; i++) {
+      canvas.save();
+      canvas.translate(center.dx, center.dy);
+      canvas.rotate(
+        (i.isEven ? 1 : -1) * (t * 4 + t * t * 14) + i * math.pi / 4,
+      );
+      ring(
+        Offset.zero,
+        radius * (1.18 + i * .045),
+        charge * .95,
+        squash: .28 + i * .14,
+        width: 3.4,
+        color: i == 1 ? gold : white,
+      );
+      canvas.restore();
+    }
+    for (var i = 0; i < (reduced ? 3 : 8); i++) {
+      final u = (t * (2.2 + phase.growth) + i / 8) % 1;
+      final angle = i * math.pi / 4 + t * 3;
+      final dir = Offset(math.cos(angle), math.sin(angle));
+      final distance = radius * (.55 + .9 * (1 - u));
+      final head = center + dir * distance * scale;
+      line(head + dir * (8 + 13 * u) * scale, head, 2.4, cyan, charge * .8);
+      disc(head, 2.6 + 3 * u, white, charge * .95);
+    }
+    ring(
+      center,
+      radius * (1.5 - .28 * phase.pressure),
+      charge * phase.pressure,
+      width: 5,
+      color: gold,
+    );
   }
 
   void muzzle(Offset point, double load, double release, double facing) {
@@ -175,12 +239,13 @@ class VoltEnergyPainter {
     final path = Path()
       ..moveTo(from.dx, from.dy)
       ..lineTo(end.dx, end.dy);
-    stroke(path, storm ? 48 : 31, blue, strength * .19);
-    stroke(path, storm ? 28 : 17, cyan, strength * .38);
-    stroke(path, storm ? 12 : 7, cyan, strength);
-    stroke(path, storm ? 4.8 : 3, white, strength);
+    stroke(path, storm ? 112 : 31, blue, strength * (storm ? .22 : .19));
+    stroke(path, storm ? 68 : 17, cyan, strength * .38);
+    if (storm) stroke(path, 40, const Color(0xFF1263BA), strength * .85);
+    stroke(path, storm ? 31 : 7, cyan, strength);
+    stroke(path, storm ? 12 : 3, white, strength);
     if (!reduced) {
-      for (final side in [-1, 1]) {
+      for (final side in storm ? [-2, -1, 1, 2] : [-1, 1]) {
         final ribbon = Path()..moveTo(from.dx, from.dy);
         for (var i = 1; i <= 12; i++) {
           final u = i / 12;
@@ -189,14 +254,15 @@ class VoltEnergyPainter {
               normal *
                   side.toDouble() *
                   math.sin(u * math.pi) *
-                  (7 + 5 * math.sin(u * 19 - t * 38)) *
+                  ((storm ? 10 : 7) +
+                      (storm ? 8 : 5) * math.sin(u * 19 - t * 38)) *
                   scale;
           ribbon.lineTo(p.dx, p.dy);
         }
-        stroke(ribbon, storm ? 3.2 : 2.3, white, strength * .8);
+        stroke(ribbon, storm ? 4.4 : 2.3, white, strength * .8);
       }
     }
-    disc(end, storm ? 19 : 12, white, strength * .75);
+    disc(end, storm ? 35 : 12, white, strength * .75);
   }
 
   void impact(
@@ -206,10 +272,10 @@ class VoltEnergyPainter {
     bool storm = false,
   }) {
     if (strength < .01) return;
-    final radius = (storm ? 24 : 12) + (storm ? 60 : 29) * unit(progress);
+    final radius = (storm ? 35 : 12) + (storm ? 100 : 29) * unit(progress);
     disc(center, radius * .75, cyan, strength * .22);
-    disc(center, storm ? 21 : 9, white, strength);
-    ring(center, radius, strength, width: storm ? 4 : 2.8, color: white);
+    disc(center, storm ? 34 : 9, white, strength);
+    ring(center, radius, strength, width: storm ? 6 : 2.8, color: white);
     ring(center, radius * 1.3, strength * .62, squash: .72, color: gold);
     for (var i = 0; i < (reduced ? 4 : 8); i++) {
       final a = i * math.pi / 4 + .25;
