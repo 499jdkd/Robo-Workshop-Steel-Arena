@@ -91,6 +91,23 @@ class VoltReleaseVerifierTests(unittest.TestCase):
         self.assertEqual(scope["counts"]["other_view_models"], 31)
         self.assertEqual(scope["counts"]["new_volt_audio"], 4)
 
+    def test_animation_only_update_requires_unchanged_volt_art(self):
+        for relative in ('assets/art/portraits/volt.svg',):
+            shutil.copyfile(self.before/'src'/relative, self.current/'src'/relative)
+        relative = 'animation/rive/game_robot/scene.rml'
+        shutil.copyfile(self.before/relative, self.current/relative)
+        scope = verifier.verify_scope(self.current, self.before, animation_only=True)
+        self.assertFalse(scope['volt_portrait']['changed'])
+        with self.assertRaisesRegex(verifier.VerificationError, 'portrait was not installed'):
+            verifier.verify_scope(self.current, self.before)
+        (self.current/'src/assets/art/portraits/volt.svg').write_text('<svg>unexpected change</svg>')
+        with self.assertRaisesRegex(verifier.VerificationError, 'Animation-only update changed the Volt portrait'):
+            verifier.verify_scope(self.current, self.before, animation_only=True)
+
+    def test_animation_only_update_rejects_changes_to_volt_artboard(self):
+        with self.assertRaisesRegex(verifier.VerificationError, 'Animation-only update changed Volt Artboard'):
+            verifier.verify_scope(self.current, self.before, animation_only=True)
+
     def test_other_robot_metadata_change_is_rejected(self):
         self.rows["spark"] = ("changed",)
         self.write_rows()

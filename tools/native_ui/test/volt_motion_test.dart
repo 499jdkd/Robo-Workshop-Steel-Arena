@@ -41,7 +41,10 @@ void main() {
             isTrue,
             reason: '$action at $t must be safe after pause/resume',
           );
-          expect(result.pose.x.abs(), lessThan(85));
+          expect(
+            result.pose.x.abs(),
+            lessThan({'quick', 'dodge'}.contains(action) ? 130 : 85),
+          );
           expect(result.pose.y.abs(), lessThan(100));
           for (final intensity in [
             result.frame.coilGlow,
@@ -102,7 +105,7 @@ void main() {
       expect(storm.pose.extra['joint1'], greaterThan(0));
       expect(storm.pose.y, lessThan(-75));
       expect(sample('ultimate', .67).frame.discharge, greaterThan(.9));
-      expect(sample('ultimate', .8).frame.shockwave, greaterThan(0));
+      expect(sample('ultimate', .94).frame.shockwave, greaterThan(0));
       expect(sample('special', .55).frame.discharge, greaterThan(.9));
     },
   );

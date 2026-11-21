@@ -471,9 +471,19 @@ class GameSceneClock extends ChangeNotifier {
       ? Offset.zero
       : Offset(
           math.sin(age * 103) * (ultimate ? 12 : 6) * impact +
-              math.sin(clock * 91) * 3.5 * voltCamera,
+              math.sin(clock * 91) *
+                  (playerVoltFrame?.action == 'ultimate' ||
+                          enemyVoltFrame?.action == 'ultimate'
+                      ? 5.8
+                      : 3.5) *
+                  voltCamera,
           math.cos(age * 137) * (ultimate ? 7 : 3) * impact +
-              math.cos(clock * 113) * 2 * voltCamera,
+              math.cos(clock * 113) *
+                  (playerVoltFrame?.action == 'ultimate' ||
+                          enemyVoltFrame?.action == 'ultimate'
+                      ? 3.5
+                      : 2) *
+                  voltCamera,
         );
 
   void update(Map<String, dynamic> next) {
@@ -782,10 +792,24 @@ class GameSceneClock extends ChangeNotifier {
         p.armR = -.85;
       }
     }
-    final edge = 210 * s + (arena ? viewport.width * .055 : 8);
-    double inside(double x) => viewport.width > 2 * edge
-        ? x.clamp(edge, viewport.width - edge)
-        : viewport.width / 2;
+    double inside(double x, GameActor actor, bool volt, List gear) {
+      if (!volt) {
+        final edge = 210 * s + (arena ? viewport.width * .055 : 8);
+        return viewport.width > 2 * edge
+            ? x.clamp(edge, viewport.width - edge)
+            : viewport.width / 2;
+      }
+      // Volt's compact built-in emitter does not occupy the generic 420px
+      // weapon envelope. That envelope erased almost the entire dodge on a
+      // portrait phone. Reserve extra space only in front of mounted gear.
+      final front = gear.isEmpty ? 140.0 : 210.0;
+      final left = (actor.facing < 0 ? front : 140.0) * s + 8;
+      final right = (actor.facing < 0 ? 140.0 : front) * s + 8;
+      return viewport.width > left + right
+          ? x.clamp(left, viewport.width - right)
+          : viewport.width / 2;
+    }
+
     void style(GameActor actor, String id) {
       final pose = actor.pose, f = pose.extra;
       final profile = robotProfiles[id] ?? robotProfiles['spark']!;
@@ -904,8 +928,28 @@ class GameSceneClock extends ChangeNotifier {
       _animateVolt(player, lastPlayer, _voltPlayer, dt, opponent: false);
     if (arena && data['enemy'] == 'volt')
       _animateVolt(enemy, lastEnemy, _voltEnemy, dt, opponent: true);
-    player.travel(inside(px + p.x * s * player.facing), s, dt);
-    if (arena) enemy.travel(inside(ex - e.x * s), s, dt);
+    player.travel(
+      inside(
+        px + p.x * s * player.facing,
+        player,
+        isVolt,
+        data['equipped'] as List? ?? const [],
+      ),
+      s,
+      dt,
+    );
+    if (arena) {
+      enemy.travel(
+        inside(
+          ex - e.x * s,
+          enemy,
+          data['enemy'] == 'volt',
+          data['enemyEquipped'] as List? ?? const [],
+        ),
+        s,
+        dt,
+      );
+    }
     final modules = (data['modules'] as List? ?? const []).cast<String>();
     final equipment = (data['equipped'] as List? ?? const []).cast<String>();
     final second = equipment.length > 1 ? equipment[1] : '';
@@ -1275,6 +1319,7 @@ class GameSceneClock extends ChangeNotifier {
       audio.play(
         mountedShot ? mounted : cue,
         channel: opponent ? 'enemy:action' : 'player:action',
+        rate: name == 'ultimate' && cue == 'volt_storm' ? .82 : 1,
       );
     }
     playback.cueT = sample.t;
@@ -1398,7 +1443,12 @@ class GameSceneClock extends ChangeNotifier {
   void moveTo(Offset point) {
     if (arena) return;
     _localSoundSerial++;
-    final edge = 210 * scale + 8;
+    final edge =
+        (isVolt && (data['equipped'] as List? ?? const []).isEmpty
+                ? 140
+                : 210) *
+            scale +
+        8;
     final width = viewport.width;
     final x = worldPoint(point).dx.clamp(edge, math.max(edge, width - edge));
     walkFrom = player.center / width;
@@ -2027,6 +2077,14 @@ class GameEffectsPainter extends CustomPainter {
         actor.center,
         scene.floor + (actor.pose.y - 126) * s,
       );
+      paintVoltMotionEchoes(
+        canvas,
+        frame,
+        origin,
+        s,
+        facing: actor.facing,
+        reduced: scene.reduced,
+      );
       drawVoltModel(
         canvas,
         actor.pose,
@@ -2046,6 +2104,8 @@ class GameEffectsPainter extends CustomPainter {
         s,
         reduced: scene.reduced,
         facing: actor.facing,
+        preview: !scene.arena,
+        viewport: Offset.zero & size,
       );
     }
 

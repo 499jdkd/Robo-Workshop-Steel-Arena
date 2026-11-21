@@ -52,6 +52,58 @@ String legacyAction(String action) => switch (action) {
 };
 
 void main() {
+  test(
+    'portrait phone dodge survives scene clamping in inspection and arena',
+    () {
+      for (final arena in [false, true]) {
+        final scene = createScene(arena: arena, demo: !arena);
+        scene.viewport = const Size(320, 230);
+        scene.advance(0);
+        final start = scene.player.center;
+        if (arena) {
+          scene.update({
+            ...scene.data,
+            'phase': 'approach',
+            'action': 'dodge',
+            'combatAction': 'dodge',
+            'event': 'portrait-dodge',
+          });
+          scene.advance(0);
+          scene.advance(.4);
+        } else {
+          scene.showcase('dodge');
+          scene.advance(0);
+          scene.advance(voltActionSeconds['dodge']! * .32);
+        }
+        expect(
+          start - scene.player.center,
+          greaterThan(arena ? 22 : 40),
+          reason: 'The generic long-weapon margin used to erase this motion',
+        );
+        expect(
+          scene.player.center - 140 * scene.scale,
+          greaterThanOrEqualTo(7.9),
+        );
+        expect(scene.player.pose.rotation, lessThan(-.15));
+      }
+    },
+  );
+
+  test('portrait quick lunge advances while an impulse braces and recoils', () {
+    final centers = <String, double>{};
+    for (final action in ['attack', 'quick']) {
+      final scene = createScene(demo: true)..viewport = const Size(320, 230);
+      scene.advance(0);
+      final start = scene.player.center;
+      scene.showcase(action);
+      scene.advance(0);
+      scene.advance(voltActionSeconds[action]! * .29);
+      centers[action] = scene.player.center - start;
+    }
+    expect(centers['attack'], lessThan(-5));
+    expect(centers['quick'], greaterThan(45));
+  });
+
   test('spaced touches use seven distinct shuffled Volt reactions', () {
     final scene = createScene(demo: true);
     final signatures = <String>{};
@@ -155,7 +207,7 @@ void main() {
       for (var frame = 0; frame < 120; frame++) scene.advance(1 / 60);
       expect(scene.player.center, greaterThan(original + 50));
       expect(
-        scene.player.center + 210 * scene.scale,
+        scene.player.center + 140 * scene.scale,
         lessThanOrEqualTo(scene.viewport.width),
       );
       expect(scene.player.motor.distance, greaterThan(0));

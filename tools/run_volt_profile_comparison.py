@@ -30,6 +30,7 @@ def main():
     parser.add_argument('--before-client', type=Path, default=ROOT / '.cache/volt-refinement/before-profile-client')
     parser.add_argument('--after-client', type=Path, default=ROOT / '.cache/volt-refinement/after-profile-client')
     parser.add_argument('--revision', choices=['all','before','after'], default='all')
+    parser.add_argument('--scenarios', nargs='+', choices=['workshop','combat','ultimate'], default=['workshop','combat'])
     args = parser.parse_args()
     output = args.out.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -37,8 +38,11 @@ def main():
     for index, (revision, scenario) in enumerate((
         ("before", "workshop"), ("after", "workshop"),
         ("before", "combat"), ("after", "combat"),
+        ("before", "ultimate"), ("after", "ultimate"),
     )):
         if args.revision != 'all' and revision != args.revision:
+            continue
+        if scenario not in args.scenarios:
             continue
         name = f"{revision}-{scenario}"
         folder = output / name
@@ -54,8 +58,8 @@ def main():
             for label, command in [
                 ("metrics", python("collect_volt_metrics.py", "--out", metrics)),
                 ("server", python("profile_interactive_game.py", "--source", source,
-                                  "--out", folder, "--port", port, "--mode", "battle" if scenario == "combat" else "workshop",
-                                  "--robot", "volt", "--silent")),
+                                  "--out", folder, "--port", port, "--mode", "battle" if scenario == "combat" else "robot" if scenario == "ultimate" else "workshop",
+                                  "--robot", "volt", "--silent", *(['--showcase-action','ultimate'] if scenario == 'ultimate' else []))),
             ]:
                 stream = (folder / f"{label}.log").open("w", encoding="utf-8")
                 streams.append(stream)
@@ -71,7 +75,7 @@ def main():
                     time.sleep(.1)
             else:
                 raise RuntimeError(f"{name}: game server did not start")
-            width, height, dpr = (390, 844, 3) if scenario == "workshop" else (844, 390, 2)
+            width, height, dpr = (844, 390, 2) if scenario == "combat" else (390, 844, 3)
             capture_name = f"{output.parent.name}-{name}"
             subprocess.run(python("capture_game_renderer.py", "--name", capture_name,
                                   "--port", port, "--client", client, "--width", width,
