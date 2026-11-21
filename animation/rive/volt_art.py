@@ -162,6 +162,27 @@ def chassis(r):
             r.rect(contacts, f"Electrode ceramic collar {side}-{dx}", dx, 2, 12, 7, ("FFF0F4E7", "FF7DADB9", "FF214C64"), r=2)
         r.rect(contacts, f"Contact crown protective casing {side}", 0, 7, 39, 9, DEEP, r=3)
         r.rect(contacts, f"Crown coupling {side}", 0, 1, 35, 10, COPPER, r=4)
+        # A telescoping three-jaw focusing head is part of the Tesla mast.
+        # Its carriage and aim swivel independently of the crown hinge.
+        label = "L" if side < 0 else "R"
+        focus = forward(contacts, r.node(contacts, "Volt focusing carriage " + label, y=-6))
+        r.bind(focus, "y", "voltEmitterTravel", -6)
+        r.bind(focus, "rotation", "voltEmitterAim" + label, 0)
+        lens = r.node(focus, "Volt pulse aperture " + label)
+        r.bind(lens, "opacity", "voltEmitterGlow", 0)
+        r.oval(lens, "Pulse hot aperture " + label, 0, -2, 12, 9, LIGHT)
+        r.oval(focus, "Emitter inner sleeve " + label, 0, -1, 21, 14, DEEP)
+        r.oval(focus, "Emitter machined collar " + label, 0, -1, 30, 19, STEEL)
+        for dx in (-13, 13):
+            jaw = r.node(focus, f"Pulse focusing jaw {label}-{dx}", x=dx)
+            silhouette(r, jaw, f"Emitter copper contact {label}-{dx}", [
+                (-4, 5), (-4, -7), (1, -12), (5, -8), (4, 5),
+            ], COPPER, 2)
+            r.rect(jaw, f"Emitter jaw light {label}-{dx}", 0, -5, 2, 9, "FFB8FAFF", r=1)
+            r.oval(jaw, f"Emitter jaw hinge {label}-{dx}", 0, 7, 6, 6, STEEL)
+        r.rect(focus, "Emitter central contact " + label, 0, -9, 5, 8, COPPER, r=1)
+        for dx in (-8, 8):
+            r.rect(focus, f"Emitter telescoping rod {label}-{dx}", dx, 13, 3, 16, STEEL, r=1)
         # Three distinct materials per winding; no oversized glow hides the metal.
         for i, y in enumerate(range(-45, 5, 10)):
             glow(r, coil, f"Coil live edge {side}-{i}", -2, y - 1, 34, 3)

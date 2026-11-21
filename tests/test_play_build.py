@@ -59,6 +59,20 @@ class PlayBuildTests(unittest.TestCase):
         self.assertIn('"live-video"', (self.stage / "src/rewarded_ads.py").read_text())
         self.assertIn('"live-app"', (self.stage / "pyproject.toml").read_text())
 
+    def test_live_flet_storage_is_never_staged_or_part_of_build_input(self):
+        storage = self.root / "src/.flet/storage/data"
+        storage.mkdir(parents=True)
+        save = storage / "workshop-save-v2.json"
+        save.write_text('"synthetic private save"', encoding="utf-8")
+        expected = self.prepare()
+        self.assertFalse((self.stage / "src/.flet").exists())
+        self.assertFalse(any(".flet" in Path(name).parts
+                             for name in expected["input"]["base_sources"]))
+        save.write_text('"changed while the app is open"', encoding="utf-8")
+        self.assertEqual(self.prepare(), expected)
+        self.assertEqual(save.read_text(encoding="utf-8"),
+                         '"changed while the app is open"')
+
     def test_identical_stage_can_be_reused_but_changed_input_is_rejected(self):
         expected = self.prepare()
         self.assertEqual(self.prepare(), expected)
