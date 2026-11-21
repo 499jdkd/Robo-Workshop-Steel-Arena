@@ -63,9 +63,10 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--name',default='volt-v36-music-live-02')
     parser.add_argument('--client',type=Path,default=ROOT/'.cache/volt-motion-v36/profile-client')
+    parser.add_argument('--out-root',type=Path,default=ROOT/'.cache/volt-motion-v36')
     args=parser.parse_args()
     assert args.name.replace('-','').isalnum()
-    out=ROOT/'.cache/volt-motion-v36'/args.name
+    out=args.out_root.resolve()/args.name
     assert not out.exists(),'Retain previous captures; select a new --name'
     out.mkdir(parents=True)
     if not (args.client/'rive').exists():

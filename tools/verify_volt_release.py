@@ -2,7 +2,7 @@
 
 These are static source/package checks, not Android execution or FPS tests.
 Builds before v35 use the snapshot taken before the Volt task; v35 uses the
-v34 snapshot and v36 uses v35. --baseline selects another snapshot.
+v34 snapshot, v36 uses v35 and v37 uses v36. --baseline selects another snapshot.
 Existing audio and the other 31 robot visuals remain byte/structure checked.
 """
 
@@ -22,6 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BASELINE = ROOT / ".cache/volt-refinement/before"
 POLISH_BASELINE = ROOT / ".cache/volt-polish-v35/baseline"
 MOTION_BASELINE = ROOT / ".cache/volt-motion-v36/baseline"
+READABILITY_BASELINE = ROOT / ".cache/volt-readability-v37/baseline"
 MUSIC_SOUNDS = ('music_workshop.ogg','music_arena.ogg','music_victory.ogg')
 ABIS = ("arm64-v8a", "armeabi-v7a", "x86_64")
 MARKERS = ("flutter-canvas-articulated", "voltPower", "volt_pulse", "volt_charge", "volt_storm", "volt_shutdown")
@@ -136,6 +137,10 @@ def verify_scope(root=ROOT, baseline=BASELINE, *, character_audio=False, applica
         report["other_portraits"][identity] = unchanged_file(current_src / relative, before_src / relative, str(relative))
     current_rml = root / "animation/rive/game_robot/scene.rml"
     before_rml = baseline / "animation/rive/game_robot/scene.rml"
+    volt_board = named_nodes(current_rml, 'Artboard')['volt']
+    report['volt_focusing_emitters'] = all(
+        any(n.get('name') == 'Volt focusing carriage ' + side for n in volt_board.iter('Node'))
+        for side in ('L', 'R'))
     for kind, excluded, key in [("Artboard", "volt", "rml_other_artboards"), ("ViewModel", "Motion_volt", "rml_other_view_models")]:
         current_nodes, old_nodes = named_nodes(current_rml, kind), named_nodes(before_rml, kind)
         require(current_nodes.keys() == old_nodes.keys(), f"RML {kind} names changed")
@@ -190,6 +195,8 @@ def verify_package(apk, scope, root=ROOT):
     markers = MARKERS + (ROBOT_MARKERS if scope.get("robot_audio") else ())
     if scope.get('music_audio'):
         markers += ('GameMusic','music_workshop','music_victory','voltLegLY')
+    if scope.get('volt_focusing_emitters'):
+        markers += ('voltEmitterTravel', 'voltEmitterAimR')
     with zipfile.ZipFile(apk) as package:
         native_abis = {name.split("/")[1] for name in package.namelist()
                        if name.startswith("lib/") and name.endswith("/libapp.so")}
@@ -231,7 +238,7 @@ def main():
     try:
         apk = ROOT / f"build/apk-game-v{args.build_number}/clicker.apk"
         require(apk.is_file(), "Final APK is not ready")
-        baseline = args.baseline or (MOTION_BASELINE if args.build_number >= 36 else POLISH_BASELINE if args.build_number >= 35 else BASELINE)
+        baseline = args.baseline or (READABILITY_BASELINE if args.build_number >= 37 else MOTION_BASELINE if args.build_number >= 36 else POLISH_BASELINE if args.build_number >= 35 else BASELINE)
         report["scope"] = verify_scope(baseline=baseline, character_audio=args.build_number >= 35, application_music=args.build_number >= 36)
         report["package"] = verify_package(apk, report["scope"])
         report["status"] = "passed"
