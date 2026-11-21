@@ -135,7 +135,7 @@ class _GameRiveControlState extends State<GameRiveControl>
             final savedData = scene.data,
                 hidden = scene.hidden,
                 suspended = scene.suspended;
-            scene.data = {...savedData, 'paused': false};
+            scene.data = {...savedData, 'paused': false, 'sampleOnly': true};
             scene.hidden = scene.suspended = false;
             scene.advance(0);
             scene.data = savedData;
@@ -334,17 +334,24 @@ class _VoltPlayback {
   double cueT = -.001, blendAt = -99;
   GamePose? from;
   VoltFrame? frame;
+  VoltFrame? fromFrame;
   void reset() {
     action = '';
     cueT = -.001;
     blendAt = -99;
     from = null;
     frame = null;
+    fromFrame = null;
   }
 }
 
 class GameSceneClock extends ChangeNotifier {
-  GameSceneClock({void Function(RobotAudioCue)? onCharacterCue}) {
+  GameSceneClock({
+    void Function(RobotAudioCue)? onCharacterCue,
+    int? reactionSeed,
+    SceneAudio? sceneAudio,
+  }) : audio = sceneAudio ?? SceneAudio(),
+       _reactionRandom = math.Random(reactionSeed) {
     characterSounds = RobotSoundDirector(
       onCharacterCue ??
           (cue) => audio.play(
@@ -360,9 +367,11 @@ class GameSceneClock extends ChangeNotifier {
   final effects = GameEffects();
   void Function()? pendingBurst;
   GamePose? previousPlayer, previousEnemy;
-  final audio = SceneAudio();
+  final SceneAudio audio;
   late final RobotSoundDirector characterSounds;
   int _localSoundSerial = 0;
+  final math.Random _reactionRandom;
+  final _reactionBag = <String>[];
   final _voltPlayer = _VoltPlayback(), _voltEnemy = _VoltPlayback();
   VoltFrame? get playerVoltFrame => _voltPlayer.frame;
   VoltFrame? get enemyVoltFrame => _voltEnemy.frame;
@@ -456,11 +465,15 @@ class GameSceneClock extends ChangeNotifier {
           phase == 'counter-hit')
       ? math.exp(-age * 7)
       : 0;
+  double get voltCamera =>
+      math.max(playerVoltFrame?.camera ?? 0, enemyVoltFrame?.camera ?? 0);
   Offset get shake => reduced
       ? Offset.zero
       : Offset(
-          math.sin(age * 103) * (ultimate ? 12 : 6) * impact,
-          math.cos(age * 137) * (ultimate ? 7 : 3) * impact,
+          math.sin(age * 103) * (ultimate ? 12 : 6) * impact +
+              math.sin(clock * 91) * 3.5 * voltCamera,
+          math.cos(age * 137) * (ultimate ? 7 : 3) * impact +
+              math.cos(clock * 113) * 2 * voltCamera,
         );
 
   void update(Map<String, dynamic> next) {
@@ -483,6 +496,7 @@ class GameSceneClock extends ChangeNotifier {
       pendingBurst = null;
       characterSounds.reset();
       _localSoundSerial = 0;
+      _reactionBag.clear();
       previousPlayer = previousEnemy = null;
       _voltPlayer.reset();
       _voltEnemy.reset();
@@ -514,7 +528,15 @@ class GameSceneClock extends ChangeNotifier {
     previousPlayer = contextChanged ? null : player.pose;
     previousEnemy = contextChanged ? null : enemy.pose;
     age = 0;
+    final tapEcho =
+        isVolt &&
+        !arena &&
+        !demonstration &&
+        combatAction == 'joy' &&
+        localAction.isNotEmpty &&
+        localAge < (voltActionSeconds[localAction] ?? 0);
     if (!arena &&
+        !tapEcho &&
         ({'attack', 'special', 'ultimate', 'guard'}.contains(combatAction) ||
             isVolt && voltActionSeconds.containsKey(combatAction))) {
       showcase(combatAction);
@@ -578,7 +600,8 @@ class GameSceneClock extends ChangeNotifier {
     if (!arena) {
       final reacting =
           (age < (action == 'feed' ? 1.7 : .95) && action != 'idle') ||
-          localAge < 2.25;
+          localAge < 2.25 ||
+          (isVolt && localAction == 'defeat');
       final id = data['robot'];
       final role = robotProfiles[id]?['class'];
       final speed = role == 'tank'
@@ -929,7 +952,14 @@ class GameSceneClock extends ChangeNotifier {
               ? 1.06
               : 1.025)
         : 1.0;
-    final target = zoomTarget * autoZoom;
+    final cinematic =
+        1 +
+        .035 *
+            math.max(
+              playerVoltFrame?.cameraZoom ?? 0,
+              enemyVoltFrame?.cameraZoom ?? 0,
+            );
+    final target = zoomTarget * math.max(autoZoom, cinematic);
     zoom += (target - zoom) * (1 - math.exp(-10 * dt));
     _sampleCharacterSounds();
     notifyListeners();
@@ -1029,9 +1059,12 @@ class GameSceneClock extends ChangeNotifier {
   }
 
   void _sampleCharacterSounds() {
+    if (data['sampleOnly'] == true) return;
     final audible = audio.enabled && !audio.muted;
     if (!arena) {
       final sample = _localAudioPresentation();
+      if (sample.action == 'victory' && sample.t >= .08)
+        audio.celebrate('preview:${data['event']}:$_localSoundSerial');
       // Volt has his own attack/charge timeline. His previously silent social
       // reactions share this director; feeding already has its saved-game cue.
       final ownedByDirector =
@@ -1049,6 +1082,10 @@ class GameSceneClock extends ChangeNotifier {
       return;
     }
     final event = (data['event'] ?? '').toString().split(':').take(2).join(':');
+    if ({'victory', 'idle'}.contains(phase) && data['result'] == 'win')
+      audio.celebrate(
+        'battle:${(data['event'] ?? '').toString().split(':').first}',
+      );
     for (final opponent in [false, true]) {
       final id = data[opponent ? 'enemy' : 'robot'] as String? ?? 'spark';
       if (id == 'volt') continue;
@@ -1067,6 +1104,8 @@ class GameSceneClock extends ChangeNotifier {
 
   ({String action, double t}) _voltPresentation(bool opponent) {
     if (!arena) {
+      if (localAction == 'defeat' && localAge >= voltActionSeconds['defeat']!)
+        return (action: 'defeat', t: 1.0);
       final duration = voltActionSeconds[localAction] ?? 1.1;
       if (localAge < duration && localAction.isNotEmpty)
         return (action: localAction, t: unit(localAge / duration));
@@ -1159,6 +1198,7 @@ class GameSceneClock extends ChangeNotifier {
     };
     if (playback.action != sample.action) {
       playback.from = playback.action.isEmpty ? null : old;
+      playback.fromFrame = playback.frame;
       playback.blendAt = clock;
       playback.cueT = -.001;
       playback.action = sample.action;
@@ -1175,21 +1215,39 @@ class GameSceneClock extends ChangeNotifier {
         ? selected
         : displayed.first;
     final pose = actor.pose;
-    if (sample.action != 'idle') {
-      // The specialised timeline owns its articulated pose. Start from the
-      // suspension pose, so the generic fist/gun animation cannot leak in.
-      final rest = GamePose(clock)..headY += 32;
-      rest.y -= 10 + 7 * math.sin(clock * 3 + (opponent ? 1 : 0));
-      pose.blendFrom(rest, 0);
-      pose.mode = 0;
-    }
-    final frame = applyVoltPose(
+    // Volt owns its articulated pose even during recovery and idle. The
+    // generic weapon timeline can outlive his shorter electrical impulse.
+    final rest = GamePose(clock)..headY += 32;
+    final suspension = name == 'defeat' ? 1 - smooth(sample.t) : 1.0;
+    rest.bodyY *= suspension;
+    rest.headY = -85 + (rest.headY + 85) * suspension;
+    rest.y -= (10 + 7 * math.sin(clock * 3 + (opponent ? 1 : 0))) * suspension;
+    pose.blendFrom(rest, 0);
+    pose.mode = 0;
+    final rawFrame = applyVoltPose(
       pose,
       name,
       sample.t,
       equippedWeapon: mounted,
       clock: clock,
+      guardImpact: !arena
+          ? null
+          : name == 'guard' &&
+                phase == (opponent ? 'impact' : 'reply') &&
+                data['stunned'] != true &&
+                data['intent'] != 'windup'
+          ? (0.35 +
+                        ((data[opponent ? 'damage' : 'incoming'] as num? ?? 0) /
+                            35))
+                    .clamp(0.0, 1.0) *
+                math.exp(-age * 12)
+          : 0,
     );
+    final blendSeconds = voltBlendSeconds(name);
+    final blendWeight = reduced
+        ? 1.0
+        : unit((clock - playback.blendAt) / blendSeconds);
+    final frame = blendVoltFrame(rawFrame, playback.fromFrame, blendWeight);
     if (mounted.isNotEmpty &&
         {'attack', 'quick', 'pierce', 'burst'}.contains(sample.action)) {
       pose.armR = -1.48 + .12 * math.sin(sample.t * math.pi * 6);
@@ -1199,13 +1257,16 @@ class GameSceneClock extends ChangeNotifier {
     }
     pose.extra['voltPower'] = frame.coilGlow;
     pose.extra['voltCore'] = frame.coreGlow;
+    pose.extra['voltFacePower'] = frame.power;
     pose.extra['voltAntenna'] = .08 * math.sin(clock * 3) + .1 * frame.charge;
-    pose.extra['joint8'] = actor.motor.velocity.clamp(-100, 100) * .0015;
-    pose.extra['joint9'] = -pose.extra['joint8']!;
-    if (!reduced && playback.from != null && clock - playback.blendAt < .18)
-      blendVoltPose(pose, playback.from!, (clock - playback.blendAt) / .18);
-    if (!arena) voltTrackGaze(pose, gaze);
+    final travel = actor.motor.velocity.clamp(-100, 100) * .0015;
+    pose.extra['joint8'] = pose.extra['joint8']! + travel;
+    pose.extra['joint9'] = pose.extra['joint9']! - travel;
+    if (!reduced && playback.from != null && blendWeight < 1)
+      blendVoltPose(pose, playback.from!, blendWeight);
+    if (!arena) voltTrackGaze(pose, gaze, weight: frame.power);
     for (final cue in voltCuesCrossed(name, playback.cueT, sample.t)) {
+      if (data['sampleOnly'] == true) continue;
       final mountedShot =
           cue == 'volt_pulse' &&
           mounted.isNotEmpty &&
@@ -1299,24 +1360,39 @@ class GameSceneClock extends ChangeNotifier {
         data['reactions'] as List? ?? ['joy', 'surprise', 'inspect'];
     final role = robotProfiles[data['robot']]?['class'];
     localAction = isVolt
-        ? (tapBurst >= 3
-              ? 'anger'
-              : const [
-                  'joy',
-                  'jump',
-                  'surprise',
-                  'inspect',
-                  'dance',
-                ][reactionIndex++ % 5])
+        ? (tapBurst >= 3 ? 'anger' : _nextVoltReaction())
         : tapBurst >= 3
         ? (role == 'tank' || role == 'striker' ? 'anger' : 'dance')
         : reactions[reactionIndex++ % reactions.length] as String;
     if (isVolt) {
       _voltPlayer.from = player.pose;
+      _voltPlayer.fromFrame = _voltPlayer.frame;
+      _voltPlayer.action = localAction;
       _voltPlayer.blendAt = clock;
       _voltPlayer.cueT = -.001;
     }
     localAge = 0;
+  }
+
+  String _nextVoltReaction() {
+    if (_reactionBag.isEmpty) {
+      _reactionBag.addAll(
+        ['joy', 'jump', 'surprise', 'inspect', 'playful', 'wave', 'dance']
+          ..shuffle(_reactionRandom),
+      );
+      // The first greeting is friendly; subsequent reactions use a shuffle bag
+      // with no repetitions until all seven have appeared.
+      final wanted = reactionIndex == 0 ? 'joy' : null;
+      if (wanted != null) {
+        _reactionBag.remove(wanted);
+        _reactionBag.insert(0, wanted);
+      } else if (_reactionBag.first == localAction) {
+        final first = _reactionBag.removeAt(0);
+        _reactionBag.add(first);
+      }
+    }
+    reactionIndex++;
+    return _reactionBag.removeAt(0);
   }
 
   void moveTo(Offset point) {
@@ -1345,6 +1421,8 @@ class GameSceneClock extends ChangeNotifier {
     player.facing = 1;
     if (isVolt) {
       _voltPlayer.from = player.pose;
+      _voltPlayer.fromFrame = _voltPlayer.frame;
+      _voltPlayer.action = name;
       _voltPlayer.blendAt = clock;
       _voltPlayer.cueT = -.001;
       return; // Native Volt timeline owns its synchronised audio cues.

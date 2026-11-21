@@ -62,11 +62,11 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   test(
-    'authored Volt geometry preserves 381 shapes and actual mechanism bindings',
+    'authored Volt geometry preserves the articulated suspension and mechanisms',
     () {
-      expect(voltGeometryShapeCount, 381);
-      expect(voltGeometryNodes.length, 511);
-      expect(voltGeometryPaths.length, 198);
+      expect(voltGeometryShapeCount, 385);
+      expect(voltGeometryNodes.length, 522);
+      expect(voltGeometryPaths.length, 199);
       expect(voltGeometrySourceSha256.length, 64);
       for (final joint in [
         'joint0',
@@ -77,10 +77,14 @@ void main() {
         'joint5',
         'joint6',
         'joint7',
+        'joint8',
+        'joint9',
         'joint10',
         'joint11',
         'joint12',
         'joint13',
+        'joint14',
+        'joint15',
       ]) {
         expect(
           voltGeometryNodes.any((n) => n.rotationBinding == joint),
@@ -99,7 +103,7 @@ void main() {
   test('Canvas rest pose matches the authored native Rive silhouette', () async {
     final image = await render(restPose());
     await save(image, 'volt-rest');
-    final native = File('../../docs/volt-v35/volt-authored-native.png');
+    final native = File('../../docs/volt-v36/volt-authored-native.png');
     expect(native.existsSync(), isTrue);
     final codec = await ui.instantiateImageCodec(native.readAsBytesSync());
     final reference = (await codec.getNextFrame()).image;
@@ -221,6 +225,7 @@ void main() {
       await save(armed, 'volt-equipped-sniper');
       final off = restPose()
         ..extra['voltPower'] = 0
+        ..extra['voltFacePower'] = 0
         ..extra['voltCore'] = 0;
       final dark = await render(off);
       final onPixels = (await idle.toByteData(

@@ -21,7 +21,10 @@ parser.add_argument("--port", type=int, default=18557)
 parser.add_argument("--mode", choices=("workshop", "battle", "robot"), default="workshop")
 parser.add_argument("--robot", default="volt")
 parser.add_argument("--silent", action="store_true")
+parser.add_argument("--music-check", action="store_true", help="Exercise real main-game music with isolated data")
 args = parser.parse_args()
+if args.music_check:
+    args.mode='robot'
 args.out.mkdir(parents=True, exist_ok=True)
 sys.path[:0] = [str(args.source.resolve()), str(ROOT)]
 import_started = time.perf_counter()
@@ -75,7 +78,33 @@ async def main(page):
     session.start()
 
     async def scenario():
-        if args.mode == "robot":
+        if args.music_check:
+            def mark(name):
+                with (args.out/'music-scenario.jsonl').open('a',encoding='utf-8') as stream:
+                    stream.write(json.dumps({'name':name,'since_session_ms':(time.perf_counter()-created)*1000})+'\n')
+            await asyncio.sleep(3)
+            mark('victory-1');session.preview_robot('volt','victory')
+            await asyncio.sleep(.8)
+            mark('pulse-during-victory');session.preview_robot('volt','attack')
+            await asyncio.sleep(.6)
+            mark('leave-inspection');session.robot_detail='';session.notify()
+            await asyncio.sleep(3.7)
+            mark('arena');session.act('battle_start','volt');session.focus_scene='battle';session.notify()
+            await asyncio.sleep(1.4)
+            mark('inspection');session.focus_scene='';session.robot_detail='volt';session.notify()
+            await asyncio.sleep(.7)
+            mark('victory-2');session.preview_robot('volt','victory')
+            await asyncio.sleep(1.6)
+            mark('pause');session.pause()
+            await asyncio.sleep(1)
+            mark('resume');session.resume()
+            for action in ['attack','special','quick']:
+                session.preview_robot('volt',action);await asyncio.sleep(.15)
+            await asyncio.sleep(5)
+            mark('storm');session.preview_robot('volt','ultimate')
+            await asyncio.sleep(2.8)
+            mark('complete')
+        elif args.mode == "robot":
             while session.ui_alive:
                 for action in ("attack", "special", "ultimate", "guard"):
                     session.preview_robot(args.robot, action)

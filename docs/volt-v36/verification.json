@@ -1,0 +1,458 @@
+{
+  "build": 36,
+  "version": "0.2.0",
+  "kind": "Android test prerelease",
+  "main_game": true,
+  "baseline_source": "6a866bdc91d7a144bbfd99409cdc54f331add872",
+  "release_tag": "volt-v0.2.0-36",
+  "apk": {
+    "apk": "C:\\Clicker\\build\\apk-game-v36\\clicker.apk",
+    "bytes": 177787354,
+    "sha256": "825a38afcab67bfdef84282e372c4a39be286bb5ad94b8f58c55b1babc746e68",
+    "version_code": 36,
+    "certificate_sha256": "67f16d1bdbaa503c69f514076d056a21a14b5c7e9db7e00b3b485491f9421e85",
+    "modules": 49,
+    "published_rive_bytes": 850270,
+    "sound_assets": 46,
+    "native_libraries_16kb": 128,
+    "abis": 3,
+    "test_ads": true,
+    "phone_tested": false,
+    "arena_url": "https://robo-workshop-arena.onrender.com"
+  },
+  "apk_growth": {
+    "baseline_bytes": 177551626,
+    "delta_bytes": 235728,
+    "percent": 0.1328
+  },
+  "scope_counts": {
+    "other_robot_portraits": 31,
+    "other_ability_rows": 31,
+    "other_artboards": 31,
+    "other_view_models": 31,
+    "unchanged_existing_audio": 46,
+    "new_volt_audio": 0,
+    "new_robot_audio": 0,
+    "new_music_audio": 3,
+    "unchanged_combat_files": 3
+  },
+  "preserved_rive": {
+    "sha256": "4e01c982c53d7704e6dce14b62094bc74118cd53304df0975ce63a9a4b7cb8fd",
+    "bytes": 850270,
+    "unchanged": true
+  },
+  "preserved_combat": {
+    "combat_rules.py": {
+      "sha256": "5b7982a91c47e5692ec8ad717e50ed2aad7273fb0fd5b2000506daaae74bdbb0",
+      "bytes": 20491,
+      "unchanged": true
+    },
+    "robot_arena.py": {
+      "sha256": "2ee815b4ef12d894952cdf699172b2c4f37ad0bac4ac60bc70c95bb13dc7daa5",
+      "bytes": 23335,
+      "unchanged": true
+    },
+    "armory.py": {
+      "sha256": "07e1d280432497420ad8dbce646c939f839987f2896b9d07266beae5ed4f5b8e",
+      "bytes": 17569,
+      "unchanged": true
+    }
+  },
+  "new_music_assets": {
+    "music_workshop.ogg": {
+      "bytes": 16932,
+      "sha256": "3a9158e8ab69501955c7dacd6447f504a1cb5275440d181f9a99ab20f12f728d"
+    },
+    "music_arena.ogg": {
+      "bytes": 16821,
+      "sha256": "da381062335347b000753303043eb4ef0fe17af2194916e28f56212e909f64ea"
+    },
+    "music_victory.ogg": {
+      "bytes": 13401,
+      "sha256": "e781e3e5cf18e40c06b7c289bdccef1d28918205fd83f9e4be44c7b521d45bb1"
+    }
+  },
+  "package_asset_checks": {
+    "abis": 3,
+    "markers_per_abi": 13,
+    "verified_assets": 82
+  },
+  "tests": {
+    "python_total": 295,
+    "python_passed": 285,
+    "optional_postgres_skips": 10,
+    "native_motion_audio_interaction": 184,
+    "native_cache": 8,
+    "native_layouts": 9,
+    "dart_analyzer_files": 8,
+    "dart_analyzer_issues": 0,
+    "official_rive_errors": 0,
+    "official_rive_warnings": 0
+  },
+  "geometry": {
+    "shapes": 385,
+    "nodes": 522,
+    "paths": 199,
+    "materials": 174,
+    "rml_sha256": "2395f7181b01d218263c140b9a1f402a27194853617a4c51493e39d0ab636e8d"
+  },
+  "canonical_model_comparison": {
+    "silhouette_iou": 0.9951668302257115,
+    "foreground_rgb_mae": 5.2956084396467125,
+    "threshold_iou": 0.9,
+    "threshold_mae": 24
+  },
+  "native_cpu_before": {
+    "measurement": "Native Flutter test engine; Dart/Canvas command recording CPU only. No Android execution or FPS claim.",
+    "samples_per_mode": 360,
+    "warm_ms": 1.022,
+    "uncached_recording_ms": {
+      "p50": 0.416,
+      "p95": 0.66
+    },
+    "assembly_picture_recording_ms": {
+      "p50": 0.261,
+      "p95": 0.494
+    },
+    "cache": {
+      "sourceShapes": 381,
+      "paths": 198,
+      "materialsPerAccent": 173,
+      "accentVariants": 1,
+      "staticAssemblies": 34,
+      "staticShapes": 230,
+      "pictureAccentVariants": 1,
+      "assemblyPictures": 34,
+      "pictureBytes": 58304,
+      "pictureBudgetBytes": 2097152,
+      "maxAccentVariants": 8,
+      "maxAssembliesPerAccent": 64,
+      "recordedAssemblies": 34
+    },
+    "gpu_raster_improvement_verified": false
+  },
+  "native_cpu_after": {
+    "measurement": "Native Flutter test engine; Dart/Canvas command recording CPU only. No Android execution or FPS claim.",
+    "samples_per_mode": 360,
+    "warm_ms": 0.963,
+    "uncached_recording_ms": {
+      "p50": 0.474,
+      "p95": 0.873
+    },
+    "assembly_picture_recording_ms": {
+      "p50": 0.326,
+      "p95": 0.601
+    },
+    "cache": {
+      "sourceShapes": 385,
+      "paths": 199,
+      "materialsPerAccent": 174,
+      "accentVariants": 1,
+      "staticAssemblies": 34,
+      "staticShapes": 224,
+      "pictureAccentVariants": 1,
+      "assemblyPictures": 34,
+      "pictureBytes": 56240,
+      "pictureBudgetBytes": 2097152,
+      "maxAccentVariants": 8,
+      "maxAssembliesPerAccent": 64,
+      "recordedAssemblies": 34
+    },
+    "gpu_raster_improvement_verified": false
+  },
+  "desktop_paired_profile": {
+    "before-workshop": {
+      "platform": "Windows Chrome headless / Flutter profile",
+      "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+      "samples_after_warmup": 26,
+      "median_unique_vsync_fps": 80.12173007840595,
+      "minimum_unique_vsync_fps": 47.68583450210379,
+      "median_raw_fps": 80.12173007840595,
+      "maximum_ui_p95_ms": 12.8,
+      "maximum_raster_p95_ms": 13,
+      "viewport": [
+        390,
+        844
+      ],
+      "flutter_errors": [],
+      "physical_android_tested": false,
+      "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+      "first_render": {
+        "python_first_render_ms": 136.04040000063833
+      },
+      "first_native_paint": {
+        "robot": "volt",
+        "enemy": "",
+        "renderer": "flutter",
+        "model_renderer": "flutter-canvas-articulated",
+        "rig_load_ms": 0,
+        "model_warm_ms": 12.6,
+        "since_session_ms": 354.1955999971833
+      },
+      "dpr": 3,
+      "capture": "volt-motion-v36-before-workshop",
+      "memory": {
+        "measurement": "Windows Chrome process-tree working/private bytes and CDP JS heap snapshots; includes browser/renderer overhead, not Android or Dart-only memory",
+        "samples": [
+          {
+            "elapsed_seconds": 10.61,
+            "chrome_processes": 11,
+            "chrome_rss_bytes": 1027784704,
+            "chrome_private_bytes": 798175232,
+            "js_heap_used_bytes": 61733320
+          },
+          {
+            "elapsed_seconds": 21.18,
+            "chrome_processes": 11,
+            "chrome_rss_bytes": 1084579840,
+            "chrome_private_bytes": 918700032,
+            "js_heap_used_bytes": 59978272
+          },
+          {
+            "elapsed_seconds": 31.78,
+            "chrome_processes": 8,
+            "chrome_rss_bytes": 1017262080,
+            "chrome_private_bytes": 897306624,
+            "js_heap_used_bytes": 58714748
+          }
+        ],
+        "max_chrome_rss_bytes": 1084579840,
+        "max_chrome_private_bytes": 918700032
+      }
+    },
+    "before-combat": {
+      "platform": "Windows Chrome headless / Flutter profile",
+      "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+      "samples_after_warmup": 25,
+      "median_unique_vsync_fps": 83.22848176561881,
+      "minimum_unique_vsync_fps": 70.65253853383514,
+      "median_raw_fps": 83.22848176561881,
+      "maximum_ui_p95_ms": 17.9,
+      "maximum_raster_p95_ms": 11.7,
+      "viewport": [
+        844,
+        390
+      ],
+      "flutter_errors": [],
+      "physical_android_tested": false,
+      "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+      "first_render": {
+        "python_first_render_ms": 426.773699997284
+      },
+      "first_native_paint": {
+        "robot": "volt",
+        "enemy": "spark",
+        "renderer": "rive",
+        "model_renderer": "flutter-canvas-articulated",
+        "rig_load_ms": 752.5,
+        "since_session_ms": 1512.0948999974644
+      },
+      "dpr": 2,
+      "capture": "volt-motion-v36-before-combat",
+      "memory": {
+        "measurement": "Windows Chrome process-tree working/private bytes and CDP JS heap snapshots; includes browser/renderer overhead, not Android or Dart-only memory",
+        "samples": [
+          {
+            "elapsed_seconds": 10.26,
+            "chrome_processes": 11,
+            "chrome_rss_bytes": 965181440,
+            "chrome_private_bytes": 834375680,
+            "js_heap_used_bytes": 78715680
+          },
+          {
+            "elapsed_seconds": 20.49,
+            "chrome_processes": 11,
+            "chrome_rss_bytes": 1088266240,
+            "chrome_private_bytes": 946216960,
+            "js_heap_used_bytes": 100789176
+          },
+          {
+            "elapsed_seconds": 30.76,
+            "chrome_processes": 8,
+            "chrome_rss_bytes": 1004146688,
+            "chrome_private_bytes": 938942464,
+            "js_heap_used_bytes": 58243468
+          }
+        ],
+        "max_chrome_rss_bytes": 1088266240,
+        "max_chrome_private_bytes": 946216960
+      }
+    },
+    "after-workshop": {
+      "platform": "Windows Chrome headless / Flutter profile",
+      "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+      "samples_after_warmup": 26,
+      "median_unique_vsync_fps": 89.14547494390428,
+      "minimum_unique_vsync_fps": 65.92797783933518,
+      "median_raw_fps": 89.14547494390428,
+      "maximum_ui_p95_ms": 11.4,
+      "maximum_raster_p95_ms": 12.8,
+      "viewport": [
+        390,
+        844
+      ],
+      "flutter_errors": [],
+      "physical_android_tested": false,
+      "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+      "first_render": {
+        "python_first_render_ms": 108.16060000070138
+      },
+      "first_native_paint": {
+        "robot": "volt",
+        "enemy": "",
+        "renderer": "flutter",
+        "model_renderer": "flutter-canvas-articulated",
+        "rig_load_ms": 0,
+        "model_warm_ms": 15.7,
+        "since_session_ms": 345.8743000010145
+      },
+      "dpr": 3,
+      "capture": "volt-motion-v36-after-workshop",
+      "memory": {
+        "measurement": "Windows Chrome process-tree working/private bytes and CDP JS heap snapshots; includes browser/renderer overhead, not Android or Dart-only memory",
+        "samples": [
+          {
+            "elapsed_seconds": 10.58,
+            "chrome_processes": 11,
+            "chrome_rss_bytes": 937385984,
+            "chrome_private_bytes": 772034560,
+            "js_heap_used_bytes": 70328544
+          },
+          {
+            "elapsed_seconds": 21.16,
+            "chrome_processes": 11,
+            "chrome_rss_bytes": 1031499776,
+            "chrome_private_bytes": 961208320,
+            "js_heap_used_bytes": 66898540
+          },
+          {
+            "elapsed_seconds": 31.75,
+            "chrome_processes": 8,
+            "chrome_rss_bytes": 955342848,
+            "chrome_private_bytes": 963092480,
+            "js_heap_used_bytes": 63277916
+          }
+        ],
+        "max_chrome_rss_bytes": 1031499776,
+        "max_chrome_private_bytes": 963092480
+      }
+    },
+    "after-combat": {
+      "platform": "Windows Chrome headless / Flutter profile",
+      "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+      "samples_after_warmup": 25,
+      "median_unique_vsync_fps": 85.7348703170029,
+      "minimum_unique_vsync_fps": 62.93632324941824,
+      "median_raw_fps": 85.73487031700289,
+      "maximum_ui_p95_ms": 10.2,
+      "maximum_raster_p95_ms": 11,
+      "viewport": [
+        844,
+        390
+      ],
+      "flutter_errors": [],
+      "physical_android_tested": false,
+      "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+      "first_render": {
+        "python_first_render_ms": 312.8281000026618
+      },
+      "first_native_paint": {
+        "robot": "volt",
+        "enemy": "spark",
+        "renderer": "rive",
+        "model_renderer": "flutter-canvas-articulated",
+        "rig_load_ms": 716.8,
+        "since_session_ms": 1373.3291999960784
+      },
+      "dpr": 2,
+      "capture": "volt-motion-v36-after-combat",
+      "memory": {
+        "measurement": "Windows Chrome process-tree working/private bytes and CDP JS heap snapshots; includes browser/renderer overhead, not Android or Dart-only memory",
+        "samples": [
+          {
+            "elapsed_seconds": 10.25,
+            "chrome_processes": 11,
+            "chrome_rss_bytes": 924504064,
+            "chrome_private_bytes": 850206720,
+            "js_heap_used_bytes": 82066460
+          },
+          {
+            "elapsed_seconds": 20.51,
+            "chrome_processes": 11,
+            "chrome_rss_bytes": 1031725056,
+            "chrome_private_bytes": 1024909312,
+            "js_heap_used_bytes": 98418744
+          },
+          {
+            "elapsed_seconds": 30.8,
+            "chrome_processes": 8,
+            "chrome_rss_bytes": 936787968,
+            "chrome_private_bytes": 1006080000,
+            "js_heap_used_bytes": 74123640
+          }
+        ],
+        "max_chrome_rss_bytes": 1031725056,
+        "max_chrome_private_bytes": 1024909312
+      }
+    }
+  },
+  "actual_browser_music": {
+    "status": "passed",
+    "real_main_game": true,
+    "isolated_player_state": true,
+    "first_victory_uninterrupted_seconds": 4.003,
+    "second_victory_resumed_at_seconds": 1.226,
+    "victory_completion_events": 2,
+    "max_simultaneous_backgrounds": 1,
+    "fade_gain_steps": [
+      0,
+      0.00852,
+      0.02981,
+      0.0575,
+      0.08519,
+      0.10648,
+      0.115
+    ],
+    "storm_starts_at_seconds": 0.312,
+    "physical_android_tested": false,
+    "speaker_auditioned": false,
+    "events_file": "C:\\Clicker\\.cache\\rework-review\\volt-v36-music-live-02\\audio-events.json",
+    "verification_method": "Actual captured media events, checked with completion-delimited reuse of the bounded victory voice"
+  },
+  "actual_pointer": {
+    "build": 36,
+    "main_packaged_game": false,
+    "main_game_source": true,
+    "robot": "volt",
+    "client": "Current main-game worker and compiled Flutter client, Chrome headless",
+    "floor_awards": 0,
+    "long_press_awards": 0,
+    "rapid_robot_taps": 5,
+    "recorded_taps": 5,
+    "coins_from_taps": 5,
+    "passive_coins_preserved": 17,
+    "automatic_feeding_preserved": true,
+    "isolated_data": "C:\\Clicker\\.cache\\interaction-v27\\packaged-input-v36\\data",
+    "real_player_save_opened": false,
+    "android_device": false
+  },
+  "packaged_python": {
+    "python": "3.14.7",
+    "apk_module_imports": 18,
+    "save_load": "passed",
+    "physical_android": false,
+    "arena_url": "https://robo-workshop-arena.onrender.com",
+    "public_https_checked": true
+  },
+  "runtime_source_files_frozen": 124,
+  "runtime_source_manifest_sha256": "220d17916a5bc4509c27ae2c66b9878e3bd990d74af926b3f5b20a8cf0f3491c",
+  "physical_android_tested": false,
+  "speaker_auditioned": false,
+  "limitations": [
+    "Desktop rolling frame windows are overlapping and come from single runs, not Android FPS or thermal measurements.",
+    "Chrome tree memory includes browser, GPU and helper processes; private bytes rose 4.8 to 8.3 percent, RSS fell.",
+    "Short runs cannot establish long-session leak freedom.",
+    "Android package checks do not execute the APK on a device."
+  ],
+  "publication": "A separate publisher receipt records tag resolution and full unauthenticated APK download SHA-256 after this source commit."
+}

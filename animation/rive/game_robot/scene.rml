@@ -2852,6 +2852,19 @@
       <ViewModelInstanceNumber viewModelPropertyId="0:120151" propertyValue="1" />
       <ViewModelInstanceNumber viewModelPropertyId="0:120152" propertyValue="0" />
       <ViewModelInstanceNumber viewModelPropertyId="0:120153" propertyValue="1" />
+      <ViewModelInstanceNumber viewModelPropertyId="0:120154" propertyValue="-43" />
+      <ViewModelInstanceNumber viewModelPropertyId="0:120155" propertyValue="78" />
+      <ViewModelInstanceNumber viewModelPropertyId="0:120156" propertyValue="1" />
+      <ViewModelInstanceNumber viewModelPropertyId="0:120157" propertyValue="43" />
+      <ViewModelInstanceNumber viewModelPropertyId="0:120158" propertyValue="78" />
+      <ViewModelInstanceNumber viewModelPropertyId="0:120159" propertyValue="1" />
+      <ViewModelInstanceNumber viewModelPropertyId="0:120160" propertyValue="1" />
+      <ViewModelInstanceNumber viewModelPropertyId="0:120161" propertyValue="-9" />
+      <ViewModelInstanceNumber viewModelPropertyId="0:120162" propertyValue="0" />
+      <ViewModelInstanceNumber viewModelPropertyId="0:120163" propertyValue="0" />
+      <ViewModelInstanceNumber viewModelPropertyId="0:120164" propertyValue="19" />
+      <ViewModelInstanceNumber viewModelPropertyId="0:120165" propertyValue="0" />
+      <ViewModelInstanceNumber viewModelPropertyId="0:120166" propertyValue="19" />
     </ViewModelInstance>
     <ViewModelPropertyNumber name="mode" id="0:120000" />
     <ViewModelPropertyNumber name="wheelAngle" id="0:120001" />
@@ -3008,6 +3021,19 @@
     <ViewModelPropertyNumber name="voltCore" id="0:120151" />
     <ViewModelPropertyNumber name="voltAntenna" id="0:120152" />
     <ViewModelPropertyNumber name="voltPower" id="0:120153" />
+    <ViewModelPropertyNumber name="voltLegLX" id="0:120154" />
+    <ViewModelPropertyNumber name="voltLegLY" id="0:120155" />
+    <ViewModelPropertyNumber name="voltStrutL" id="0:120156" />
+    <ViewModelPropertyNumber name="voltLegRX" id="0:120157" />
+    <ViewModelPropertyNumber name="voltLegRY" id="0:120158" />
+    <ViewModelPropertyNumber name="voltStrutR" id="0:120159" />
+    <ViewModelPropertyNumber name="voltFacePower" id="0:120160" />
+    <ViewModelPropertyNumber name="voltOpticY" id="0:120161" />
+    <ViewModelPropertyNumber name="voltOpticRoll" id="0:120162" />
+    <ViewModelPropertyNumber name="voltShoulderL" id="0:120163" />
+    <ViewModelPropertyNumber name="voltPistonL" id="0:120164" />
+    <ViewModelPropertyNumber name="voltShoulderR" id="0:120165" />
+    <ViewModelPropertyNumber name="voltPistonR" id="0:120166" />
   </ViewModel>
   <Artboard width="420" height="440" name="volt" id="0:100002" styleId="0:100003" defaultStateMachineId="0:100020" viewModelId="0:100010" viewModelInstanceId="0:100011" originX="0" originY="0" clip="false" x="500" y="0">
     <LayoutComponentStyle name="Artboard Style" id="0:100003" />
@@ -3118,72 +3144,77 @@
     <LinearAnimation id="0:100056" name="victory" fps="60" duration="120" quantize="false" loopValue="loop" />
     <LinearAnimation id="0:100057" name="defeat" fps="60" duration="90" quantize="false" loopValue="oneShot" />
     <Node x="210" y="276" name="Robot" id="0:104000" rotation="0">
-      <Node y="-85" name="Head" id="0:104222" rotation="0">
+      <Node y="-85" name="Head" id="0:104230" rotation="0">
         <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120055" />
         <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120056" />
-        <Node name="Gaze" id="0:104223" x="0" y="0">
+        <Node name="Gaze" id="0:104231" x="0" y="0">
           <DataBindContext propertyKey="13" sourcePathIds="0:100010-0:120002" />
           <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120003" />
-          <Node name="Smile" id="0:104224" opacity="1">
-            <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120065" />
-            <Shape name="Smile phosphor" id="0:104225">
-              <PointsPath isClosed="true" isClockwise="true">
-                <StraightVertex x="-12" y="20" radius="3" />
-                <StraightVertex x="-6" y="24" radius="3" />
-                <StraightVertex x="4" y="25" radius="3" />
-                <StraightVertex x="13" y="20" radius="3" />
-              </PointsPath>
-              <Stroke thickness="3" cap="round" join="round">
-                <SolidColor colorValue="FFB7FAFF" />
-              </Stroke>
-            </Shape>
+          <Node name="Volt phosphor screen" id="0:104232" opacity="1">
+            <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120160" />
+            <Node name="Smile" id="0:104233" opacity="1">
+              <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120065" />
+              <Shape name="Smile phosphor" id="0:104234">
+                <PointsPath isClosed="true" isClockwise="true">
+                  <StraightVertex x="-12" y="20" radius="3" />
+                  <StraightVertex x="-6" y="24" radius="3" />
+                  <StraightVertex x="4" y="25" radius="3" />
+                  <StraightVertex x="13" y="20" radius="3" />
+                </PointsPath>
+                <Stroke thickness="3" cap="round" join="round">
+                  <SolidColor colorValue="FFB7FAFF" />
+                </Stroke>
+              </Shape>
+            </Node>
+            <Node name="Focus mouth" id="0:104235" opacity="0">
+              <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120066" />
+              <Shape name="Focus mouth phosphor" id="0:104236">
+                <PointsPath isClosed="true" isClockwise="true">
+                  <StraightVertex x="-11" y="23" radius="3" />
+                  <StraightVertex x="11" y="23" radius="3" />
+                </PointsPath>
+                <Stroke thickness="3" cap="round" join="round">
+                  <SolidColor colorValue="FFB7FAFF" />
+                </Stroke>
+              </Shape>
+            </Node>
+            <Node name="Sad mouth" id="0:104237" opacity="0">
+              <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120067" />
+              <Shape name="Sad mouth phosphor" id="0:104238">
+                <PointsPath isClosed="true" isClockwise="true">
+                  <StraightVertex x="-12" y="24" radius="3" />
+                  <StraightVertex x="-5" y="19" radius="3" />
+                  <StraightVertex x="5" y="19" radius="3" />
+                  <StraightVertex x="12" y="24" radius="3" />
+                </PointsPath>
+                <Stroke thickness="3" cap="round" join="round">
+                  <SolidColor colorValue="FFB7FAFF" />
+                </Stroke>
+              </Shape>
+            </Node>
+            <Node name="Surprised mouth" id="0:104239" opacity="0">
+              <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120093" />
+              <Shape x="0" y="23" rotation="0" name="Volt surprised mouth" id="0:104240">
+                <Ellipse width="11" height="13" originX="0.5" originY="0.5" />
+                <Fill>
+                  <LinearGradient startX="-3.96" startY="-6.5" endX="4.62" endY="6.5">
+                    <GradientStop position="0.0" colorValue="FFF5FFFF" />
+                    <GradientStop position="0.5" colorValue="FF7FF8FF" />
+                    <GradientStop position="1.0" colorValue="FF239CCF" />
+                  </LinearGradient>
+                </Fill>
+              </Shape>
+            </Node>
           </Node>
-          <Node name="Focus mouth" id="0:104226" opacity="0">
-            <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120066" />
-            <Shape name="Focus mouth phosphor" id="0:104227">
-              <PointsPath isClosed="true" isClockwise="true">
-                <StraightVertex x="-11" y="23" radius="3" />
-                <StraightVertex x="11" y="23" radius="3" />
-              </PointsPath>
-              <Stroke thickness="3" cap="round" join="round">
-                <SolidColor colorValue="FFB7FAFF" />
-              </Stroke>
-            </Shape>
-          </Node>
-          <Node name="Sad mouth" id="0:104228" opacity="0">
-            <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120067" />
-            <Shape name="Sad mouth phosphor" id="0:104229">
-              <PointsPath isClosed="true" isClockwise="true">
-                <StraightVertex x="-12" y="24" radius="3" />
-                <StraightVertex x="-5" y="19" radius="3" />
-                <StraightVertex x="5" y="19" radius="3" />
-                <StraightVertex x="12" y="24" radius="3" />
-              </PointsPath>
-              <Stroke thickness="3" cap="round" join="round">
-                <SolidColor colorValue="FFB7FAFF" />
-              </Stroke>
-            </Shape>
-          </Node>
-          <Node name="Surprised mouth" id="0:104230" opacity="0">
-            <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120093" />
-            <Shape x="0" y="23" rotation="0" name="Volt surprised mouth" id="0:104231">
-              <Ellipse width="11" height="13" originX="0.5" originY="0.5" />
-              <Fill>
-                <LinearGradient startX="-3.96" startY="-6.5" endX="4.62" endY="6.5">
-                  <GradientStop position="0.0" colorValue="FFF5FFFF" />
-                  <GradientStop position="0.5" colorValue="FF7FF8FF" />
-                  <GradientStop position="1.0" colorValue="FF239CCF" />
-                </LinearGradient>
-              </Fill>
-            </Shape>
-          </Node>
-          <Node y="-9" name="Eyes" id="0:104232" scaleX="1" scaleY="1">
+          <Node y="-9" name="Eyes" id="0:104241" rotation="0" scaleX="1" scaleY="1">
+            <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120161" />
+            <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120162" />
             <DataBindContext propertyKey="16" sourcePathIds="0:100010-0:120063" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120064" />
-            <Node rotation="0.0" name="Volt iris pivot frame 0" id="0:104233">
-              <Node x="22" y="0" name="Volt iris blade 0" id="0:104234" rotation="0">
+            <Node rotation="0.0" name="Volt iris pivot frame 0" id="0:104242">
+              <Node x="22" y="0" name="Volt iris blade 0" id="0:104243" rotation="0">
                 <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120138" />
-                <Shape name="Iris machined leaf 0" id="0:104235">
+                <Shape name="Iris machined leaf 0" id="0:104244">
                   <PointsPath isClosed="true" isClockwise="true">
                     <StraightVertex x="0" y="-7" radius="0.8" />
                     <StraightVertex x="4" y="-2" radius="0.8" />
@@ -3205,10 +3236,10 @@
                 </Shape>
               </Node>
             </Node>
-            <Node rotation="1.0471975511965976" name="Volt iris pivot frame 1" id="0:104236">
-              <Node x="22" y="0" name="Volt iris blade 1" id="0:104237" rotation="0">
+            <Node rotation="1.0471975511965976" name="Volt iris pivot frame 1" id="0:104245">
+              <Node x="22" y="0" name="Volt iris blade 1" id="0:104246" rotation="0">
                 <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120138" />
-                <Shape name="Iris machined leaf 1" id="0:104238">
+                <Shape name="Iris machined leaf 1" id="0:104247">
                   <PointsPath isClosed="true" isClockwise="true">
                     <StraightVertex x="0" y="-7" radius="0.8" />
                     <StraightVertex x="4" y="-2" radius="0.8" />
@@ -3230,10 +3261,10 @@
                 </Shape>
               </Node>
             </Node>
-            <Node rotation="2.0943951023931953" name="Volt iris pivot frame 2" id="0:104239">
-              <Node x="22" y="0" name="Volt iris blade 2" id="0:104240" rotation="0">
+            <Node rotation="2.0943951023931953" name="Volt iris pivot frame 2" id="0:104248">
+              <Node x="22" y="0" name="Volt iris blade 2" id="0:104249" rotation="0">
                 <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120138" />
-                <Shape name="Iris machined leaf 2" id="0:104241">
+                <Shape name="Iris machined leaf 2" id="0:104250">
                   <PointsPath isClosed="true" isClockwise="true">
                     <StraightVertex x="0" y="-7" radius="0.8" />
                     <StraightVertex x="4" y="-2" radius="0.8" />
@@ -3255,10 +3286,10 @@
                 </Shape>
               </Node>
             </Node>
-            <Node rotation="3.141592653589793" name="Volt iris pivot frame 3" id="0:104242">
-              <Node x="22" y="0" name="Volt iris blade 3" id="0:104243" rotation="0">
+            <Node rotation="3.141592653589793" name="Volt iris pivot frame 3" id="0:104251">
+              <Node x="22" y="0" name="Volt iris blade 3" id="0:104252" rotation="0">
                 <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120138" />
-                <Shape name="Iris machined leaf 3" id="0:104244">
+                <Shape name="Iris machined leaf 3" id="0:104253">
                   <PointsPath isClosed="true" isClockwise="true">
                     <StraightVertex x="0" y="-7" radius="0.8" />
                     <StraightVertex x="4" y="-2" radius="0.8" />
@@ -3280,10 +3311,10 @@
                 </Shape>
               </Node>
             </Node>
-            <Node rotation="4.1887902047863905" name="Volt iris pivot frame 4" id="0:104245">
-              <Node x="22" y="0" name="Volt iris blade 4" id="0:104246" rotation="0">
+            <Node rotation="4.1887902047863905" name="Volt iris pivot frame 4" id="0:104254">
+              <Node x="22" y="0" name="Volt iris blade 4" id="0:104255" rotation="0">
                 <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120138" />
-                <Shape name="Iris machined leaf 4" id="0:104247">
+                <Shape name="Iris machined leaf 4" id="0:104256">
                   <PointsPath isClosed="true" isClockwise="true">
                     <StraightVertex x="0" y="-7" radius="0.8" />
                     <StraightVertex x="4" y="-2" radius="0.8" />
@@ -3305,10 +3336,10 @@
                 </Shape>
               </Node>
             </Node>
-            <Node rotation="5.235987755982989" name="Volt iris pivot frame 5" id="0:104248">
-              <Node x="22" y="0" name="Volt iris blade 5" id="0:104249" rotation="0">
+            <Node rotation="5.235987755982989" name="Volt iris pivot frame 5" id="0:104257">
+              <Node x="22" y="0" name="Volt iris blade 5" id="0:104258" rotation="0">
                 <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120138" />
-                <Shape name="Iris machined leaf 5" id="0:104250">
+                <Shape name="Iris machined leaf 5" id="0:104259">
                   <PointsPath isClosed="true" isClockwise="true">
                     <StraightVertex x="0" y="-7" radius="0.8" />
                     <StraightVertex x="4" y="-2" radius="0.8" />
@@ -3330,15 +3361,15 @@
                 </Shape>
               </Node>
             </Node>
-            <Node name="Volt optical power" id="0:104251" opacity="1">
+            <Node name="Volt optical power" id="0:104260" opacity="1">
               <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120153" />
-              <Shape x="-5" y="-6" rotation="0" name="Lens glint" id="0:104252">
+              <Shape x="-5" y="-6" rotation="0" name="Lens glint" id="0:104261">
                 <Ellipse width="7" height="9" originX="0.5" originY="0.5" />
                 <Fill>
                   <SolidColor colorValue="FFFFFFFF" />
                 </Fill>
               </Shape>
-              <Shape x="0" y="0" rotation="0" name="Lens inner iris" id="0:104253">
+              <Shape x="0" y="0" rotation="0" name="Lens inner iris" id="0:104262">
                 <Ellipse width="21" height="25" originX="0.5" originY="0.5" />
                 <Fill>
                   <LinearGradient startX="-7.56" startY="-12.5" endX="8.82" endY="12.5">
@@ -3347,7 +3378,7 @@
                   </LinearGradient>
                 </Fill>
               </Shape>
-              <Shape x="0" y="0" rotation="0" name="Lens outer iris" id="0:104254">
+              <Shape x="0" y="0" rotation="0" name="Lens outer iris" id="0:104263">
                 <Ellipse width="27" height="29" originX="0.5" originY="0.5" />
                 <Fill>
                   <LinearGradient startX="-9.719999999999999" startY="-14.5" endX="11.34" endY="14.5">
@@ -3357,7 +3388,7 @@
                 </Fill>
               </Shape>
             </Node>
-            <Shape x="0" y="0" rotation="0" name="Lens dark aperture" id="0:104255">
+            <Shape x="0" y="0" rotation="0" name="Lens dark aperture" id="0:104264">
               <Ellipse width="38" height="39" originX="0.5" originY="0.5" />
               <Fill>
                 <LinearGradient startX="-13.68" startY="-19.5" endX="15.96" endY="19.5">
@@ -3367,7 +3398,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="0" rotation="0" name="Lens silver rim" id="0:104256">
+            <Shape x="0" y="0" rotation="0" name="Lens silver rim" id="0:104265">
               <Ellipse width="49" height="50" originX="0.5" originY="0.5" />
               <Fill>
                 <LinearGradient startX="-17.64" startY="-25.0" endX="20.58" endY="25.0">
@@ -3377,7 +3408,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="1" rotation="0" name="Lens recessed rim" id="0:104257">
+            <Shape x="0" y="1" rotation="0" name="Lens recessed rim" id="0:104266">
               <Ellipse width="54" height="55" originX="0.5" originY="0.5" />
               <Fill>
                 <SolidColor colorValue="FF071E35" />
@@ -3385,9 +3416,9 @@
             </Shape>
           </Node>
         </Node>
-        <Node x="0" y="-31" name="Volt protective brow carrier" id="0:104258" rotation="0">
+        <Node x="0" y="-31" name="Volt protective brow carrier" id="0:104267" rotation="0">
           <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120139" />
-          <Shape name="Visor hood edge" id="0:104259">
+          <Shape name="Visor hood edge" id="0:104268">
             <PointsPath isClosed="true" isClockwise="true">
               <StraightVertex x="-35" y="-5" radius="3" />
               <StraightVertex x="-20" y="-9" radius="3" />
@@ -3404,7 +3435,7 @@
               </LinearGradient>
             </Fill>
           </Shape>
-          <Shape name="Visor hood underside" id="0:104260">
+          <Shape name="Visor hood underside" id="0:104269">
             <PointsPath isClosed="true" isClockwise="true">
               <StraightVertex x="-29" y="-1" radius="3" />
               <StraightVertex x="29" y="-1" radius="3" />
@@ -3419,9 +3450,9 @@
               </LinearGradient>
             </Fill>
           </Shape>
-          <Node x="-19" y="1" name="Brow -1" id="0:104261" rotation="0">
+          <Node x="-19" y="1" name="Brow -1" id="0:104270" rotation="0">
             <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120068" />
-            <Shape x="0" y="0" rotation="0" name="Volt brow phosphor -1" id="0:104262">
+            <Shape x="0" y="0" rotation="0" name="Volt brow phosphor -1" id="0:104271">
               <Rectangle width="22" height="3" originX="0.5" originY="0.5" cornerRadiusTL="1" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -3430,7 +3461,7 @@
                 <SolidColor colorValue="FF91F1FF" />
               </Fill>
             </Shape>
-            <Shape x="0" y="-1" rotation="0" name="Volt brow shutter -1" id="0:104263">
+            <Shape x="0" y="-1" rotation="0" name="Volt brow shutter -1" id="0:104272">
               <Rectangle width="27" height="7" originX="0.5" originY="0.5" cornerRadiusTL="3" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -3444,9 +3475,9 @@
               </Fill>
             </Shape>
           </Node>
-          <Node x="19" y="1" name="Brow 1" id="0:104269" rotation="0">
+          <Node x="19" y="1" name="Brow 1" id="0:104278" rotation="0">
             <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120069" />
-            <Shape x="0" y="0" rotation="0" name="Volt brow phosphor 1" id="0:104270">
+            <Shape x="0" y="0" rotation="0" name="Volt brow phosphor 1" id="0:104279">
               <Rectangle width="22" height="3" originX="0.5" originY="0.5" cornerRadiusTL="1" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -3455,7 +3486,7 @@
                 <SolidColor colorValue="FF91F1FF" />
               </Fill>
             </Shape>
-            <Shape x="0" y="-1" rotation="0" name="Volt brow shutter 1" id="0:104271">
+            <Shape x="0" y="-1" rotation="0" name="Volt brow shutter 1" id="0:104280">
               <Rectangle width="27" height="7" originX="0.5" originY="0.5" cornerRadiusTL="3" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -3470,7 +3501,7 @@
             </Shape>
           </Node>
         </Node>
-        <Shape x="-45" y="-17" rotation="0" name="Temple screw -1 slot" id="0:104264">
+        <Shape x="-45" y="-17" rotation="0" name="Temple screw -1 slot" id="0:104273">
           <Rectangle width="2.8499999999999996" height="1.4" originX="0.5" originY="0.5" cornerRadiusTL="0.5" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -3479,7 +3510,7 @@
             <SolidColor colorValue="FF194362" />
           </Fill>
         </Shape>
-        <Shape x="-45" y="-17" rotation="0" name="Temple screw -1 cap" id="0:104265">
+        <Shape x="-45" y="-17" rotation="0" name="Temple screw -1 cap" id="0:104274">
           <Ellipse width="5" height="5" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-1.7999999999999998" startY="-2.5" endX="2.1" endY="2.5">
@@ -3489,7 +3520,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="-45" y="-16" rotation="0" name="Temple screw -1 socket" id="0:104266">
+        <Shape x="-45" y="-16" rotation="0" name="Temple screw -1 socket" id="0:104275">
           <Ellipse width="8" height="8" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-2.88" startY="-4.0" endX="3.36" endY="4.0">
@@ -3499,7 +3530,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="-44" y="13" rotation="0" name="Temple groove -1" id="0:104267">
+        <Shape x="-44" y="13" rotation="0" name="Temple groove -1" id="0:104276">
           <Rectangle width="4" height="18" originX="0.5" originY="0.5" cornerRadiusTL="2" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -3508,7 +3539,7 @@
             <SolidColor colorValue="FF1C5980" />
           </Fill>
         </Shape>
-        <Shape name="Helmet seam -1" id="0:104268">
+        <Shape name="Helmet seam -1" id="0:104277">
           <PointsPath isClosed="true" isClockwise="true">
             <StraightVertex x="-48" y="-31" radius="3" />
             <StraightVertex x="-34" y="-35" radius="3" />
@@ -3518,7 +3549,7 @@
             <SolidColor colorValue="FF7BDFF4" />
           </Stroke>
         </Shape>
-        <Shape x="45" y="-17" rotation="0" name="Temple screw 1 slot" id="0:104272">
+        <Shape x="45" y="-17" rotation="0" name="Temple screw 1 slot" id="0:104281">
           <Rectangle width="2.8499999999999996" height="1.4" originX="0.5" originY="0.5" cornerRadiusTL="0.5" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -3527,7 +3558,7 @@
             <SolidColor colorValue="FF194362" />
           </Fill>
         </Shape>
-        <Shape x="45" y="-17" rotation="0" name="Temple screw 1 cap" id="0:104273">
+        <Shape x="45" y="-17" rotation="0" name="Temple screw 1 cap" id="0:104282">
           <Ellipse width="5" height="5" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-1.7999999999999998" startY="-2.5" endX="2.1" endY="2.5">
@@ -3537,7 +3568,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="45" y="-16" rotation="0" name="Temple screw 1 socket" id="0:104274">
+        <Shape x="45" y="-16" rotation="0" name="Temple screw 1 socket" id="0:104283">
           <Ellipse width="8" height="8" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-2.88" startY="-4.0" endX="3.36" endY="4.0">
@@ -3547,7 +3578,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="44" y="13" rotation="0" name="Temple groove 1" id="0:104275">
+        <Shape x="44" y="13" rotation="0" name="Temple groove 1" id="0:104284">
           <Rectangle width="4" height="18" originX="0.5" originY="0.5" cornerRadiusTL="2" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -3556,7 +3587,7 @@
             <SolidColor colorValue="FF1C5980" />
           </Fill>
         </Shape>
-        <Shape name="Helmet seam 1" id="0:104276">
+        <Shape name="Helmet seam 1" id="0:104285">
           <PointsPath isClosed="true" isClockwise="true">
             <StraightVertex x="48" y="-31" radius="3" />
             <StraightVertex x="34" y="-35" radius="3" />
@@ -3566,7 +3597,7 @@
             <SolidColor colorValue="FF7BDFF4" />
           </Stroke>
         </Shape>
-        <Shape name="Visor reflection" id="0:104277">
+        <Shape name="Visor reflection" id="0:104286">
           <PointsPath isClosed="true" isClockwise="true">
             <StraightVertex x="-31" y="-18" radius="3" />
             <StraightVertex x="-23" y="-23" radius="3" />
@@ -3576,7 +3607,7 @@
             <SolidColor colorValue="555ACBEA" />
           </Stroke>
         </Shape>
-        <Shape x="0" y="-1" rotation="0" name="Volt inset visor" id="0:104278">
+        <Shape x="0" y="-1" rotation="0" name="Volt inset visor" id="0:104287">
           <Rectangle width="79" height="63" originX="0.5" originY="0.5" cornerRadiusTL="24" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -3589,7 +3620,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape name="Helmet crown bevel" id="0:104279">
+        <Shape name="Helmet crown bevel" id="0:104288">
           <PointsPath isClosed="true" isClockwise="true">
             <StraightVertex x="-40" y="-40" radius="5" />
             <StraightVertex x="29" y="-40" radius="5" />
@@ -3607,7 +3638,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape name="Helmet side shadow" id="0:104280">
+        <Shape name="Helmet side shadow" id="0:104289">
           <PointsPath isClosed="true" isClockwise="true">
             <StraightVertex x="34" y="-29" radius="5" />
             <StraightVertex x="49" y="-23" radius="5" />
@@ -3624,7 +3655,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape name="Helmet reflected side plane" id="0:104281">
+        <Shape name="Helmet reflected side plane" id="0:104290">
           <PointsPath isClosed="true" isClockwise="true">
             <StraightVertex x="-50" y="-13" radius="5" />
             <StraightVertex x="-43" y="-26" radius="5" />
@@ -3642,7 +3673,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape name="Helmet sculpted chin" id="0:104282">
+        <Shape name="Helmet sculpted chin" id="0:104291">
           <PointsPath isClosed="true" isClockwise="true">
             <StraightVertex x="-30" y="32" radius="4" />
             <StraightVertex x="17" y="35" radius="4" />
@@ -3658,7 +3689,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape name="Volt raised helmet" id="0:104283">
+        <Shape name="Volt raised helmet" id="0:104292">
           <PointsPath isClosed="true" isClockwise="true">
             <StraightVertex x="-40" y="-40" radius="13" />
             <StraightVertex x="29" y="-40" radius="13" />
@@ -3678,7 +3709,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape name="Volt helmet depth" id="0:104284">
+        <Shape name="Volt helmet depth" id="0:104293">
           <PointsPath isClosed="true" isClockwise="true">
             <StraightVertex x="-41" y="-42" radius="14" />
             <StraightVertex x="31" y="-42" radius="14" />
@@ -3698,11 +3729,11 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Node x="30" y="-39" name="Volt signal aerial" id="0:104285" rotation="0">
+        <Node x="30" y="-39" name="Volt signal aerial" id="0:104294" rotation="0">
           <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120152" />
-          <Node x="5" y="-14" name="Volt aerial light" id="0:104286" opacity="1">
+          <Node x="5" y="-14" name="Volt aerial light" id="0:104295" opacity="1">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120153" />
-            <Shape x="0" y="0" rotation="0" name="Volt aerial light emissive" id="0:104287">
+            <Shape x="0" y="0" rotation="0" name="Volt aerial light emissive" id="0:104296">
               <Ellipse width="6" height="7" originX="0.5" originY="0.5" />
               <Fill>
                 <LinearGradient startX="-2.16" startY="-3.5" endX="2.52" endY="3.5">
@@ -3713,7 +3744,7 @@
               </Fill>
             </Shape>
           </Node>
-          <Shape name="Volt aerial stalk" id="0:104288">
+          <Shape name="Volt aerial stalk" id="0:104297">
             <PointsPath isClosed="true" isClockwise="true">
               <StraightVertex x="0" y="0" radius="3" />
               <StraightVertex x="5" y="-14" radius="3" />
@@ -3727,7 +3758,7 @@
             </Stroke>
           </Shape>
         </Node>
-        <Shape x="0" y="42" rotation="0" name="Neck swivel" id="0:104289">
+        <Shape x="0" y="42" rotation="0" name="Neck swivel" id="0:104298">
           <Ellipse width="39" height="18" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-14.04" startY="-9.0" endX="16.38" endY="9.0">
@@ -3738,9 +3769,9 @@
           </Fill>
         </Shape>
       </Node>
-      <Node x="30" y="-160" name="modGadget" id="0:104485" opacity="0">
+      <Node x="30" y="-160" name="modGadget" id="0:104496" opacity="0">
         <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120123" />
-        <Shape x="0" y="0" rotation="0" name="modGadget light" id="0:104486">
+        <Shape x="0" y="0" rotation="0" name="modGadget light" id="0:104497">
           <Ellipse width="20" height="20" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -3749,7 +3780,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="0" y="0" rotation="0" name="modGadget case" id="0:104487">
+        <Shape x="0" y="0" rotation="0" name="modGadget case" id="0:104498">
           <Rectangle width="28" height="32" originX="0.5" originY="0.5" cornerRadiusTL="7" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -3763,9 +3794,9 @@
           </Fill>
         </Shape>
       </Node>
-      <Node x="52" y="-12" name="modDefense" id="0:104482" opacity="0">
+      <Node x="52" y="-12" name="modDefense" id="0:104493" opacity="0">
         <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120122" />
-        <Shape x="0" y="0" rotation="0" name="modDefense light" id="0:104483">
+        <Shape x="0" y="0" rotation="0" name="modDefense light" id="0:104494">
           <Ellipse width="20" height="20" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -3774,7 +3805,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="0" y="0" rotation="0" name="modDefense case" id="0:104484">
+        <Shape x="0" y="0" rotation="0" name="modDefense case" id="0:104495">
           <Rectangle width="28" height="32" originX="0.5" originY="0.5" cornerRadiusTL="7" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -3788,9 +3819,9 @@
           </Fill>
         </Shape>
       </Node>
-      <Node x="-55" y="68" name="modDrive" id="0:104479" opacity="0">
+      <Node x="-55" y="68" name="modDrive" id="0:104490" opacity="0">
         <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120121" />
-        <Shape x="0" y="0" rotation="0" name="modDrive light" id="0:104480">
+        <Shape x="0" y="0" rotation="0" name="modDrive light" id="0:104491">
           <Ellipse width="20" height="20" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -3799,7 +3830,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="0" y="0" rotation="0" name="modDrive case" id="0:104481">
+        <Shape x="0" y="0" rotation="0" name="modDrive case" id="0:104492">
           <Rectangle width="28" height="32" originX="0.5" originY="0.5" cornerRadiusTL="7" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -3813,9 +3844,9 @@
           </Fill>
         </Shape>
       </Node>
-      <Node x="0" y="-22" name="modCore" id="0:104476" opacity="0">
+      <Node x="0" y="-22" name="modCore" id="0:104487" opacity="0">
         <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120120" />
-        <Shape x="0" y="0" rotation="0" name="modCore light" id="0:104477">
+        <Shape x="0" y="0" rotation="0" name="modCore light" id="0:104488">
           <Ellipse width="20" height="20" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -3824,7 +3855,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="0" y="0" rotation="0" name="modCore case" id="0:104478">
+        <Shape x="0" y="0" rotation="0" name="modCore case" id="0:104489">
           <Rectangle width="28" height="32" originX="0.5" originY="0.5" cornerRadiusTL="7" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -3838,9 +3869,9 @@
           </Fill>
         </Shape>
       </Node>
-      <Node x="-44" y="-9" name="modArmor" id="0:104473" opacity="0">
+      <Node x="-44" y="-9" name="modArmor" id="0:104484" opacity="0">
         <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120119" />
-        <Shape x="0" y="0" rotation="0" name="modArmor light" id="0:104474">
+        <Shape x="0" y="0" rotation="0" name="modArmor light" id="0:104485">
           <Ellipse width="20" height="20" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -3849,7 +3880,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="0" y="0" rotation="0" name="modArmor case" id="0:104475">
+        <Shape x="0" y="0" rotation="0" name="modArmor case" id="0:104486">
           <Rectangle width="28" height="32" originX="0.5" originY="0.5" cornerRadiusTL="7" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -3866,9 +3897,11 @@
       <DataBindContext propertyKey="13" sourcePathIds="0:100010-0:120052" />
       <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120053" />
       <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120054" />
-      <Node name="Body" id="0:104001" y="0" rotation="0">
+      <Node name="Body" id="0:104001" y="0" rotation="0" scaleX="1" scaleY="1">
         <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120057" />
         <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120058" />
+        <DataBindContext propertyKey="16" sourcePathIds="0:100010-0:120094" />
+        <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120095" />
         <Node y="8" name="Volt reactor" id="0:104002">
           <Node name="Volt fixed containment cage" id="0:104041">
             <Shape name="Containment jaw -1--1" id="0:104042">
@@ -5364,130 +5397,164 @@
       </Shape>
       <Node x="-43" y="78" name="Volt gimbal -1" id="0:104152" rotation="0">
         <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120136" />
-        <Node x="0" y="13" name="Nozzle charge -1" id="0:104153" opacity="1">
-          <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120153" />
-          <Shape x="0" y="0" rotation="0" name="Nozzle charge -1 emissive" id="0:104154">
-            <Ellipse width="25" height="8" originX="0.5" originY="0.5" />
+        <DataBindContext propertyKey="13" sourcePathIds="0:100010-0:120154" />
+        <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120155" />
+        <Node x="0" y="0" name="Volt ankle L" id="0:104153" rotation="0">
+          <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120109" />
+          <Node x="0" y="13" name="Nozzle charge -1" id="0:104154" opacity="1">
+            <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120153" />
+            <Shape x="0" y="0" rotation="0" name="Nozzle charge -1 emissive" id="0:104155">
+              <Ellipse width="25" height="8" originX="0.5" originY="0.5" />
+              <Fill>
+                <LinearGradient startX="-9.0" startY="-4.0" endX="10.5" endY="4.0">
+                  <GradientStop position="0.0" colorValue="FFF5FFFF" />
+                  <GradientStop position="0.5" colorValue="FF7FF8FF" />
+                  <GradientStop position="1.0" colorValue="FF239CCF" />
+                </LinearGradient>
+              </Fill>
+            </Shape>
+          </Node>
+          <Shape x="-14" y="0" rotation="0" name="Gimbal pin -1--14 slot" id="0:104156">
+            <Rectangle width="2.8499999999999996" height="1.4" originX="0.5" originY="0.5" cornerRadiusTL="0.5" />
+            <Stroke thickness="2" cap="round" join="round">
+              <SolidColor colorValue="FF6F91B2" />
+            </Stroke>
             <Fill>
-              <LinearGradient startX="-9.0" startY="-4.0" endX="10.5" endY="4.0">
-                <GradientStop position="0.0" colorValue="FFF5FFFF" />
-                <GradientStop position="0.5" colorValue="FF7FF8FF" />
-                <GradientStop position="1.0" colorValue="FF239CCF" />
+              <SolidColor colorValue="FF194362" />
+            </Fill>
+          </Shape>
+          <Shape x="-14" y="0" rotation="0" name="Gimbal pin -1--14 cap" id="0:104157">
+            <Ellipse width="5" height="5" originX="0.5" originY="0.5" />
+            <Fill>
+              <LinearGradient startX="-1.7999999999999998" startY="-2.5" endX="2.1" endY="2.5">
+                <GradientStop position="0.0" colorValue="FFE8F5FC" />
+                <GradientStop position="0.5" colorValue="FF7DABC0" />
+                <GradientStop position="1.0" colorValue="FF244B66" />
               </LinearGradient>
             </Fill>
           </Shape>
-        </Node>
-        <Shape x="-14" y="0" rotation="0" name="Gimbal pin -1--14 slot" id="0:104155">
-          <Rectangle width="2.8499999999999996" height="1.4" originX="0.5" originY="0.5" cornerRadiusTL="0.5" />
-          <Stroke thickness="2" cap="round" join="round">
-            <SolidColor colorValue="FF6F91B2" />
-          </Stroke>
-          <Fill>
-            <SolidColor colorValue="FF194362" />
-          </Fill>
-        </Shape>
-        <Shape x="-14" y="0" rotation="0" name="Gimbal pin -1--14 cap" id="0:104156">
-          <Ellipse width="5" height="5" originX="0.5" originY="0.5" />
-          <Fill>
-            <LinearGradient startX="-1.7999999999999998" startY="-2.5" endX="2.1" endY="2.5">
-              <GradientStop position="0.0" colorValue="FFE8F5FC" />
-              <GradientStop position="0.5" colorValue="FF7DABC0" />
-              <GradientStop position="1.0" colorValue="FF244B66" />
-            </LinearGradient>
-          </Fill>
-        </Shape>
-        <Shape x="-14" y="1" rotation="0" name="Gimbal pin -1--14 socket" id="0:104157">
-          <Ellipse width="8" height="8" originX="0.5" originY="0.5" />
-          <Fill>
-            <LinearGradient startX="-2.88" startY="-4.0" endX="3.36" endY="4.0">
-              <GradientStop position="0.0" colorValue="FF254A64" />
-              <GradientStop position="0.5" colorValue="FF102C46" />
-              <GradientStop position="1.0" colorValue="FF07162A" />
-            </LinearGradient>
-          </Fill>
-        </Shape>
-        <Shape x="14" y="0" rotation="0" name="Gimbal pin -1-14 slot" id="0:104158">
-          <Rectangle width="2.8499999999999996" height="1.4" originX="0.5" originY="0.5" cornerRadiusTL="0.5" />
-          <Stroke thickness="2" cap="round" join="round">
-            <SolidColor colorValue="FF6F91B2" />
-          </Stroke>
-          <Fill>
-            <SolidColor colorValue="FF194362" />
-          </Fill>
-        </Shape>
-        <Shape x="14" y="0" rotation="0" name="Gimbal pin -1-14 cap" id="0:104159">
-          <Ellipse width="5" height="5" originX="0.5" originY="0.5" />
-          <Fill>
-            <LinearGradient startX="-1.7999999999999998" startY="-2.5" endX="2.1" endY="2.5">
-              <GradientStop position="0.0" colorValue="FFE8F5FC" />
-              <GradientStop position="0.5" colorValue="FF7DABC0" />
-              <GradientStop position="1.0" colorValue="FF244B66" />
-            </LinearGradient>
-          </Fill>
-        </Shape>
-        <Shape x="14" y="1" rotation="0" name="Gimbal pin -1-14 socket" id="0:104160">
-          <Ellipse width="8" height="8" originX="0.5" originY="0.5" />
-          <Fill>
-            <LinearGradient startX="-2.88" startY="-4.0" endX="3.36" endY="4.0">
-              <GradientStop position="0.0" colorValue="FF254A64" />
-              <GradientStop position="0.5" colorValue="FF102C46" />
-              <GradientStop position="1.0" colorValue="FF07162A" />
-            </LinearGradient>
-          </Fill>
-        </Shape>
-        <Shape x="0" y="16" rotation="0" name="Nozzle mouth -1" id="0:104161">
-          <Ellipse width="37" height="12" originX="0.5" originY="0.5" />
-          <Fill>
-            <LinearGradient startX="-13.32" startY="-6.0" endX="15.54" endY="6.0">
-              <GradientStop position="0.0" colorValue="FF254A64" />
-              <GradientStop position="0.5" colorValue="FF102C46" />
-              <GradientStop position="1.0" colorValue="FF07162A" />
-            </LinearGradient>
-          </Fill>
-        </Shape>
-        <Shape x="0" y="2" rotation="0" name="Nozzle shell -1" id="0:104162">
-          <Rectangle width="35" height="26" originX="0.5" originY="0.5" cornerRadiusTL="8" />
-          <Stroke thickness="2" cap="round" join="round">
-            <SolidColor colorValue="FF6F91B2" />
-          </Stroke>
-          <Fill>
-            <LinearGradient startX="-12.6" startY="-13.0" endX="14.7" endY="13.0">
-              <GradientStop position="0.0" colorValue="FFE8F5FC" />
-              <GradientStop position="0.5" colorValue="FF7DABC0" />
-              <GradientStop position="1.0" colorValue="FF244B66" />
-            </LinearGradient>
-          </Fill>
-        </Shape>
-        <Node y="18" name="Volt ion exhaust -1" id="0:104163" scaleY="1" opacity="1">
-          <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120103" />
-          <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120153" />
-          <Shape x="0" y="12" rotation="0" name="Ion exhaust core -1" id="0:104164">
-            <Ellipse width="12" height="27" originX="0.5" originY="0.5" />
+          <Shape x="-14" y="1" rotation="0" name="Gimbal pin -1--14 socket" id="0:104158">
+            <Ellipse width="8" height="8" originX="0.5" originY="0.5" />
             <Fill>
-              <LinearGradient startX="-4.32" startY="-13.5" endX="5.04" endY="13.5">
-                <GradientStop position="0.0" colorValue="CCECFFFF" />
-                <GradientStop position="1.0" colorValue="0040CBFF" />
+              <LinearGradient startX="-2.88" startY="-4.0" endX="3.36" endY="4.0">
+                <GradientStop position="0.0" colorValue="FF254A64" />
+                <GradientStop position="0.5" colorValue="FF102C46" />
+                <GradientStop position="1.0" colorValue="FF07162A" />
               </LinearGradient>
             </Fill>
           </Shape>
-          <Shape x="0" y="15" rotation="0" name="Ion exhaust halo -1" id="0:104165">
-            <Ellipse width="26" height="42" originX="0.5" originY="0.5" />
+          <Shape x="14" y="0" rotation="0" name="Gimbal pin -1-14 slot" id="0:104159">
+            <Rectangle width="2.8499999999999996" height="1.4" originX="0.5" originY="0.5" cornerRadiusTL="0.5" />
+            <Stroke thickness="2" cap="round" join="round">
+              <SolidColor colorValue="FF6F91B2" />
+            </Stroke>
             <Fill>
-              <LinearGradient startX="-9.36" startY="-21.0" endX="10.92" endY="21.0">
-                <GradientStop position="0.0" colorValue="5577EFFF" />
-                <GradientStop position="1.0" colorValue="002175C9" />
+              <SolidColor colorValue="FF194362" />
+            </Fill>
+          </Shape>
+          <Shape x="14" y="0" rotation="0" name="Gimbal pin -1-14 cap" id="0:104160">
+            <Ellipse width="5" height="5" originX="0.5" originY="0.5" />
+            <Fill>
+              <LinearGradient startX="-1.7999999999999998" startY="-2.5" endX="2.1" endY="2.5">
+                <GradientStop position="0.0" colorValue="FFE8F5FC" />
+                <GradientStop position="0.5" colorValue="FF7DABC0" />
+                <GradientStop position="1.0" colorValue="FF244B66" />
               </LinearGradient>
             </Fill>
           </Shape>
+          <Shape x="14" y="1" rotation="0" name="Gimbal pin -1-14 socket" id="0:104161">
+            <Ellipse width="8" height="8" originX="0.5" originY="0.5" />
+            <Fill>
+              <LinearGradient startX="-2.88" startY="-4.0" endX="3.36" endY="4.0">
+                <GradientStop position="0.0" colorValue="FF254A64" />
+                <GradientStop position="0.5" colorValue="FF102C46" />
+                <GradientStop position="1.0" colorValue="FF07162A" />
+              </LinearGradient>
+            </Fill>
+          </Shape>
+          <Shape x="0" y="16" rotation="0" name="Nozzle mouth -1" id="0:104162">
+            <Ellipse width="37" height="12" originX="0.5" originY="0.5" />
+            <Fill>
+              <LinearGradient startX="-13.32" startY="-6.0" endX="15.54" endY="6.0">
+                <GradientStop position="0.0" colorValue="FF254A64" />
+                <GradientStop position="0.5" colorValue="FF102C46" />
+                <GradientStop position="1.0" colorValue="FF07162A" />
+              </LinearGradient>
+            </Fill>
+          </Shape>
+          <Shape x="0" y="2" rotation="0" name="Nozzle shell -1" id="0:104163">
+            <Rectangle width="35" height="26" originX="0.5" originY="0.5" cornerRadiusTL="8" />
+            <Stroke thickness="2" cap="round" join="round">
+              <SolidColor colorValue="FF6F91B2" />
+            </Stroke>
+            <Fill>
+              <LinearGradient startX="-12.6" startY="-13.0" endX="14.7" endY="13.0">
+                <GradientStop position="0.0" colorValue="FFE8F5FC" />
+                <GradientStop position="0.5" colorValue="FF7DABC0" />
+                <GradientStop position="1.0" colorValue="FF244B66" />
+              </LinearGradient>
+            </Fill>
+          </Shape>
+          <Node y="18" name="Volt ion exhaust -1" id="0:104164" scaleY="1" opacity="1">
+            <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120103" />
+            <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120153" />
+            <Shape x="0" y="12" rotation="0" name="Ion exhaust core -1" id="0:104165">
+              <Ellipse width="12" height="27" originX="0.5" originY="0.5" />
+              <Fill>
+                <LinearGradient startX="-4.32" startY="-13.5" endX="5.04" endY="13.5">
+                  <GradientStop position="0.0" colorValue="CCECFFFF" />
+                  <GradientStop position="1.0" colorValue="0040CBFF" />
+                </LinearGradient>
+              </Fill>
+            </Shape>
+            <Shape x="0" y="15" rotation="0" name="Ion exhaust halo -1" id="0:104166">
+              <Ellipse width="26" height="42" originX="0.5" originY="0.5" />
+              <Fill>
+                <LinearGradient startX="-9.36" startY="-21.0" endX="10.92" endY="21.0">
+                  <GradientStop position="0.0" colorValue="5577EFFF" />
+                  <GradientStop position="1.0" colorValue="002175C9" />
+                </LinearGradient>
+              </Fill>
+            </Shape>
+          </Node>
         </Node>
       </Node>
-      <Node x="76" y="-60" name="Tesla mast 1" id="0:104166" rotation="0">
+      <Node x="-43" y="56" name="Volt suspension L" id="0:104167" scaleY="1">
+        <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120156" />
+        <Shape x="-7" y="10" rotation="0" name="Suspension rod L--7" id="0:104168">
+          <Rectangle width="3" height="22" originX="0.5" originY="0.5" cornerRadiusTL="1" />
+          <Stroke thickness="2" cap="round" join="round">
+            <SolidColor colorValue="FF6F91B2" />
+          </Stroke>
+          <Fill>
+            <LinearGradient startX="-1.08" startY="-11.0" endX="1.26" endY="11.0">
+              <GradientStop position="0.0" colorValue="FFE8F5FC" />
+              <GradientStop position="0.5" colorValue="FF7DABC0" />
+              <GradientStop position="1.0" colorValue="FF244B66" />
+            </LinearGradient>
+          </Fill>
+        </Shape>
+        <Shape x="7" y="10" rotation="0" name="Suspension rod L-7" id="0:104169">
+          <Rectangle width="3" height="22" originX="0.5" originY="0.5" cornerRadiusTL="1" />
+          <Stroke thickness="2" cap="round" join="round">
+            <SolidColor colorValue="FF6F91B2" />
+          </Stroke>
+          <Fill>
+            <LinearGradient startX="-1.08" startY="-11.0" endX="1.26" endY="11.0">
+              <GradientStop position="0.0" colorValue="FFE8F5FC" />
+              <GradientStop position="0.5" colorValue="FF7DABC0" />
+              <GradientStop position="1.0" colorValue="FF244B66" />
+            </LinearGradient>
+          </Fill>
+        </Shape>
+      </Node>
+      <Node x="76" y="-60" name="Tesla mast 1" id="0:104170" rotation="0">
         <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120129" />
-        <Node x="0" y="-55" name="Volt crown contact 1" id="0:104167" rotation="0">
+        <Node x="0" y="-55" name="Volt crown contact 1" id="0:104171" rotation="0">
           <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120131" />
-          <Node x="-12" y="-10" name="Electrode tip 1--12" id="0:104168" opacity="1">
+          <Node x="-12" y="-10" name="Electrode tip 1--12" id="0:104172" opacity="1">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120153" />
-            <Shape x="0" y="0" rotation="0" name="Electrode tip 1--12 emissive" id="0:104169">
+            <Shape x="0" y="0" rotation="0" name="Electrode tip 1--12 emissive" id="0:104173">
               <Ellipse width="9" height="7" originX="0.5" originY="0.5" />
               <Fill>
                 <LinearGradient startX="-3.2399999999999998" startY="-3.5" endX="3.7800000000000002" endY="3.5">
@@ -5498,7 +5565,7 @@
               </Fill>
             </Shape>
           </Node>
-          <Shape name="Electrode finger 1--12" id="0:104170">
+          <Shape name="Electrode finger 1--12" id="0:104174">
             <PointsPath isClosed="true" isClockwise="true">
               <StraightVertex x="-16" y="1" radius="3" />
               <StraightVertex x="-16" y="-14" radius="3" />
@@ -5513,7 +5580,7 @@
               </LinearGradient>
             </Fill>
           </Shape>
-          <Shape x="-12" y="2" rotation="0" name="Electrode ceramic collar 1--12" id="0:104171">
+          <Shape x="-12" y="2" rotation="0" name="Electrode ceramic collar 1--12" id="0:104175">
             <Rectangle width="12" height="7" originX="0.5" originY="0.5" cornerRadiusTL="2" />
             <Stroke thickness="2" cap="round" join="round">
               <SolidColor colorValue="FF6F91B2" />
@@ -5526,9 +5593,9 @@
               </LinearGradient>
             </Fill>
           </Shape>
-          <Node x="12" y="-10" name="Electrode tip 1-12" id="0:104172" opacity="1">
+          <Node x="12" y="-10" name="Electrode tip 1-12" id="0:104176" opacity="1">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120153" />
-            <Shape x="0" y="0" rotation="0" name="Electrode tip 1-12 emissive" id="0:104173">
+            <Shape x="0" y="0" rotation="0" name="Electrode tip 1-12 emissive" id="0:104177">
               <Ellipse width="9" height="7" originX="0.5" originY="0.5" />
               <Fill>
                 <LinearGradient startX="-3.2399999999999998" startY="-3.5" endX="3.7800000000000002" endY="3.5">
@@ -5539,7 +5606,7 @@
               </Fill>
             </Shape>
           </Node>
-          <Shape name="Electrode finger 1-12" id="0:104174">
+          <Shape name="Electrode finger 1-12" id="0:104178">
             <PointsPath isClosed="true" isClockwise="true">
               <StraightVertex x="8" y="1" radius="3" />
               <StraightVertex x="8" y="-14" radius="3" />
@@ -5554,7 +5621,7 @@
               </LinearGradient>
             </Fill>
           </Shape>
-          <Shape x="12" y="2" rotation="0" name="Electrode ceramic collar 1-12" id="0:104175">
+          <Shape x="12" y="2" rotation="0" name="Electrode ceramic collar 1-12" id="0:104179">
             <Rectangle width="12" height="7" originX="0.5" originY="0.5" cornerRadiusTL="2" />
             <Stroke thickness="2" cap="round" join="round">
               <SolidColor colorValue="FF6F91B2" />
@@ -5567,7 +5634,7 @@
               </LinearGradient>
             </Fill>
           </Shape>
-          <Shape x="0" y="7" rotation="0" name="Contact crown protective casing 1" id="0:104176">
+          <Shape x="0" y="7" rotation="0" name="Contact crown protective casing 1" id="0:104180">
             <Rectangle width="39" height="9" originX="0.5" originY="0.5" cornerRadiusTL="3" />
             <Stroke thickness="2" cap="round" join="round">
               <SolidColor colorValue="FF6F91B2" />
@@ -5580,7 +5647,7 @@
               </LinearGradient>
             </Fill>
           </Shape>
-          <Shape x="0" y="1" rotation="0" name="Crown coupling 1" id="0:104177">
+          <Shape x="0" y="1" rotation="0" name="Crown coupling 1" id="0:104181">
             <Rectangle width="35" height="10" originX="0.5" originY="0.5" cornerRadiusTL="4" />
             <Stroke thickness="2" cap="round" join="round">
               <SolidColor colorValue="FF6F91B2" />
@@ -5594,9 +5661,9 @@
             </Fill>
           </Shape>
         </Node>
-        <Node x="-2" y="-46" name="Coil live edge 1-0" id="0:104178" opacity="1">
+        <Node x="-2" y="-46" name="Coil live edge 1-0" id="0:104182" opacity="1">
           <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120153" />
-          <Shape x="0" y="0" rotation="0" name="Coil live edge 1-0 emissive" id="0:104179">
+          <Shape x="0" y="0" rotation="0" name="Coil live edge 1-0 emissive" id="0:104183">
             <Ellipse width="34" height="3" originX="0.5" originY="0.5" />
             <Fill>
               <LinearGradient startX="-12.239999999999998" startY="-1.5" endX="14.28" endY="1.5">
@@ -5607,7 +5674,7 @@
             </Fill>
           </Shape>
         </Node>
-        <Shape x="-2" y="-47" rotation="0" name="Winding crown 1-0" id="0:104180">
+        <Shape x="-2" y="-47" rotation="0" name="Winding crown 1-0" id="0:104184">
           <Ellipse width="39" height="7" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-14.04" startY="-3.5" endX="16.38" endY="3.5">
@@ -5617,7 +5684,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="1" y="-43" rotation="0" name="Winding copper 1-0" id="0:104181">
+        <Shape x="1" y="-43" rotation="0" name="Winding copper 1-0" id="0:104185">
           <Ellipse width="41" height="8" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-14.76" startY="-4.0" endX="17.22" endY="4.0">
@@ -5627,9 +5694,9 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Node x="-2" y="-36" name="Coil live edge 1-1" id="0:104182" opacity="1">
+        <Node x="-2" y="-36" name="Coil live edge 1-1" id="0:104186" opacity="1">
           <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120153" />
-          <Shape x="0" y="0" rotation="0" name="Coil live edge 1-1 emissive" id="0:104183">
+          <Shape x="0" y="0" rotation="0" name="Coil live edge 1-1 emissive" id="0:104187">
             <Ellipse width="34" height="3" originX="0.5" originY="0.5" />
             <Fill>
               <LinearGradient startX="-12.239999999999998" startY="-1.5" endX="14.28" endY="1.5">
@@ -5640,7 +5707,7 @@
             </Fill>
           </Shape>
         </Node>
-        <Shape x="-2" y="-37" rotation="0" name="Winding crown 1-1" id="0:104184">
+        <Shape x="-2" y="-37" rotation="0" name="Winding crown 1-1" id="0:104188">
           <Ellipse width="39" height="7" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-14.04" startY="-3.5" endX="16.38" endY="3.5">
@@ -5650,7 +5717,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="1" y="-33" rotation="0" name="Winding copper 1-1" id="0:104185">
+        <Shape x="1" y="-33" rotation="0" name="Winding copper 1-1" id="0:104189">
           <Ellipse width="41" height="8" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-14.76" startY="-4.0" endX="17.22" endY="4.0">
@@ -5660,9 +5727,9 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Node x="-2" y="-26" name="Coil live edge 1-2" id="0:104186" opacity="1">
+        <Node x="-2" y="-26" name="Coil live edge 1-2" id="0:104190" opacity="1">
           <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120153" />
-          <Shape x="0" y="0" rotation="0" name="Coil live edge 1-2 emissive" id="0:104187">
+          <Shape x="0" y="0" rotation="0" name="Coil live edge 1-2 emissive" id="0:104191">
             <Ellipse width="34" height="3" originX="0.5" originY="0.5" />
             <Fill>
               <LinearGradient startX="-12.239999999999998" startY="-1.5" endX="14.28" endY="1.5">
@@ -5673,7 +5740,7 @@
             </Fill>
           </Shape>
         </Node>
-        <Shape x="-2" y="-27" rotation="0" name="Winding crown 1-2" id="0:104188">
+        <Shape x="-2" y="-27" rotation="0" name="Winding crown 1-2" id="0:104192">
           <Ellipse width="39" height="7" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-14.04" startY="-3.5" endX="16.38" endY="3.5">
@@ -5683,7 +5750,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="1" y="-23" rotation="0" name="Winding copper 1-2" id="0:104189">
+        <Shape x="1" y="-23" rotation="0" name="Winding copper 1-2" id="0:104193">
           <Ellipse width="41" height="8" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-14.76" startY="-4.0" endX="17.22" endY="4.0">
@@ -5693,9 +5760,9 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Node x="-2" y="-16" name="Coil live edge 1-3" id="0:104190" opacity="1">
+        <Node x="-2" y="-16" name="Coil live edge 1-3" id="0:104194" opacity="1">
           <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120153" />
-          <Shape x="0" y="0" rotation="0" name="Coil live edge 1-3 emissive" id="0:104191">
+          <Shape x="0" y="0" rotation="0" name="Coil live edge 1-3 emissive" id="0:104195">
             <Ellipse width="34" height="3" originX="0.5" originY="0.5" />
             <Fill>
               <LinearGradient startX="-12.239999999999998" startY="-1.5" endX="14.28" endY="1.5">
@@ -5706,7 +5773,7 @@
             </Fill>
           </Shape>
         </Node>
-        <Shape x="-2" y="-17" rotation="0" name="Winding crown 1-3" id="0:104192">
+        <Shape x="-2" y="-17" rotation="0" name="Winding crown 1-3" id="0:104196">
           <Ellipse width="39" height="7" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-14.04" startY="-3.5" endX="16.38" endY="3.5">
@@ -5716,7 +5783,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="1" y="-13" rotation="0" name="Winding copper 1-3" id="0:104193">
+        <Shape x="1" y="-13" rotation="0" name="Winding copper 1-3" id="0:104197">
           <Ellipse width="41" height="8" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-14.76" startY="-4.0" endX="17.22" endY="4.0">
@@ -5726,9 +5793,9 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Node x="-2" y="-6" name="Coil live edge 1-4" id="0:104194" opacity="1">
+        <Node x="-2" y="-6" name="Coil live edge 1-4" id="0:104198" opacity="1">
           <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120153" />
-          <Shape x="0" y="0" rotation="0" name="Coil live edge 1-4 emissive" id="0:104195">
+          <Shape x="0" y="0" rotation="0" name="Coil live edge 1-4 emissive" id="0:104199">
             <Ellipse width="34" height="3" originX="0.5" originY="0.5" />
             <Fill>
               <LinearGradient startX="-12.239999999999998" startY="-1.5" endX="14.28" endY="1.5">
@@ -5739,7 +5806,7 @@
             </Fill>
           </Shape>
         </Node>
-        <Shape x="-2" y="-7" rotation="0" name="Winding crown 1-4" id="0:104196">
+        <Shape x="-2" y="-7" rotation="0" name="Winding crown 1-4" id="0:104200">
           <Ellipse width="39" height="7" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-14.04" startY="-3.5" endX="16.38" endY="3.5">
@@ -5749,7 +5816,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="1" y="-3" rotation="0" name="Winding copper 1-4" id="0:104197">
+        <Shape x="1" y="-3" rotation="0" name="Winding copper 1-4" id="0:104201">
           <Ellipse width="41" height="8" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-14.76" startY="-4.0" endX="17.22" endY="4.0">
@@ -5759,7 +5826,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="0" y="-50" rotation="0" name="Upper ceramic terminal 1" id="0:104198">
+        <Shape x="0" y="-50" rotation="0" name="Upper ceramic terminal 1" id="0:104202">
           <Ellipse width="37" height="10" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-13.32" startY="-5.0" endX="15.54" endY="5.0">
@@ -5769,7 +5836,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="0" y="6" rotation="0" name="Lower ceramic terminal 1" id="0:104199">
+        <Shape x="0" y="6" rotation="0" name="Lower ceramic terminal 1" id="0:104203">
           <Ellipse width="39" height="12" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-14.04" startY="-6.0" endX="16.38" endY="6.0">
@@ -5779,7 +5846,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="0" y="-24" rotation="0" name="Ceramic spine 1" id="0:104200">
+        <Shape x="0" y="-24" rotation="0" name="Ceramic spine 1" id="0:104204">
           <Rectangle width="16" height="70" originX="0.5" originY="0.5" cornerRadiusTL="6" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -5791,7 +5858,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="0" y="14" rotation="0" name="Coil universal pin 1" id="0:104201">
+        <Shape x="0" y="14" rotation="0" name="Coil universal pin 1" id="0:104205">
           <Ellipse width="13" height="13" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-4.68" startY="-6.5" endX="5.46" endY="6.5">
@@ -5801,7 +5868,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="0" y="14" rotation="0" name="Coil universal hub 1" id="0:104202">
+        <Shape x="0" y="14" rotation="0" name="Coil universal hub 1" id="0:104206">
           <Ellipse width="25" height="25" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-9.0" startY="-12.5" endX="10.5" endY="12.5">
@@ -5811,7 +5878,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape name="Mast articulated bracket 1" id="0:104203">
+        <Shape name="Mast articulated bracket 1" id="0:104207">
           <PointsPath isClosed="true" isClockwise="true">
             <StraightVertex x="-9" y="4" radius="4" />
             <StraightVertex x="9" y="4" radius="4" />
@@ -5827,7 +5894,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="14" y="28" rotation="0" name="Mast chromed piston 1" id="0:104204">
+        <Shape x="14" y="28" rotation="0" name="Mast chromed piston 1" id="0:104208">
           <Rectangle width="5" height="20" originX="0.5" originY="0.5" cornerRadiusTL="2" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -5840,7 +5907,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="14" y="16" rotation="0" name="Mast hydraulic sleeve 1" id="0:104205">
+        <Shape x="14" y="16" rotation="0" name="Mast hydraulic sleeve 1" id="0:104209">
           <Rectangle width="9" height="12" originX="0.5" originY="0.5" cornerRadiusTL="3" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -5854,7 +5921,7 @@
           </Fill>
         </Shape>
       </Node>
-      <Shape name="Coil hose reflection 1" id="0:104206">
+      <Shape name="Coil hose reflection 1" id="0:104210">
         <PointsPath isClosed="false" isClockwise="true">
           <StraightVertex x="49" y="-24" radius="3" />
           <StraightVertex x="64" y="-21" radius="3" />
@@ -5865,7 +5932,7 @@
           <SolidColor colorValue="FF59899D" />
         </Stroke>
       </Shape>
-      <Shape name="Coil flexible cable 1" id="0:104207">
+      <Shape name="Coil flexible cable 1" id="0:104211">
         <PointsPath isClosed="false" isClockwise="true">
           <StraightVertex x="49" y="-24" radius="3" />
           <StraightVertex x="64" y="-21" radius="3" />
@@ -5880,128 +5947,163 @@
           </LinearGradient>
         </Stroke>
       </Shape>
-      <Node x="43" y="78" name="Volt gimbal 1" id="0:104208" rotation="0">
+      <Node x="43" y="78" name="Volt gimbal 1" id="0:104212" rotation="0">
         <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120137" />
-        <Node x="0" y="13" name="Nozzle charge 1" id="0:104209" opacity="1">
-          <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120153" />
-          <Shape x="0" y="0" rotation="0" name="Nozzle charge 1 emissive" id="0:104210">
-            <Ellipse width="25" height="8" originX="0.5" originY="0.5" />
+        <DataBindContext propertyKey="13" sourcePathIds="0:100010-0:120157" />
+        <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120158" />
+        <Node x="0" y="0" name="Volt ankle R" id="0:104213" rotation="0">
+          <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120142" />
+          <Node x="0" y="13" name="Nozzle charge 1" id="0:104214" opacity="1">
+            <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120153" />
+            <Shape x="0" y="0" rotation="0" name="Nozzle charge 1 emissive" id="0:104215">
+              <Ellipse width="25" height="8" originX="0.5" originY="0.5" />
+              <Fill>
+                <LinearGradient startX="-9.0" startY="-4.0" endX="10.5" endY="4.0">
+                  <GradientStop position="0.0" colorValue="FFF5FFFF" />
+                  <GradientStop position="0.5" colorValue="FF7FF8FF" />
+                  <GradientStop position="1.0" colorValue="FF239CCF" />
+                </LinearGradient>
+              </Fill>
+            </Shape>
+          </Node>
+          <Shape x="-14" y="0" rotation="0" name="Gimbal pin 1--14 slot" id="0:104216">
+            <Rectangle width="2.8499999999999996" height="1.4" originX="0.5" originY="0.5" cornerRadiusTL="0.5" />
+            <Stroke thickness="2" cap="round" join="round">
+              <SolidColor colorValue="FF6F91B2" />
+            </Stroke>
             <Fill>
-              <LinearGradient startX="-9.0" startY="-4.0" endX="10.5" endY="4.0">
-                <GradientStop position="0.0" colorValue="FFF5FFFF" />
-                <GradientStop position="0.5" colorValue="FF7FF8FF" />
-                <GradientStop position="1.0" colorValue="FF239CCF" />
+              <SolidColor colorValue="FF194362" />
+            </Fill>
+          </Shape>
+          <Shape x="-14" y="0" rotation="0" name="Gimbal pin 1--14 cap" id="0:104217">
+            <Ellipse width="5" height="5" originX="0.5" originY="0.5" />
+            <Fill>
+              <LinearGradient startX="-1.7999999999999998" startY="-2.5" endX="2.1" endY="2.5">
+                <GradientStop position="0.0" colorValue="FFE8F5FC" />
+                <GradientStop position="0.5" colorValue="FF7DABC0" />
+                <GradientStop position="1.0" colorValue="FF244B66" />
               </LinearGradient>
             </Fill>
           </Shape>
-        </Node>
-        <Shape x="-14" y="0" rotation="0" name="Gimbal pin 1--14 slot" id="0:104211">
-          <Rectangle width="2.8499999999999996" height="1.4" originX="0.5" originY="0.5" cornerRadiusTL="0.5" />
-          <Stroke thickness="2" cap="round" join="round">
-            <SolidColor colorValue="FF6F91B2" />
-          </Stroke>
-          <Fill>
-            <SolidColor colorValue="FF194362" />
-          </Fill>
-        </Shape>
-        <Shape x="-14" y="0" rotation="0" name="Gimbal pin 1--14 cap" id="0:104212">
-          <Ellipse width="5" height="5" originX="0.5" originY="0.5" />
-          <Fill>
-            <LinearGradient startX="-1.7999999999999998" startY="-2.5" endX="2.1" endY="2.5">
-              <GradientStop position="0.0" colorValue="FFE8F5FC" />
-              <GradientStop position="0.5" colorValue="FF7DABC0" />
-              <GradientStop position="1.0" colorValue="FF244B66" />
-            </LinearGradient>
-          </Fill>
-        </Shape>
-        <Shape x="-14" y="1" rotation="0" name="Gimbal pin 1--14 socket" id="0:104213">
-          <Ellipse width="8" height="8" originX="0.5" originY="0.5" />
-          <Fill>
-            <LinearGradient startX="-2.88" startY="-4.0" endX="3.36" endY="4.0">
-              <GradientStop position="0.0" colorValue="FF254A64" />
-              <GradientStop position="0.5" colorValue="FF102C46" />
-              <GradientStop position="1.0" colorValue="FF07162A" />
-            </LinearGradient>
-          </Fill>
-        </Shape>
-        <Shape x="14" y="0" rotation="0" name="Gimbal pin 1-14 slot" id="0:104214">
-          <Rectangle width="2.8499999999999996" height="1.4" originX="0.5" originY="0.5" cornerRadiusTL="0.5" />
-          <Stroke thickness="2" cap="round" join="round">
-            <SolidColor colorValue="FF6F91B2" />
-          </Stroke>
-          <Fill>
-            <SolidColor colorValue="FF194362" />
-          </Fill>
-        </Shape>
-        <Shape x="14" y="0" rotation="0" name="Gimbal pin 1-14 cap" id="0:104215">
-          <Ellipse width="5" height="5" originX="0.5" originY="0.5" />
-          <Fill>
-            <LinearGradient startX="-1.7999999999999998" startY="-2.5" endX="2.1" endY="2.5">
-              <GradientStop position="0.0" colorValue="FFE8F5FC" />
-              <GradientStop position="0.5" colorValue="FF7DABC0" />
-              <GradientStop position="1.0" colorValue="FF244B66" />
-            </LinearGradient>
-          </Fill>
-        </Shape>
-        <Shape x="14" y="1" rotation="0" name="Gimbal pin 1-14 socket" id="0:104216">
-          <Ellipse width="8" height="8" originX="0.5" originY="0.5" />
-          <Fill>
-            <LinearGradient startX="-2.88" startY="-4.0" endX="3.36" endY="4.0">
-              <GradientStop position="0.0" colorValue="FF254A64" />
-              <GradientStop position="0.5" colorValue="FF102C46" />
-              <GradientStop position="1.0" colorValue="FF07162A" />
-            </LinearGradient>
-          </Fill>
-        </Shape>
-        <Shape x="0" y="16" rotation="0" name="Nozzle mouth 1" id="0:104217">
-          <Ellipse width="37" height="12" originX="0.5" originY="0.5" />
-          <Fill>
-            <LinearGradient startX="-13.32" startY="-6.0" endX="15.54" endY="6.0">
-              <GradientStop position="0.0" colorValue="FF254A64" />
-              <GradientStop position="0.5" colorValue="FF102C46" />
-              <GradientStop position="1.0" colorValue="FF07162A" />
-            </LinearGradient>
-          </Fill>
-        </Shape>
-        <Shape x="0" y="2" rotation="0" name="Nozzle shell 1" id="0:104218">
-          <Rectangle width="35" height="26" originX="0.5" originY="0.5" cornerRadiusTL="8" />
-          <Stroke thickness="2" cap="round" join="round">
-            <SolidColor colorValue="FF6F91B2" />
-          </Stroke>
-          <Fill>
-            <LinearGradient startX="-12.6" startY="-13.0" endX="14.7" endY="13.0">
-              <GradientStop position="0.0" colorValue="FFE8F5FC" />
-              <GradientStop position="0.5" colorValue="FF7DABC0" />
-              <GradientStop position="1.0" colorValue="FF244B66" />
-            </LinearGradient>
-          </Fill>
-        </Shape>
-        <Node y="18" name="Volt ion exhaust 1" id="0:104219" scaleY="1" opacity="1">
-          <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120103" />
-          <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120153" />
-          <Shape x="0" y="12" rotation="0" name="Ion exhaust core 1" id="0:104220">
-            <Ellipse width="12" height="27" originX="0.5" originY="0.5" />
+          <Shape x="-14" y="1" rotation="0" name="Gimbal pin 1--14 socket" id="0:104218">
+            <Ellipse width="8" height="8" originX="0.5" originY="0.5" />
             <Fill>
-              <LinearGradient startX="-4.32" startY="-13.5" endX="5.04" endY="13.5">
-                <GradientStop position="0.0" colorValue="CCECFFFF" />
-                <GradientStop position="1.0" colorValue="0040CBFF" />
+              <LinearGradient startX="-2.88" startY="-4.0" endX="3.36" endY="4.0">
+                <GradientStop position="0.0" colorValue="FF254A64" />
+                <GradientStop position="0.5" colorValue="FF102C46" />
+                <GradientStop position="1.0" colorValue="FF07162A" />
               </LinearGradient>
             </Fill>
           </Shape>
-          <Shape x="0" y="15" rotation="0" name="Ion exhaust halo 1" id="0:104221">
-            <Ellipse width="26" height="42" originX="0.5" originY="0.5" />
+          <Shape x="14" y="0" rotation="0" name="Gimbal pin 1-14 slot" id="0:104219">
+            <Rectangle width="2.8499999999999996" height="1.4" originX="0.5" originY="0.5" cornerRadiusTL="0.5" />
+            <Stroke thickness="2" cap="round" join="round">
+              <SolidColor colorValue="FF6F91B2" />
+            </Stroke>
             <Fill>
-              <LinearGradient startX="-9.36" startY="-21.0" endX="10.92" endY="21.0">
-                <GradientStop position="0.0" colorValue="5577EFFF" />
-                <GradientStop position="1.0" colorValue="002175C9" />
+              <SolidColor colorValue="FF194362" />
+            </Fill>
+          </Shape>
+          <Shape x="14" y="0" rotation="0" name="Gimbal pin 1-14 cap" id="0:104220">
+            <Ellipse width="5" height="5" originX="0.5" originY="0.5" />
+            <Fill>
+              <LinearGradient startX="-1.7999999999999998" startY="-2.5" endX="2.1" endY="2.5">
+                <GradientStop position="0.0" colorValue="FFE8F5FC" />
+                <GradientStop position="0.5" colorValue="FF7DABC0" />
+                <GradientStop position="1.0" colorValue="FF244B66" />
               </LinearGradient>
             </Fill>
           </Shape>
+          <Shape x="14" y="1" rotation="0" name="Gimbal pin 1-14 socket" id="0:104221">
+            <Ellipse width="8" height="8" originX="0.5" originY="0.5" />
+            <Fill>
+              <LinearGradient startX="-2.88" startY="-4.0" endX="3.36" endY="4.0">
+                <GradientStop position="0.0" colorValue="FF254A64" />
+                <GradientStop position="0.5" colorValue="FF102C46" />
+                <GradientStop position="1.0" colorValue="FF07162A" />
+              </LinearGradient>
+            </Fill>
+          </Shape>
+          <Shape x="0" y="16" rotation="0" name="Nozzle mouth 1" id="0:104222">
+            <Ellipse width="37" height="12" originX="0.5" originY="0.5" />
+            <Fill>
+              <LinearGradient startX="-13.32" startY="-6.0" endX="15.54" endY="6.0">
+                <GradientStop position="0.0" colorValue="FF254A64" />
+                <GradientStop position="0.5" colorValue="FF102C46" />
+                <GradientStop position="1.0" colorValue="FF07162A" />
+              </LinearGradient>
+            </Fill>
+          </Shape>
+          <Shape x="0" y="2" rotation="0" name="Nozzle shell 1" id="0:104223">
+            <Rectangle width="35" height="26" originX="0.5" originY="0.5" cornerRadiusTL="8" />
+            <Stroke thickness="2" cap="round" join="round">
+              <SolidColor colorValue="FF6F91B2" />
+            </Stroke>
+            <Fill>
+              <LinearGradient startX="-12.6" startY="-13.0" endX="14.7" endY="13.0">
+                <GradientStop position="0.0" colorValue="FFE8F5FC" />
+                <GradientStop position="0.5" colorValue="FF7DABC0" />
+                <GradientStop position="1.0" colorValue="FF244B66" />
+              </LinearGradient>
+            </Fill>
+          </Shape>
+          <Node y="18" name="Volt ion exhaust 1" id="0:104224" scaleY="1" opacity="1">
+            <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120103" />
+            <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120153" />
+            <Shape x="0" y="12" rotation="0" name="Ion exhaust core 1" id="0:104225">
+              <Ellipse width="12" height="27" originX="0.5" originY="0.5" />
+              <Fill>
+                <LinearGradient startX="-4.32" startY="-13.5" endX="5.04" endY="13.5">
+                  <GradientStop position="0.0" colorValue="CCECFFFF" />
+                  <GradientStop position="1.0" colorValue="0040CBFF" />
+                </LinearGradient>
+              </Fill>
+            </Shape>
+            <Shape x="0" y="15" rotation="0" name="Ion exhaust halo 1" id="0:104226">
+              <Ellipse width="26" height="42" originX="0.5" originY="0.5" />
+              <Fill>
+                <LinearGradient startX="-9.36" startY="-21.0" endX="10.92" endY="21.0">
+                  <GradientStop position="0.0" colorValue="5577EFFF" />
+                  <GradientStop position="1.0" colorValue="002175C9" />
+                </LinearGradient>
+              </Fill>
+            </Shape>
+          </Node>
         </Node>
       </Node>
-      <Node x="-83" y="-36" name="Arm L" id="0:104290" rotation="0.05">
-        <Node name="Volt shoulder detail L" id="0:104441">
-          <Shape x="0" y="0" rotation="0" name="Shoulder cap L slot" id="0:104442">
+      <Node x="43" y="56" name="Volt suspension R" id="0:104227" scaleY="1">
+        <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120159" />
+        <Shape x="-7" y="10" rotation="0" name="Suspension rod R--7" id="0:104228">
+          <Rectangle width="3" height="22" originX="0.5" originY="0.5" cornerRadiusTL="1" />
+          <Stroke thickness="2" cap="round" join="round">
+            <SolidColor colorValue="FF6F91B2" />
+          </Stroke>
+          <Fill>
+            <LinearGradient startX="-1.08" startY="-11.0" endX="1.26" endY="11.0">
+              <GradientStop position="0.0" colorValue="FFE8F5FC" />
+              <GradientStop position="0.5" colorValue="FF7DABC0" />
+              <GradientStop position="1.0" colorValue="FF244B66" />
+            </LinearGradient>
+          </Fill>
+        </Shape>
+        <Shape x="7" y="10" rotation="0" name="Suspension rod R-7" id="0:104229">
+          <Rectangle width="3" height="22" originX="0.5" originY="0.5" cornerRadiusTL="1" />
+          <Stroke thickness="2" cap="round" join="round">
+            <SolidColor colorValue="FF6F91B2" />
+          </Stroke>
+          <Fill>
+            <LinearGradient startX="-1.08" startY="-11.0" endX="1.26" endY="11.0">
+              <GradientStop position="0.0" colorValue="FFE8F5FC" />
+              <GradientStop position="0.5" colorValue="FF7DABC0" />
+              <GradientStop position="1.0" colorValue="FF244B66" />
+            </LinearGradient>
+          </Fill>
+        </Shape>
+      </Node>
+      <Node x="-83" y="-36" name="Arm L" id="0:104299" rotation="0.05">
+        <Node name="Volt shoulder detail L" id="0:104450" rotation="0">
+          <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120163" />
+          <Shape x="0" y="0" rotation="0" name="Shoulder cap L slot" id="0:104451">
             <Rectangle width="6.84" height="1.4" originX="0.5" originY="0.5" cornerRadiusTL="0.5" />
             <Stroke thickness="2" cap="round" join="round">
               <SolidColor colorValue="FF6F91B2" />
@@ -6010,7 +6112,7 @@
               <SolidColor colorValue="FF194362" />
             </Fill>
           </Shape>
-          <Shape x="0" y="0" rotation="0" name="Shoulder cap L cap" id="0:104443">
+          <Shape x="0" y="0" rotation="0" name="Shoulder cap L cap" id="0:104452">
             <Ellipse width="12" height="12" originX="0.5" originY="0.5" />
             <Fill>
               <LinearGradient startX="-4.32" startY="-6.0" endX="5.04" endY="6.0">
@@ -6020,7 +6122,7 @@
               </LinearGradient>
             </Fill>
           </Shape>
-          <Shape x="0" y="1" rotation="0" name="Shoulder cap L socket" id="0:104444">
+          <Shape x="0" y="1" rotation="0" name="Shoulder cap L socket" id="0:104453">
             <Ellipse width="15" height="15" originX="0.5" originY="0.5" />
             <Fill>
               <LinearGradient startX="-5.4" startY="-7.5" endX="6.3" endY="7.5">
@@ -6030,7 +6132,7 @@
               </LinearGradient>
             </Fill>
           </Shape>
-          <Shape x="0" y="0" rotation="0" name="Shoulder copper ring L" id="0:104445">
+          <Shape x="0" y="0" rotation="0" name="Shoulder copper ring L" id="0:104454">
             <Ellipse width="22" height="22" originX="0.5" originY="0.5" />
             <Fill>
               <LinearGradient startX="-7.92" startY="-11.0" endX="9.24" endY="11.0">
@@ -6040,7 +6142,7 @@
               </LinearGradient>
             </Fill>
           </Shape>
-          <Shape x="0" y="0" rotation="0" name="Shoulder armored rim L" id="0:104446">
+          <Shape x="0" y="0" rotation="0" name="Shoulder armored rim L" id="0:104455">
             <Ellipse width="32" height="32" originX="0.5" originY="0.5" />
             <Fill>
               <LinearGradient startX="-11.52" startY="-16.0" endX="13.44" endY="16.0">
@@ -6050,20 +6152,23 @@
               </LinearGradient>
             </Fill>
           </Shape>
-          <Shape x="-5" y="19" rotation="0" name="Upper arm chromed piston L" id="0:104447">
-            <Rectangle width="5" height="25" originX="0.5" originY="0.5" cornerRadiusTL="2" />
-            <Stroke thickness="2" cap="round" join="round">
-              <SolidColor colorValue="FF6F91B2" />
-            </Stroke>
-            <Fill>
-              <LinearGradient startX="-1.7999999999999998" startY="-12.5" endX="2.1" endY="12.5">
-                <GradientStop position="0.0" colorValue="FFE8F5FC" />
-                <GradientStop position="0.5" colorValue="FF7DABC0" />
-                <GradientStop position="1.0" colorValue="FF244B66" />
-              </LinearGradient>
-            </Fill>
-          </Shape>
-          <Shape x="-5" y="31" rotation="0" name="Upper arm rod coupling L" id="0:104448">
+          <Node y="19" name="Volt piston slider L" id="0:104456">
+            <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120164" />
+            <Shape x="-5" y="0" rotation="0" name="Upper arm chromed piston L" id="0:104457">
+              <Rectangle width="5" height="25" originX="0.5" originY="0.5" cornerRadiusTL="2" />
+              <Stroke thickness="2" cap="round" join="round">
+                <SolidColor colorValue="FF6F91B2" />
+              </Stroke>
+              <Fill>
+                <LinearGradient startX="-1.7999999999999998" startY="-12.5" endX="2.1" endY="12.5">
+                  <GradientStop position="0.0" colorValue="FFE8F5FC" />
+                  <GradientStop position="0.5" colorValue="FF7DABC0" />
+                  <GradientStop position="1.0" colorValue="FF244B66" />
+                </LinearGradient>
+              </Fill>
+            </Shape>
+          </Node>
+          <Shape x="-5" y="31" rotation="0" name="Upper arm rod coupling L" id="0:104458">
             <Rectangle width="10" height="6" originX="0.5" originY="0.5" cornerRadiusTL="2" />
             <Stroke thickness="2" cap="round" join="round">
               <SolidColor colorValue="FF6F91B2" />
@@ -6076,7 +6181,7 @@
               </LinearGradient>
             </Fill>
           </Shape>
-          <Shape name="Elbow service hose L" id="0:104449">
+          <Shape name="Elbow service hose L" id="0:104459">
             <PointsPath isClosed="false" isClockwise="true">
               <StraightVertex x="-12" y="8" radius="3" />
               <StraightVertex x="-15" y="23" radius="3" />
@@ -6092,11 +6197,11 @@
           </Shape>
         </Node>
         <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120059" />
-        <Node y="40" name="Forearm L" id="0:104291" rotation="0">
-          <Node name="Volt wrist mechanism L" id="0:104450">
-            <Node x="-4" y="21" name="Wrist channel L" id="0:104451" opacity="1">
+        <Node y="40" name="Forearm L" id="0:104300" rotation="0">
+          <Node name="Volt wrist mechanism L" id="0:104460">
+            <Node x="-4" y="21" name="Wrist channel L" id="0:104461" opacity="1">
               <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120153" />
-              <Shape x="0" y="0" rotation="0" name="Wrist channel L emissive" id="0:104452">
+              <Shape x="0" y="0" rotation="0" name="Wrist channel L emissive" id="0:104462">
                 <Ellipse width="7" height="21" originX="0.5" originY="0.5" />
                 <Fill>
                   <LinearGradient startX="-2.52" startY="-10.5" endX="2.94" endY="10.5">
@@ -6107,7 +6212,7 @@
                 </Fill>
               </Shape>
             </Node>
-            <Shape name="Wrist bright bevel L" id="0:104453">
+            <Shape name="Wrist bright bevel L" id="0:104463">
               <PointsPath isClosed="true" isClockwise="true">
                 <StraightVertex x="-13" y="3" radius="3" />
                 <StraightVertex x="-6" y="0" radius="3" />
@@ -6125,7 +6230,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape name="Wrist sculpted shade L" id="0:104454">
+            <Shape name="Wrist sculpted shade L" id="0:104464">
               <PointsPath isClosed="true" isClockwise="true">
                 <StraightVertex x="10" y="4" radius="3" />
                 <StraightVertex x="15" y="10" radius="3" />
@@ -6142,7 +6247,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="20" rotation="0" name="Wrist service plate L" id="0:104455">
+            <Shape x="0" y="20" rotation="0" name="Wrist service plate L" id="0:104465">
               <Rectangle width="29" height="37" originX="0.5" originY="0.5" cornerRadiusTL="9" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -6155,7 +6260,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape name="Wrist flexible wire L" id="0:104456">
+            <Shape name="Wrist flexible wire L" id="0:104466">
               <PointsPath isClosed="true" isClockwise="true">
                 <StraightVertex x="-8" y="5" radius="3" />
                 <StraightVertex x="-13" y="16" radius="3" />
@@ -6171,7 +6276,7 @@
             </Shape>
           </Node>
           <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120061" />
-          <Shape x="0" y="38" rotation="0" name="Left hand" id="0:104292">
+          <Shape x="0" y="38" rotation="0" name="Left hand" id="0:104301">
             <Rectangle width="40" height="38" originX="0.5" originY="0.5" cornerRadiusTL="10" />
             <Stroke thickness="2" cap="round" join="round">
               <SolidColor colorValue="FF6F91B2" />
@@ -6184,7 +6289,7 @@
               </LinearGradient>
             </Fill>
           </Shape>
-          <Shape x="-2" y="7" rotation="0" name="Forearm L armor face" id="0:104293">
+          <Shape x="-2" y="7" rotation="0" name="Forearm L armor face" id="0:104302">
             <Rectangle width="27" height="40" originX="0.5" originY="0.5" cornerRadiusTL="12.0" />
             <Stroke thickness="2" cap="round" join="round">
               <SolidColor colorValue="FF6F91B2" />
@@ -6199,7 +6304,7 @@
               </LinearGradient>
             </Fill>
           </Shape>
-          <Shape x="0" y="10" rotation="0" name="Forearm L armor bevel" id="0:104294">
+          <Shape x="0" y="10" rotation="0" name="Forearm L armor bevel" id="0:104303">
             <Rectangle width="35" height="48" originX="0.5" originY="0.5" cornerRadiusTL="12.0" />
             <Stroke thickness="2" cap="round" join="round">
               <SolidColor colorValue="FF6F91B2" />
@@ -6213,7 +6318,7 @@
             </Fill>
           </Shape>
         </Node>
-        <Shape x="0" y="40" rotation="0" name="Elbow L" id="0:104295">
+        <Shape x="0" y="40" rotation="0" name="Elbow L" id="0:104304">
           <Ellipse width="25" height="25" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6223,7 +6328,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="0" y="17" rotation="0" name="Arm L piston" id="0:104296">
+        <Shape x="0" y="17" rotation="0" name="Arm L piston" id="0:104305">
           <Rectangle width="19" height="42" originX="0.5" originY="0.5" cornerRadiusTL="6" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -6236,7 +6341,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="0" y="0" rotation="0" name="Shoulder L" id="0:104297">
+        <Shape x="0" y="0" rotation="0" name="Shoulder L" id="0:104306">
           <Ellipse width="39" height="39" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6249,9 +6354,10 @@
           </Fill>
         </Shape>
       </Node>
-      <Node x="83" y="-36" name="Arm R" id="0:104298" rotation="-0.05">
-        <Node name="Volt shoulder detail R" id="0:104457">
-          <Shape x="0" y="0" rotation="0" name="Shoulder cap R slot" id="0:104458">
+      <Node x="83" y="-36" name="Arm R" id="0:104307" rotation="-0.05">
+        <Node name="Volt shoulder detail R" id="0:104467" rotation="0">
+          <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120165" />
+          <Shape x="0" y="0" rotation="0" name="Shoulder cap R slot" id="0:104468">
             <Rectangle width="6.84" height="1.4" originX="0.5" originY="0.5" cornerRadiusTL="0.5" />
             <Stroke thickness="2" cap="round" join="round">
               <SolidColor colorValue="FF6F91B2" />
@@ -6260,7 +6366,7 @@
               <SolidColor colorValue="FF194362" />
             </Fill>
           </Shape>
-          <Shape x="0" y="0" rotation="0" name="Shoulder cap R cap" id="0:104459">
+          <Shape x="0" y="0" rotation="0" name="Shoulder cap R cap" id="0:104469">
             <Ellipse width="12" height="12" originX="0.5" originY="0.5" />
             <Fill>
               <LinearGradient startX="-4.32" startY="-6.0" endX="5.04" endY="6.0">
@@ -6270,7 +6376,7 @@
               </LinearGradient>
             </Fill>
           </Shape>
-          <Shape x="0" y="1" rotation="0" name="Shoulder cap R socket" id="0:104460">
+          <Shape x="0" y="1" rotation="0" name="Shoulder cap R socket" id="0:104470">
             <Ellipse width="15" height="15" originX="0.5" originY="0.5" />
             <Fill>
               <LinearGradient startX="-5.4" startY="-7.5" endX="6.3" endY="7.5">
@@ -6280,7 +6386,7 @@
               </LinearGradient>
             </Fill>
           </Shape>
-          <Shape x="0" y="0" rotation="0" name="Shoulder copper ring R" id="0:104461">
+          <Shape x="0" y="0" rotation="0" name="Shoulder copper ring R" id="0:104471">
             <Ellipse width="22" height="22" originX="0.5" originY="0.5" />
             <Fill>
               <LinearGradient startX="-7.92" startY="-11.0" endX="9.24" endY="11.0">
@@ -6290,7 +6396,7 @@
               </LinearGradient>
             </Fill>
           </Shape>
-          <Shape x="0" y="0" rotation="0" name="Shoulder armored rim R" id="0:104462">
+          <Shape x="0" y="0" rotation="0" name="Shoulder armored rim R" id="0:104472">
             <Ellipse width="32" height="32" originX="0.5" originY="0.5" />
             <Fill>
               <LinearGradient startX="-11.52" startY="-16.0" endX="13.44" endY="16.0">
@@ -6300,20 +6406,23 @@
               </LinearGradient>
             </Fill>
           </Shape>
-          <Shape x="5" y="19" rotation="0" name="Upper arm chromed piston R" id="0:104463">
-            <Rectangle width="5" height="25" originX="0.5" originY="0.5" cornerRadiusTL="2" />
-            <Stroke thickness="2" cap="round" join="round">
-              <SolidColor colorValue="FF6F91B2" />
-            </Stroke>
-            <Fill>
-              <LinearGradient startX="-1.7999999999999998" startY="-12.5" endX="2.1" endY="12.5">
-                <GradientStop position="0.0" colorValue="FFE8F5FC" />
-                <GradientStop position="0.5" colorValue="FF7DABC0" />
-                <GradientStop position="1.0" colorValue="FF244B66" />
-              </LinearGradient>
-            </Fill>
-          </Shape>
-          <Shape x="5" y="31" rotation="0" name="Upper arm rod coupling R" id="0:104464">
+          <Node y="19" name="Volt piston slider R" id="0:104473">
+            <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120166" />
+            <Shape x="5" y="0" rotation="0" name="Upper arm chromed piston R" id="0:104474">
+              <Rectangle width="5" height="25" originX="0.5" originY="0.5" cornerRadiusTL="2" />
+              <Stroke thickness="2" cap="round" join="round">
+                <SolidColor colorValue="FF6F91B2" />
+              </Stroke>
+              <Fill>
+                <LinearGradient startX="-1.7999999999999998" startY="-12.5" endX="2.1" endY="12.5">
+                  <GradientStop position="0.0" colorValue="FFE8F5FC" />
+                  <GradientStop position="0.5" colorValue="FF7DABC0" />
+                  <GradientStop position="1.0" colorValue="FF244B66" />
+                </LinearGradient>
+              </Fill>
+            </Shape>
+          </Node>
+          <Shape x="5" y="31" rotation="0" name="Upper arm rod coupling R" id="0:104475">
             <Rectangle width="10" height="6" originX="0.5" originY="0.5" cornerRadiusTL="2" />
             <Stroke thickness="2" cap="round" join="round">
               <SolidColor colorValue="FF6F91B2" />
@@ -6326,7 +6435,7 @@
               </LinearGradient>
             </Fill>
           </Shape>
-          <Shape name="Elbow service hose R" id="0:104465">
+          <Shape name="Elbow service hose R" id="0:104476">
             <PointsPath isClosed="false" isClockwise="true">
               <StraightVertex x="12" y="8" radius="3" />
               <StraightVertex x="15" y="23" radius="3" />
@@ -6342,11 +6451,11 @@
           </Shape>
         </Node>
         <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120060" />
-        <Node y="40" name="Forearm R" id="0:104299" rotation="0">
-          <Node name="Volt wrist mechanism R" id="0:104466">
-            <Node x="4" y="21" name="Wrist channel R" id="0:104467" opacity="1">
+        <Node y="40" name="Forearm R" id="0:104308" rotation="0">
+          <Node name="Volt wrist mechanism R" id="0:104477">
+            <Node x="4" y="21" name="Wrist channel R" id="0:104478" opacity="1">
               <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120153" />
-              <Shape x="0" y="0" rotation="0" name="Wrist channel R emissive" id="0:104468">
+              <Shape x="0" y="0" rotation="0" name="Wrist channel R emissive" id="0:104479">
                 <Ellipse width="7" height="21" originX="0.5" originY="0.5" />
                 <Fill>
                   <LinearGradient startX="-2.52" startY="-10.5" endX="2.94" endY="10.5">
@@ -6357,7 +6466,7 @@
                 </Fill>
               </Shape>
             </Node>
-            <Shape name="Wrist bright bevel R" id="0:104469">
+            <Shape name="Wrist bright bevel R" id="0:104480">
               <PointsPath isClosed="true" isClockwise="true">
                 <StraightVertex x="-13" y="3" radius="3" />
                 <StraightVertex x="-6" y="0" radius="3" />
@@ -6375,7 +6484,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape name="Wrist sculpted shade R" id="0:104470">
+            <Shape name="Wrist sculpted shade R" id="0:104481">
               <PointsPath isClosed="true" isClockwise="true">
                 <StraightVertex x="10" y="4" radius="3" />
                 <StraightVertex x="15" y="10" radius="3" />
@@ -6392,7 +6501,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="20" rotation="0" name="Wrist service plate R" id="0:104471">
+            <Shape x="0" y="20" rotation="0" name="Wrist service plate R" id="0:104482">
               <Rectangle width="29" height="37" originX="0.5" originY="0.5" cornerRadiusTL="9" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -6405,7 +6514,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape name="Wrist flexible wire R" id="0:104472">
+            <Shape name="Wrist flexible wire R" id="0:104483">
               <PointsPath isClosed="true" isClockwise="true">
                 <StraightVertex x="8" y="5" radius="3" />
                 <StraightVertex x="13" y="16" radius="3" />
@@ -6421,35 +6530,35 @@
             </Shape>
           </Node>
           <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120062" />
-          <Node y="18" opacity="0" name="Drone" id="0:104300">
+          <Node y="18" opacity="0" name="Drone" id="0:104309">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120091" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120074" />
             <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120075" />
-            <Node x="-39" y="55" name="Drone rotor -39" id="0:104301">
+            <Node x="-39" y="55" name="Drone rotor -39" id="0:104310">
               <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120092" />
-              <Shape x="0" y="0" rotation="0" name="Drone blade -39" id="0:104302">
+              <Shape x="0" y="0" rotation="0" name="Drone blade -39" id="0:104311">
                 <Rectangle width="56" height="6" originX="0.5" originY="0.5" cornerRadiusTL="3" />
                 <Fill>
                   <SolidColor colorValue="CC9FDDE9" />
                 </Fill>
               </Shape>
             </Node>
-            <Node x="39" y="55" name="Drone rotor 39" id="0:104303">
+            <Node x="39" y="55" name="Drone rotor 39" id="0:104312">
               <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120092" />
-              <Shape x="0" y="0" rotation="0" name="Drone blade 39" id="0:104304">
+              <Shape x="0" y="0" rotation="0" name="Drone blade 39" id="0:104313">
                 <Rectangle width="56" height="6" originX="0.5" originY="0.5" cornerRadiusTL="3" />
                 <Fill>
                   <SolidColor colorValue="CC9FDDE9" />
                 </Fill>
               </Shape>
             </Node>
-            <Shape x="0" y="67" rotation="0" name="Drone eyes" id="0:104305">
+            <Shape x="0" y="67" rotation="0" name="Drone eyes" id="0:104314">
               <Rectangle width="24" height="7" originX="0.5" originY="0.5" cornerRadiusTL="3" />
               <Fill>
                 <SolidColor colorValue="FF81F5FF" />
               </Fill>
             </Shape>
-            <Shape x="0" y="55" rotation="0" name="Drone body" id="0:104306">
+            <Shape x="0" y="55" rotation="0" name="Drone body" id="0:104315">
               <Rectangle width="51" height="35" originX="0.5" originY="0.5" cornerRadiusTL="14" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6459,17 +6568,17 @@
               </Fill>
             </Shape>
           </Node>
-          <Node y="18" opacity="0" name="Flame" id="0:104307">
+          <Node y="18" opacity="0" name="Flame" id="0:104316">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120090" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120074" />
             <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120075" />
-            <Shape x="0" y="101" rotation="0" name="Flame nozzle" id="0:104308">
+            <Shape x="0" y="101" rotation="0" name="Flame nozzle" id="0:104317">
               <Rectangle width="37" height="19" originX="0.5" originY="0.5" cornerRadiusTL="5" />
               <Fill>
                 <SolidColor colorValue="FFFFB476" />
               </Fill>
             </Shape>
-            <Shape x="0" y="60" rotation="0" name="Flame barrel" id="0:104309">
+            <Shape x="0" y="60" rotation="0" name="Flame barrel" id="0:104318">
               <Rectangle width="26" height="87" originX="0.5" originY="0.5" cornerRadiusTL="7" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6478,7 +6587,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="-26" y="30" rotation="0" name="Fuel tank" id="0:104310">
+            <Shape x="-26" y="30" rotation="0" name="Fuel tank" id="0:104319">
               <Rectangle width="31" height="70" originX="0.5" originY="0.5" cornerRadiusTL="12" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6488,17 +6597,17 @@
               </Fill>
             </Shape>
           </Node>
-          <Node y="18" opacity="0" name="Sword" id="0:104311">
+          <Node y="18" opacity="0" name="Sword" id="0:104320">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120089" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120074" />
             <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120075" />
-            <Shape x="0" y="110" rotation="0" name="Energy blade core" id="0:104312">
+            <Shape x="0" y="110" rotation="0" name="Energy blade core" id="0:104321">
               <Rectangle width="12" height="157" originX="0.5" originY="0.5" cornerRadiusTL="4" />
               <Fill>
                 <SolidColor colorValue="FFEBFFFF" />
               </Fill>
             </Shape>
-            <Shape x="0" y="110" rotation="0" name="Energy blade edge" id="0:104313">
+            <Shape x="0" y="110" rotation="0" name="Energy blade edge" id="0:104322">
               <Rectangle width="26" height="167" originX="0.5" originY="0.5" cornerRadiusTL="9" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6507,7 +6616,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="24" rotation="0" name="Sword guard" id="0:104314">
+            <Shape x="0" y="24" rotation="0" name="Sword guard" id="0:104323">
               <Rectangle width="66" height="12" originX="0.5" originY="0.5" cornerRadiusTL="5" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6516,19 +6625,19 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="3" rotation="0" name="Sword grip" id="0:104315">
+            <Shape x="0" y="3" rotation="0" name="Sword grip" id="0:104324">
               <Rectangle width="20" height="35" originX="0.5" originY="0.5" cornerRadiusTL="5" />
               <Fill>
                 <SolidColor colorValue="FF304B67" />
               </Fill>
             </Shape>
           </Node>
-          <Node y="18" opacity="0" name="Machinegun" id="0:104316">
+          <Node y="18" opacity="0" name="Machinegun" id="0:104325">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120085" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120074" />
             <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120075" />
-            <Node y="38" name="Minigun rotor" id="0:104317">
-              <Shape x="-13" y="49" rotation="0" name="Minigun barrel -13" id="0:104318">
+            <Node y="38" name="Minigun rotor" id="0:104326">
+              <Shape x="-13" y="49" rotation="0" name="Minigun barrel -13" id="0:104327">
                 <Rectangle width="9" height="109" originX="0.5" originY="0.5" cornerRadiusTL="3" />
                 <Fill>
                   <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6538,7 +6647,7 @@
                 </Fill>
                 <DataBindContext propertyKey="13" sourcePathIds="0:100010-0:120086" />
               </Shape>
-              <Shape x="0" y="49" rotation="0" name="Minigun barrel 0" id="0:104319">
+              <Shape x="0" y="49" rotation="0" name="Minigun barrel 0" id="0:104328">
                 <Rectangle width="9" height="109" originX="0.5" originY="0.5" cornerRadiusTL="3" />
                 <Fill>
                   <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6548,7 +6657,7 @@
                 </Fill>
                 <DataBindContext propertyKey="13" sourcePathIds="0:100010-0:120087" />
               </Shape>
-              <Shape x="13" y="49" rotation="0" name="Minigun barrel 13" id="0:104320">
+              <Shape x="13" y="49" rotation="0" name="Minigun barrel 13" id="0:104329">
                 <Rectangle width="9" height="109" originX="0.5" originY="0.5" cornerRadiusTL="3" />
                 <Fill>
                   <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6559,7 +6668,7 @@
                 <DataBindContext propertyKey="13" sourcePathIds="0:100010-0:120088" />
               </Shape>
             </Node>
-            <Shape x="0" y="12" rotation="0" name="Minigun receiver" id="0:104321">
+            <Shape x="0" y="12" rotation="0" name="Minigun receiver" id="0:104330">
               <Rectangle width="53" height="54" originX="0.5" originY="0.5" cornerRadiusTL="12" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6569,47 +6678,47 @@
               </Fill>
             </Shape>
           </Node>
-          <Node y="18" opacity="0" name="Electric" id="0:104322">
+          <Node y="18" opacity="0" name="Electric" id="0:104331">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120084" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120074" />
             <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120075" />
-            <Shape x="0" y="28" rotation="0" name="Tesla coil 28" id="0:104323">
+            <Shape x="0" y="28" rotation="0" name="Tesla coil 28" id="0:104332">
               <Rectangle width="39" height="6" originX="0.5" originY="0.5" cornerRadiusTL="2" />
               <Fill>
                 <SolidColor colorValue="FF87EFFF" />
               </Fill>
             </Shape>
-            <Shape x="0" y="42" rotation="0" name="Tesla coil 42" id="0:104324">
+            <Shape x="0" y="42" rotation="0" name="Tesla coil 42" id="0:104333">
               <Rectangle width="39" height="6" originX="0.5" originY="0.5" cornerRadiusTL="2" />
               <Fill>
                 <SolidColor colorValue="FF87EFFF" />
               </Fill>
             </Shape>
-            <Shape x="0" y="56" rotation="0" name="Tesla coil 56" id="0:104325">
+            <Shape x="0" y="56" rotation="0" name="Tesla coil 56" id="0:104334">
               <Rectangle width="39" height="6" originX="0.5" originY="0.5" cornerRadiusTL="2" />
               <Fill>
                 <SolidColor colorValue="FF87EFFF" />
               </Fill>
             </Shape>
-            <Shape x="0" y="70" rotation="0" name="Tesla coil 70" id="0:104326">
+            <Shape x="0" y="70" rotation="0" name="Tesla coil 70" id="0:104335">
               <Rectangle width="39" height="6" originX="0.5" originY="0.5" cornerRadiusTL="2" />
               <Fill>
                 <SolidColor colorValue="FF87EFFF" />
               </Fill>
             </Shape>
-            <Shape x="0" y="84" rotation="0" name="Tesla coil 84" id="0:104327">
+            <Shape x="0" y="84" rotation="0" name="Tesla coil 84" id="0:104336">
               <Rectangle width="39" height="6" originX="0.5" originY="0.5" cornerRadiusTL="2" />
               <Fill>
                 <SolidColor colorValue="FF87EFFF" />
               </Fill>
             </Shape>
-            <Shape x="0" y="98" rotation="0" name="Tesla coil 98" id="0:104328">
+            <Shape x="0" y="98" rotation="0" name="Tesla coil 98" id="0:104337">
               <Rectangle width="39" height="6" originX="0.5" originY="0.5" cornerRadiusTL="2" />
               <Fill>
                 <SolidColor colorValue="FF87EFFF" />
               </Fill>
             </Shape>
-            <Shape x="0" y="55" rotation="0" name="Tesla core" id="0:104329">
+            <Shape x="0" y="55" rotation="0" name="Tesla core" id="0:104338">
               <Rectangle width="24" height="110" originX="0.5" originY="0.5" cornerRadiusTL="10" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6619,17 +6728,17 @@
               </Fill>
             </Shape>
           </Node>
-          <Node y="18" opacity="0" name="Laser" id="0:104330">
+          <Node y="18" opacity="0" name="Laser" id="0:104339">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120083" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120074" />
             <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120075" />
-            <Shape x="0" y="105" rotation="0" name="Laser emitter" id="0:104331">
+            <Shape x="0" y="105" rotation="0" name="Laser emitter" id="0:104340">
               <Rectangle width="31" height="14" originX="0.5" originY="0.5" cornerRadiusTL="6" />
               <Fill>
                 <SolidColor colorValue="FFFF6EAB" />
               </Fill>
             </Shape>
-            <Shape x="-20" y="65" rotation="0" name="Laser rail -20" id="0:104332">
+            <Shape x="-20" y="65" rotation="0" name="Laser rail -20" id="0:104341">
               <Rectangle width="10" height="80" originX="0.5" originY="0.5" cornerRadiusTL="4" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6638,7 +6747,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="20" y="65" rotation="0" name="Laser rail 20" id="0:104333">
+            <Shape x="20" y="65" rotation="0" name="Laser rail 20" id="0:104342">
               <Rectangle width="10" height="80" originX="0.5" originY="0.5" cornerRadiusTL="4" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6647,7 +6756,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="33" rotation="0" name="Laser capacitor" id="0:104334">
+            <Shape x="0" y="33" rotation="0" name="Laser capacitor" id="0:104343">
               <Rectangle width="46" height="65" originX="0.5" originY="0.5" cornerRadiusTL="12" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6657,13 +6766,13 @@
               </Fill>
             </Shape>
           </Node>
-          <Node y="18" opacity="0" name="Rocket" id="0:104335">
+          <Node y="18" opacity="0" name="Rocket" id="0:104344">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120080" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120074" />
             <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120075" />
-            <Node x="-20" y="34" name="Missile 0" id="0:104336">
+            <Node x="-20" y="34" name="Missile 0" id="0:104345">
               <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120081" />
-              <Shape x="0" y="47" rotation="0" name="Rocket tip 0" id="0:104337">
+              <Shape x="0" y="47" rotation="0" name="Rocket tip 0" id="0:104346">
                 <Rectangle width="18" height="23" originX="0.5" originY="0.5" cornerRadiusTL="8" />
                 <Fill>
                   <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6672,7 +6781,7 @@
                   </LinearGradient>
                 </Fill>
               </Shape>
-              <Shape x="0" y="16" rotation="0" name="Rocket hull 0" id="0:104338">
+              <Shape x="0" y="16" rotation="0" name="Rocket hull 0" id="0:104347">
                 <Rectangle width="18" height="48" originX="0.5" originY="0.5" cornerRadiusTL="6" />
                 <Fill>
                   <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6682,15 +6791,15 @@
                 </Fill>
               </Shape>
             </Node>
-            <Shape x="-20" y="57" rotation="0" name="Launcher aperture 0" id="0:104339">
+            <Shape x="-20" y="57" rotation="0" name="Launcher aperture 0" id="0:104348">
               <Rectangle width="24" height="12" originX="0.5" originY="0.5" cornerRadiusTL="5" />
               <Fill>
                 <SolidColor colorValue="FF1D2B44" />
               </Fill>
             </Shape>
-            <Node x="20" y="34" name="Missile 1" id="0:104340">
+            <Node x="20" y="34" name="Missile 1" id="0:104349">
               <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120082" />
-              <Shape x="0" y="47" rotation="0" name="Rocket tip 1" id="0:104341">
+              <Shape x="0" y="47" rotation="0" name="Rocket tip 1" id="0:104350">
                 <Rectangle width="18" height="23" originX="0.5" originY="0.5" cornerRadiusTL="8" />
                 <Fill>
                   <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6699,7 +6808,7 @@
                   </LinearGradient>
                 </Fill>
               </Shape>
-              <Shape x="0" y="16" rotation="0" name="Rocket hull 1" id="0:104342">
+              <Shape x="0" y="16" rotation="0" name="Rocket hull 1" id="0:104351">
                 <Rectangle width="18" height="48" originX="0.5" originY="0.5" cornerRadiusTL="6" />
                 <Fill>
                   <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6709,13 +6818,13 @@
                 </Fill>
               </Shape>
             </Node>
-            <Shape x="20" y="57" rotation="0" name="Launcher aperture 1" id="0:104343">
+            <Shape x="20" y="57" rotation="0" name="Launcher aperture 1" id="0:104352">
               <Rectangle width="24" height="12" originX="0.5" originY="0.5" cornerRadiusTL="5" />
               <Fill>
                 <SolidColor colorValue="FF1D2B44" />
               </Fill>
             </Shape>
-            <Shape x="0" y="27" rotation="0" name="Launcher armor" id="0:104344">
+            <Shape x="0" y="27" rotation="0" name="Launcher armor" id="0:104353">
               <Rectangle width="66" height="71" originX="0.5" originY="0.5" cornerRadiusTL="13" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF536D85" />
@@ -6728,11 +6837,11 @@
               </Fill>
             </Shape>
           </Node>
-          <Node y="18" opacity="0" name="Fist" id="0:104345">
+          <Node y="18" opacity="0" name="Fist" id="0:104354">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120079" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120074" />
             <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120075" />
-            <Shape x="-17" y="66" rotation="0" name="Charged knuckle -17" id="0:104346">
+            <Shape x="-17" y="66" rotation="0" name="Charged knuckle -17" id="0:104355">
               <Rectangle width="14" height="18" originX="0.5" originY="0.5" cornerRadiusTL="6" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6741,7 +6850,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="66" rotation="0" name="Charged knuckle 0" id="0:104347">
+            <Shape x="0" y="66" rotation="0" name="Charged knuckle 0" id="0:104356">
               <Rectangle width="14" height="18" originX="0.5" originY="0.5" cornerRadiusTL="6" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6750,7 +6859,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="17" y="66" rotation="0" name="Charged knuckle 17" id="0:104348">
+            <Shape x="17" y="66" rotation="0" name="Charged knuckle 17" id="0:104357">
               <Rectangle width="14" height="18" originX="0.5" originY="0.5" cornerRadiusTL="6" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6759,7 +6868,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="42" rotation="0" name="Electric gauntlet" id="0:104349">
+            <Shape x="0" y="42" rotation="0" name="Electric gauntlet" id="0:104358">
               <Rectangle width="65" height="65" originX="0.5" originY="0.5" cornerRadiusTL="16" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF72EAFB" />
@@ -6771,36 +6880,36 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="10" rotation="0" name="Gauntlet coil" id="0:104350">
+            <Shape x="0" y="10" rotation="0" name="Gauntlet coil" id="0:104359">
               <Rectangle width="53" height="16" originX="0.5" originY="0.5" cornerRadiusTL="6" />
               <Fill>
                 <SolidColor colorValue="FF39DDF6" />
               </Fill>
             </Shape>
           </Node>
-          <Node y="18" opacity="0" name="Sniper" id="0:104351">
+          <Node y="18" opacity="0" name="Sniper" id="0:104360">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120078" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120074" />
             <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120075" />
-            <Shape x="0" y="175" rotation="0" name="Sniper muzzle brake" id="0:104352">
+            <Shape x="0" y="175" rotation="0" name="Sniper muzzle brake" id="0:104361">
               <Rectangle width="24" height="19" originX="0.5" originY="0.5" cornerRadiusTL="4" />
               <Fill>
                 <SolidColor colorValue="FF394C6C" />
               </Fill>
             </Shape>
-            <Shape x="0" y="174" rotation="0" name="Muzzle slot 174" id="0:104353">
+            <Shape x="0" y="174" rotation="0" name="Muzzle slot 174" id="0:104362">
               <Rectangle width="21" height="3" originX="0.5" originY="0.5" cornerRadiusTL="1" />
               <Fill>
                 <SolidColor colorValue="FF0D192A" />
               </Fill>
             </Shape>
-            <Shape x="0" y="179" rotation="0" name="Muzzle slot 179" id="0:104354">
+            <Shape x="0" y="179" rotation="0" name="Muzzle slot 179" id="0:104363">
               <Rectangle width="21" height="3" originX="0.5" originY="0.5" cornerRadiusTL="1" />
               <Fill>
                 <SolidColor colorValue="FF0D192A" />
               </Fill>
             </Shape>
-            <Shape x="0" y="113" rotation="0" name="Sniper long barrel" id="0:104355">
+            <Shape x="0" y="113" rotation="0" name="Sniper long barrel" id="0:104364">
               <Rectangle width="11" height="115" originX="0.5" originY="0.5" cornerRadiusTL="3" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6809,13 +6918,13 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="-29" y="69" rotation="0" name="Scope lens" id="0:104356">
+            <Shape x="-29" y="69" rotation="0" name="Scope lens" id="0:104365">
               <Ellipse width="16" height="9" originX="0.5" originY="0.5" />
               <Fill>
                 <SolidColor colorValue="FFED6279" />
               </Fill>
             </Shape>
-            <Shape x="-29" y="41" rotation="0" name="Scope" id="0:104357">
+            <Shape x="-29" y="41" rotation="0" name="Scope" id="0:104366">
               <Rectangle width="17" height="53" originX="0.5" originY="0.5" cornerRadiusTL="6" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6824,13 +6933,13 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="-14" y="34" rotation="0" name="Scope mount" id="0:104358">
+            <Shape x="-14" y="34" rotation="0" name="Scope mount" id="0:104367">
               <Rectangle width="22" height="12" originX="0.5" originY="0.5" cornerRadiusTL="3" />
               <Fill>
                 <SolidColor colorValue="FF384F6C" />
               </Fill>
             </Shape>
-            <Shape x="0" y="34" rotation="0" name="Sniper receiver" id="0:104359">
+            <Shape x="0" y="34" rotation="0" name="Sniper receiver" id="0:104368">
               <Rectangle width="38" height="81" originX="0.5" originY="0.5" cornerRadiusTL="8" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6839,18 +6948,18 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="27" y="28" rotation="-0.25" name="Sniper magazine" id="0:104360">
+            <Shape x="27" y="28" rotation="-0.25" name="Sniper magazine" id="0:104369">
               <Rectangle width="28" height="33" originX="0.5" originY="0.5" cornerRadiusTL="5" />
               <Fill>
                 <SolidColor colorValue="FF3B5272" />
               </Fill>
             </Shape>
           </Node>
-          <Node y="18" opacity="0" name="Plasma" id="0:104361">
+          <Node y="18" opacity="0" name="Plasma" id="0:104370">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120073" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120074" />
             <DataBindContext propertyKey="14" sourcePathIds="0:100010-0:120075" />
-            <Shape x="0" y="49" rotation="0" name="Plasma ring 49" id="0:104362">
+            <Shape x="0" y="49" rotation="0" name="Plasma ring 49" id="0:104371">
               <Rectangle width="49" height="8" originX="0.5" originY="0.5" cornerRadiusTL="4" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6859,7 +6968,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="69" rotation="0" name="Plasma ring 69" id="0:104363">
+            <Shape x="0" y="69" rotation="0" name="Plasma ring 69" id="0:104372">
               <Rectangle width="49" height="8" originX="0.5" originY="0.5" cornerRadiusTL="4" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6868,7 +6977,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="89" rotation="0" name="Plasma ring 89" id="0:104364">
+            <Shape x="0" y="89" rotation="0" name="Plasma ring 89" id="0:104373">
               <Rectangle width="49" height="8" originX="0.5" originY="0.5" cornerRadiusTL="4" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6877,7 +6986,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="108" rotation="0" name="Plasma muzzle" id="0:104365">
+            <Shape x="0" y="108" rotation="0" name="Plasma muzzle" id="0:104374">
               <Rectangle width="41" height="15" originX="0.5" originY="0.5" cornerRadiusTL="5" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6886,7 +6995,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="55" rotation="0" name="Plasma core" id="0:104366">
+            <Shape x="0" y="55" rotation="0" name="Plasma core" id="0:104375">
               <Rectangle width="21" height="76" originX="0.5" originY="0.5" cornerRadiusTL="9" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6895,7 +7004,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="52" rotation="0" name="Plasma barrel" id="0:104367">
+            <Shape x="0" y="52" rotation="0" name="Plasma barrel" id="0:104376">
               <Rectangle width="43" height="104" originX="0.5" originY="0.5" cornerRadiusTL="14" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6B96B5" />
@@ -6907,9 +7016,9 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Node x="-28" y="34" name="Plasma fin -28" id="0:104368">
+            <Node x="-28" y="34" name="Plasma fin -28" id="0:104377">
               <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120076" />
-              <Shape x="0" y="0" rotation="0" name="Plasma armor fin -28" id="0:104369">
+              <Shape x="0" y="0" rotation="0" name="Plasma armor fin -28" id="0:104378">
                 <Rectangle width="13" height="58" originX="0.5" originY="0.5" cornerRadiusTL="5" />
                 <Fill>
                   <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6919,9 +7028,9 @@
                 </Fill>
               </Shape>
             </Node>
-            <Node x="28" y="34" name="Plasma fin 28" id="0:104370">
+            <Node x="28" y="34" name="Plasma fin 28" id="0:104379">
               <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120077" />
-              <Shape x="0" y="0" rotation="0" name="Plasma armor fin 28" id="0:104371">
+              <Shape x="0" y="0" rotation="0" name="Plasma armor fin 28" id="0:104380">
                 <Rectangle width="13" height="58" originX="0.5" originY="0.5" cornerRadiusTL="5" />
                 <Fill>
                   <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -6932,26 +7041,26 @@
               </Shape>
             </Node>
           </Node>
-          <Node opacity="1" name="Palm" id="0:104372">
-            <Shape x="-7" y="31" rotation="0" name="Finger R -7" id="0:104373">
+          <Node opacity="1" name="Palm" id="0:104381">
+            <Shape x="-7" y="31" rotation="0" name="Finger R -7" id="0:104382">
               <Rectangle width="4" height="13" originX="0.5" originY="0.5" cornerRadiusTL="2" />
               <Fill>
                 <SolidColor colorValue="FF8296AB" />
               </Fill>
             </Shape>
-            <Shape x="0" y="31" rotation="0" name="Finger R 0" id="0:104374">
+            <Shape x="0" y="31" rotation="0" name="Finger R 0" id="0:104383">
               <Rectangle width="4" height="13" originX="0.5" originY="0.5" cornerRadiusTL="2" />
               <Fill>
                 <SolidColor colorValue="FF8296AB" />
               </Fill>
             </Shape>
-            <Shape x="7" y="31" rotation="0" name="Finger R 7" id="0:104375">
+            <Shape x="7" y="31" rotation="0" name="Finger R 7" id="0:104384">
               <Rectangle width="4" height="13" originX="0.5" originY="0.5" cornerRadiusTL="2" />
               <Fill>
                 <SolidColor colorValue="FF8296AB" />
               </Fill>
             </Shape>
-            <Shape x="0" y="26" rotation="0" name="Hand R" id="0:104376">
+            <Shape x="0" y="26" rotation="0" name="Hand R" id="0:104385">
               <Rectangle width="35" height="31" originX="0.5" originY="0.5" cornerRadiusTL="12" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF8DA3B7" />
@@ -6966,11 +7075,11 @@
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120072" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120072" />
           </Node>
-          <Node y="18" name="cryo assembly" id="0:104377" opacity="0" scaleY="0.01">
+          <Node y="18" name="cryo assembly" id="0:104386" opacity="0" scaleY="0.01">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120110" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120074" />
-            <Node rotation="0.0" y="65" name="Cryo vane 0" id="0:104378">
-              <Shape name="Crystal edge 0" id="0:104379">
+            <Node rotation="0.0" y="65" name="Cryo vane 0" id="0:104387">
+              <Shape name="Crystal edge 0" id="0:104388">
                 <PointsPath isClosed="true" isClockwise="true">
                   <StraightVertex x="0" y="10" radius="3" />
                   <StraightVertex x="-9" y="-19" radius="3" />
@@ -6985,8 +7094,8 @@
                 </Fill>
               </Shape>
             </Node>
-            <Node rotation="1.0471975500000001" y="65" name="Cryo vane 1" id="0:104380">
-              <Shape name="Crystal edge 1" id="0:104381">
+            <Node rotation="1.0471975500000001" y="65" name="Cryo vane 1" id="0:104389">
+              <Shape name="Crystal edge 1" id="0:104390">
                 <PointsPath isClosed="true" isClockwise="true">
                   <StraightVertex x="0" y="10" radius="3" />
                   <StraightVertex x="-9" y="-19" radius="3" />
@@ -7001,8 +7110,8 @@
                 </Fill>
               </Shape>
             </Node>
-            <Node rotation="2.0943951000000003" y="65" name="Cryo vane 2" id="0:104382">
-              <Shape name="Crystal edge 2" id="0:104383">
+            <Node rotation="2.0943951000000003" y="65" name="Cryo vane 2" id="0:104391">
+              <Shape name="Crystal edge 2" id="0:104392">
                 <PointsPath isClosed="true" isClockwise="true">
                   <StraightVertex x="0" y="10" radius="3" />
                   <StraightVertex x="-9" y="-19" radius="3" />
@@ -7017,8 +7126,8 @@
                 </Fill>
               </Shape>
             </Node>
-            <Node rotation="3.14159265" y="65" name="Cryo vane 3" id="0:104384">
-              <Shape name="Crystal edge 3" id="0:104385">
+            <Node rotation="3.14159265" y="65" name="Cryo vane 3" id="0:104393">
+              <Shape name="Crystal edge 3" id="0:104394">
                 <PointsPath isClosed="true" isClockwise="true">
                   <StraightVertex x="0" y="10" radius="3" />
                   <StraightVertex x="-9" y="-19" radius="3" />
@@ -7033,8 +7142,8 @@
                 </Fill>
               </Shape>
             </Node>
-            <Node rotation="4.188790200000001" y="65" name="Cryo vane 4" id="0:104386">
-              <Shape name="Crystal edge 4" id="0:104387">
+            <Node rotation="4.188790200000001" y="65" name="Cryo vane 4" id="0:104395">
+              <Shape name="Crystal edge 4" id="0:104396">
                 <PointsPath isClosed="true" isClockwise="true">
                   <StraightVertex x="0" y="10" radius="3" />
                   <StraightVertex x="-9" y="-19" radius="3" />
@@ -7049,8 +7158,8 @@
                 </Fill>
               </Shape>
             </Node>
-            <Node rotation="5.2359877500000005" y="65" name="Cryo vane 5" id="0:104388">
-              <Shape name="Crystal edge 5" id="0:104389">
+            <Node rotation="5.2359877500000005" y="65" name="Cryo vane 5" id="0:104397">
+              <Shape name="Crystal edge 5" id="0:104398">
                 <PointsPath isClosed="true" isClockwise="true">
                   <StraightVertex x="0" y="10" radius="3" />
                   <StraightVertex x="-9" y="-19" radius="3" />
@@ -7065,7 +7174,7 @@
                 </Fill>
               </Shape>
             </Node>
-            <Shape x="0" y="42" rotation="0" name="Cold bore" id="0:104390">
+            <Shape x="0" y="42" rotation="0" name="Cold bore" id="0:104399">
               <Rectangle width="29" height="83" originX="0.5" originY="0.5" cornerRadiusTL="8" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -7079,10 +7188,10 @@
               </Fill>
             </Shape>
           </Node>
-          <Node y="18" name="ion assembly" id="0:104391" opacity="0" scaleY="0.01">
+          <Node y="18" name="ion assembly" id="0:104400" opacity="0" scaleY="0.01">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120111" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120074" />
-            <Shape x="0" y="92" rotation="0" name="Ion sphere" id="0:104392">
+            <Shape x="0" y="92" rotation="0" name="Ion sphere" id="0:104401">
               <Ellipse width="43" height="43" originX="0.5" originY="0.5" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7092,7 +7201,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="-28" y="54" rotation="0" name="Ion rail -28" id="0:104393">
+            <Shape x="-28" y="54" rotation="0" name="Ion rail -28" id="0:104402">
               <Rectangle width="10" height="93" originX="0.5" originY="0.5" cornerRadiusTL="4" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -7107,7 +7216,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="28" y="54" rotation="0" name="Ion rail 28" id="0:104394">
+            <Shape x="28" y="54" rotation="0" name="Ion rail 28" id="0:104403">
               <Rectangle width="10" height="93" originX="0.5" originY="0.5" cornerRadiusTL="4" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -7122,7 +7231,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="-2" y="21" rotation="0" name="Ion receiver face" id="0:104395">
+            <Shape x="-2" y="21" rotation="0" name="Ion receiver face" id="0:104404">
               <Rectangle width="42" height="47" originX="0.5" originY="0.5" cornerRadiusTL="13.75" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -7137,7 +7246,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="24" rotation="0" name="Ion receiver bevel" id="0:104396">
+            <Shape x="0" y="24" rotation="0" name="Ion receiver bevel" id="0:104405">
               <Rectangle width="50" height="55" originX="0.5" originY="0.5" cornerRadiusTL="13.75" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -7151,10 +7260,10 @@
               </Fill>
             </Shape>
           </Node>
-          <Node y="18" name="blaster assembly" id="0:104397" opacity="0" scaleY="0.01">
+          <Node y="18" name="blaster assembly" id="0:104406" opacity="0" scaleY="0.01">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120112" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120074" />
-            <Shape x="-16" y="65" rotation="0" name="Pulse barrel -16" id="0:104398">
+            <Shape x="-16" y="65" rotation="0" name="Pulse barrel -16" id="0:104407">
               <Rectangle width="18" height="87" originX="0.5" originY="0.5" cornerRadiusTL="6" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -7167,7 +7276,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="16" y="65" rotation="0" name="Pulse barrel 16" id="0:104399">
+            <Shape x="16" y="65" rotation="0" name="Pulse barrel 16" id="0:104408">
               <Rectangle width="18" height="87" originX="0.5" originY="0.5" cornerRadiusTL="6" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -7180,7 +7289,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="-2" y="25" rotation="0" name="Pulse housing face" id="0:104400">
+            <Shape x="-2" y="25" rotation="0" name="Pulse housing face" id="0:104409">
               <Rectangle width="47" height="47" originX="0.5" originY="0.5" cornerRadiusTL="13.75" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -7195,7 +7304,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="28" rotation="0" name="Pulse housing bevel" id="0:104401">
+            <Shape x="0" y="28" rotation="0" name="Pulse housing bevel" id="0:104410">
               <Rectangle width="55" height="55" originX="0.5" originY="0.5" cornerRadiusTL="13.75" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -7209,10 +7318,10 @@
               </Fill>
             </Shape>
           </Node>
-          <Node y="18" name="magnetic assembly" id="0:104402" opacity="0" scaleY="0.01">
+          <Node y="18" name="magnetic assembly" id="0:104411" opacity="0" scaleY="0.01">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120113" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120074" />
-            <Shape name="Magnetic yoke" id="0:104403">
+            <Shape name="Magnetic yoke" id="0:104412">
               <PointsPath isClosed="true" isClockwise="true">
                 <StraightVertex x="-25" y="100" radius="3" />
                 <StraightVertex x="-25" y="32" radius="3" />
@@ -7226,7 +7335,7 @@
                 </LinearGradient>
               </Stroke>
             </Shape>
-            <Shape x="-25" y="100" rotation="0" name="Magnetic pole -25" id="0:104404">
+            <Shape x="-25" y="100" rotation="0" name="Magnetic pole -25" id="0:104413">
               <Rectangle width="24" height="20" originX="0.5" originY="0.5" cornerRadiusTL="4" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -7238,7 +7347,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="25" y="100" rotation="0" name="Magnetic pole 25" id="0:104405">
+            <Shape x="25" y="100" rotation="0" name="Magnetic pole 25" id="0:104414">
               <Rectangle width="24" height="20" originX="0.5" originY="0.5" cornerRadiusTL="4" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -7251,10 +7360,10 @@
               </Fill>
             </Shape>
           </Node>
-          <Node y="18" name="grenade assembly" id="0:104406" opacity="0" scaleY="0.01">
+          <Node y="18" name="grenade assembly" id="0:104415" opacity="0" scaleY="0.01">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120114" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120074" />
-            <Shape x="0" y="42" rotation="0" name="Grenade drum" id="0:104407">
+            <Shape x="0" y="42" rotation="0" name="Grenade drum" id="0:104416">
               <Ellipse width="68" height="68" originX="0.5" originY="0.5" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7263,7 +7372,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="22.0" y="42.0" rotation="0" name="Drum chamber 0" id="0:104408">
+            <Shape x="22.0" y="42.0" rotation="0" name="Drum chamber 0" id="0:104417">
               <Ellipse width="13" height="13" originX="0.5" originY="0.5" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7275,7 +7384,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="6.798373876248844" y="62.92324335849338" rotation="0" name="Drum chamber 1" id="0:104409">
+            <Shape x="6.798373876248844" y="62.92324335849338" rotation="0" name="Drum chamber 1" id="0:104418">
               <Ellipse width="13" height="13" originX="0.5" originY="0.5" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7287,7 +7396,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="-17.798373876248842" y="54.931275550434414" rotation="0" name="Drum chamber 2" id="0:104410">
+            <Shape x="-17.798373876248842" y="54.931275550434414" rotation="0" name="Drum chamber 2" id="0:104419">
               <Ellipse width="13" height="13" originX="0.5" originY="0.5" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7299,7 +7408,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="-17.798373876248846" y="29.068724449565593" rotation="0" name="Drum chamber 3" id="0:104411">
+            <Shape x="-17.798373876248846" y="29.068724449565593" rotation="0" name="Drum chamber 3" id="0:104420">
               <Ellipse width="13" height="13" originX="0.5" originY="0.5" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7311,7 +7420,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="6.798373876248839" y="21.07675664150662" rotation="0" name="Drum chamber 4" id="0:104412">
+            <Shape x="6.798373876248839" y="21.07675664150662" rotation="0" name="Drum chamber 4" id="0:104421">
               <Ellipse width="13" height="13" originX="0.5" originY="0.5" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7323,7 +7432,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="83" rotation="0" name="Grenade short barrel" id="0:104413">
+            <Shape x="0" y="83" rotation="0" name="Grenade short barrel" id="0:104422">
               <Rectangle width="34" height="40" originX="0.5" originY="0.5" cornerRadiusTL="8" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -7337,10 +7446,10 @@
               </Fill>
             </Shape>
           </Node>
-          <Node y="18" name="emp assembly" id="0:104414" opacity="0" scaleY="0.01">
+          <Node y="18" name="emp assembly" id="0:104423" opacity="0" scaleY="0.01">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120115" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120074" />
-            <Shape x="0" y="40" rotation="0" name="EMP ring 40" id="0:104415">
+            <Shape x="0" y="40" rotation="0" name="EMP ring 40" id="0:104424">
               <Ellipse width="56" height="12" originX="0.5" originY="0.5" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7349,7 +7458,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="62" rotation="0" name="EMP ring 62" id="0:104416">
+            <Shape x="0" y="62" rotation="0" name="EMP ring 62" id="0:104425">
               <Ellipse width="56" height="12" originX="0.5" originY="0.5" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7358,7 +7467,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="84" rotation="0" name="EMP ring 84" id="0:104417">
+            <Shape x="0" y="84" rotation="0" name="EMP ring 84" id="0:104426">
               <Ellipse width="56" height="12" originX="0.5" originY="0.5" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7367,7 +7476,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="54" rotation="0" name="EMP emitter mast" id="0:104418">
+            <Shape x="0" y="54" rotation="0" name="EMP emitter mast" id="0:104427">
               <Rectangle width="18" height="90" originX="0.5" originY="0.5" cornerRadiusTL="7" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -7381,12 +7490,12 @@
               </Fill>
             </Shape>
           </Node>
-          <Node y="18" name="drill assembly" id="0:104419" opacity="0" scaleY="0.01">
+          <Node y="18" name="drill assembly" id="0:104428" opacity="0" scaleY="0.01">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120116" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120074" />
-            <Node y="47" name="Mechanical bore" id="0:104420" rotation="0">
+            <Node y="47" name="Mechanical bore" id="0:104429" rotation="0">
               <DataBindContext propertyKey="15" sourcePathIds="0:100010-0:120092" />
-              <Shape name="Bore cone" id="0:104421">
+              <Shape name="Bore cone" id="0:104430">
                 <PointsPath isClosed="true" isClockwise="true">
                   <StraightVertex x="-31" y="-12" radius="3" />
                   <StraightVertex x="0" y="74" radius="3" />
@@ -7400,7 +7509,7 @@
                   </LinearGradient>
                 </Fill>
               </Shape>
-              <Shape name="Bore helix 0" id="0:104422">
+              <Shape name="Bore helix 0" id="0:104431">
                 <PointsPath isClosed="true" isClockwise="true">
                   <StraightVertex x="-25.0" y="0" radius="3" />
                   <StraightVertex x="22.0" y="15" radius="3" />
@@ -7415,7 +7524,7 @@
                   </LinearGradient>
                 </Stroke>
               </Shape>
-              <Shape name="Bore helix 18" id="0:104423">
+              <Shape name="Bore helix 18" id="0:104432">
                 <PointsPath isClosed="true" isClockwise="true">
                   <StraightVertex x="-19.0" y="18" radius="3" />
                   <StraightVertex x="16.0" y="33" radius="3" />
@@ -7430,7 +7539,7 @@
                   </LinearGradient>
                 </Stroke>
               </Shape>
-              <Shape name="Bore helix 36" id="0:104424">
+              <Shape name="Bore helix 36" id="0:104433">
                 <PointsPath isClosed="true" isClockwise="true">
                   <StraightVertex x="-13.0" y="36" radius="3" />
                   <StraightVertex x="10.0" y="51" radius="3" />
@@ -7446,7 +7555,7 @@
                 </Stroke>
               </Shape>
             </Node>
-            <Shape x="-2" y="11" rotation="0" name="Bore chuck face" id="0:104425">
+            <Shape x="-2" y="11" rotation="0" name="Bore chuck face" id="0:104434">
               <Rectangle width="52" height="30" originX="0.5" originY="0.5" cornerRadiusTL="9.5" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -7461,7 +7570,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="14" rotation="0" name="Bore chuck bevel" id="0:104426">
+            <Shape x="0" y="14" rotation="0" name="Bore chuck bevel" id="0:104435">
               <Rectangle width="60" height="38" originX="0.5" originY="0.5" cornerRadiusTL="9.5" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -7475,10 +7584,10 @@
               </Fill>
             </Shape>
           </Node>
-          <Node y="18" name="disc assembly" id="0:104427" opacity="0" scaleY="0.01">
+          <Node y="18" name="disc assembly" id="0:104436" opacity="0" scaleY="0.01">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120117" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120074" />
-            <Shape x="0" y="28" rotation="0" name="Disc magazine 28" id="0:104428">
+            <Shape x="0" y="28" rotation="0" name="Disc magazine 28" id="0:104437">
               <Ellipse width="63" height="15" originX="0.5" originY="0.5" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7488,7 +7597,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="50" rotation="0" name="Disc magazine 50" id="0:104429">
+            <Shape x="0" y="50" rotation="0" name="Disc magazine 50" id="0:104438">
               <Ellipse width="63" height="15" originX="0.5" originY="0.5" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7498,7 +7607,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="72" rotation="0" name="Disc magazine 72" id="0:104430">
+            <Shape x="0" y="72" rotation="0" name="Disc magazine 72" id="0:104439">
               <Ellipse width="63" height="15" originX="0.5" originY="0.5" />
               <Fill>
                 <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7508,7 +7617,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="93" rotation="0" name="Disc accelerator" id="0:104431">
+            <Shape x="0" y="93" rotation="0" name="Disc accelerator" id="0:104440">
               <Rectangle width="51" height="13" originX="0.5" originY="0.5" cornerRadiusTL="5" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -7524,10 +7633,10 @@
               </Fill>
             </Shape>
           </Node>
-          <Node y="18" name="repair assembly" id="0:104432" opacity="0" scaleY="0.01">
+          <Node y="18" name="repair assembly" id="0:104441" opacity="0" scaleY="0.01">
             <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120118" />
             <DataBindContext propertyKey="17" sourcePathIds="0:100010-0:120074" />
-            <Shape x="0" y="53" rotation="0" name="Repair core" id="0:104433">
+            <Shape x="0" y="53" rotation="0" name="Repair core" id="0:104442">
               <Rectangle width="40" height="91" originX="0.5" originY="0.5" cornerRadiusTL="12" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -7539,7 +7648,7 @@
                 </LinearGradient>
               </Fill>
             </Shape>
-            <Shape x="0" y="55" rotation="0" name="Repair cross upright" id="0:104434">
+            <Shape x="0" y="55" rotation="0" name="Repair cross upright" id="0:104443">
               <Rectangle width="9" height="36" originX="0.5" originY="0.5" cornerRadiusTL="2" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -7548,7 +7657,7 @@
                 <SolidColor colorValue="FFEEFFF8" />
               </Fill>
             </Shape>
-            <Shape x="0" y="55" rotation="0" name="Repair cross horizontal" id="0:104435">
+            <Shape x="0" y="55" rotation="0" name="Repair cross horizontal" id="0:104444">
               <Rectangle width="28" height="9" originX="0.5" originY="0.5" cornerRadiusTL="2" />
               <Stroke thickness="2" cap="round" join="round">
                 <SolidColor colorValue="FF6F91B2" />
@@ -7558,7 +7667,7 @@
               </Fill>
             </Shape>
           </Node>
-          <Shape x="-2" y="7" rotation="0" name="Forearm R armor face" id="0:104436">
+          <Shape x="-2" y="7" rotation="0" name="Forearm R armor face" id="0:104445">
             <Rectangle width="27" height="40" originX="0.5" originY="0.5" cornerRadiusTL="12.0" />
             <Stroke thickness="2" cap="round" join="round">
               <SolidColor colorValue="FF6F91B2" />
@@ -7573,7 +7682,7 @@
               </LinearGradient>
             </Fill>
           </Shape>
-          <Shape x="0" y="10" rotation="0" name="Forearm R armor bevel" id="0:104437">
+          <Shape x="0" y="10" rotation="0" name="Forearm R armor bevel" id="0:104446">
             <Rectangle width="35" height="48" originX="0.5" originY="0.5" cornerRadiusTL="12.0" />
             <Stroke thickness="2" cap="round" join="round">
               <SolidColor colorValue="FF6F91B2" />
@@ -7587,7 +7696,7 @@
             </Fill>
           </Shape>
         </Node>
-        <Shape x="0" y="40" rotation="0" name="Elbow R" id="0:104438">
+        <Shape x="0" y="40" rotation="0" name="Elbow R" id="0:104447">
           <Ellipse width="25" height="25" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7597,7 +7706,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="0" y="17" rotation="0" name="Arm R piston" id="0:104439">
+        <Shape x="0" y="17" rotation="0" name="Arm R piston" id="0:104448">
           <Rectangle width="19" height="42" originX="0.5" originY="0.5" cornerRadiusTL="6" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -7610,7 +7719,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="0" y="0" rotation="0" name="Shoulder R" id="0:104440">
+        <Shape x="0" y="0" rotation="0" name="Shoulder R" id="0:104449">
           <Ellipse width="39" height="39" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7623,9 +7732,9 @@
           </Fill>
         </Shape>
       </Node>
-      <Node x="-75" y="-95" name="secondaryGun" id="0:104488" opacity="0">
+      <Node x="-75" y="-95" name="secondaryGun" id="0:104499" opacity="0">
         <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120124" />
-        <Shape x="0" y="0" rotation="0" name="secondaryGun bracket" id="0:104489">
+        <Shape x="0" y="0" rotation="0" name="secondaryGun bracket" id="0:104500">
           <Rectangle width="24" height="47" originX="0.5" originY="0.5" cornerRadiusTL="5" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -7638,7 +7747,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="-13" y="-29" rotation="0" name="Back cannon" id="0:104490">
+        <Shape x="-13" y="-29" rotation="0" name="Back cannon" id="0:104501">
           <Rectangle width="77" height="22" originX="0.5" originY="0.5" cornerRadiusTL="5" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -7651,7 +7760,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="-53" y="-29" rotation="0" name="Back cannon light" id="0:104491">
+        <Shape x="-53" y="-29" rotation="0" name="Back cannon light" id="0:104502">
           <Ellipse width="8" height="18" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7662,9 +7771,9 @@
           </Fill>
         </Shape>
       </Node>
-      <Node x="-75" y="-95" name="secondaryPods" id="0:104492" opacity="0">
+      <Node x="-75" y="-95" name="secondaryPods" id="0:104503" opacity="0">
         <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120125" />
-        <Shape x="0" y="0" rotation="0" name="secondaryPods bracket" id="0:104493">
+        <Shape x="0" y="0" rotation="0" name="secondaryPods bracket" id="0:104504">
           <Rectangle width="24" height="47" originX="0.5" originY="0.5" cornerRadiusTL="5" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -7677,7 +7786,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="-9" y="-26" rotation="0" name="Back rocket pack" id="0:104494">
+        <Shape x="-9" y="-26" rotation="0" name="Back rocket pack" id="0:104505">
           <Rectangle width="49" height="62" originX="0.5" originY="0.5" cornerRadiusTL="7" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -7690,7 +7799,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="-23" y="-40" rotation="0" name="Back rocket -23" id="0:104495">
+        <Shape x="-23" y="-40" rotation="0" name="Back rocket -23" id="0:104506">
           <Ellipse width="12" height="27" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7699,7 +7808,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="-4" y="-40" rotation="0" name="Back rocket -4" id="0:104496">
+        <Shape x="-4" y="-40" rotation="0" name="Back rocket -4" id="0:104507">
           <Ellipse width="12" height="27" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7708,7 +7817,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="15" y="-40" rotation="0" name="Back rocket 15" id="0:104497">
+        <Shape x="15" y="-40" rotation="0" name="Back rocket 15" id="0:104508">
           <Ellipse width="12" height="27" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7718,9 +7827,9 @@
           </Fill>
         </Shape>
       </Node>
-      <Node x="-75" y="-95" name="secondaryBlade" id="0:104498" opacity="0">
+      <Node x="-75" y="-95" name="secondaryBlade" id="0:104509" opacity="0">
         <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120126" />
-        <Shape x="0" y="0" rotation="0" name="secondaryBlade bracket" id="0:104499">
+        <Shape x="0" y="0" rotation="0" name="secondaryBlade bracket" id="0:104510">
           <Rectangle width="24" height="47" originX="0.5" originY="0.5" cornerRadiusTL="5" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -7733,7 +7842,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape name="Back energy blade" id="0:104500">
+        <Shape name="Back energy blade" id="0:104511">
           <PointsPath isClosed="true" isClockwise="true">
             <StraightVertex x="-7" y="4" radius="3" />
             <StraightVertex x="-20" y="-67" radius="3" />
@@ -7749,7 +7858,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="0" y="0" rotation="0" name="Blade guard" id="0:104501">
+        <Shape x="0" y="0" rotation="0" name="Blade guard" id="0:104512">
           <Rectangle width="39" height="10" originX="0.5" originY="0.5" cornerRadiusTL="3" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -7763,9 +7872,9 @@
           </Fill>
         </Shape>
       </Node>
-      <Node x="-75" y="-95" name="secondaryOrb" id="0:104502" opacity="0">
+      <Node x="-75" y="-95" name="secondaryOrb" id="0:104513" opacity="0">
         <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120127" />
-        <Shape x="0" y="0" rotation="0" name="secondaryOrb bracket" id="0:104503">
+        <Shape x="0" y="0" rotation="0" name="secondaryOrb bracket" id="0:104514">
           <Rectangle width="24" height="47" originX="0.5" originY="0.5" cornerRadiusTL="5" />
           <Stroke thickness="2" cap="round" join="round">
             <SolidColor colorValue="FF6F91B2" />
@@ -7778,7 +7887,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="-9" y="-26" rotation="0" name="Back energy module" id="0:104504">
+        <Shape x="-9" y="-26" rotation="0" name="Back energy module" id="0:104515">
           <Ellipse width="52" height="57" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7787,7 +7896,7 @@
             </LinearGradient>
           </Fill>
         </Shape>
-        <Shape x="-9" y="-26" rotation="0" name="Module core" id="0:104505">
+        <Shape x="-9" y="-26" rotation="0" name="Module core" id="0:104516">
           <Ellipse width="28" height="30" originX="0.5" originY="0.5" />
           <Fill>
             <LinearGradient startX="-60" startY="-60" endX="60" endY="65">
@@ -7798,9 +7907,9 @@
           </Fill>
         </Shape>
       </Node>
-      <Node name="Shield" id="0:104506" opacity="0">
+      <Node name="Shield" id="0:104517" opacity="0">
         <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120070" />
-        <Shape name="Energy shield" id="0:104507">
+        <Shape name="Energy shield" id="0:104518">
           <PointsPath isClosed="true" isClockwise="true">
             <StraightVertex x="76" y="-138" radius="3" />
             <StraightVertex x="142" y="-115" radius="3" />
@@ -7813,16 +7922,16 @@
           </Stroke>
         </Shape>
       </Node>
-      <Node name="Charge aura" id="0:104508" opacity="0">
+      <Node name="Charge aura" id="0:104519" opacity="0">
         <DataBindContext propertyKey="18" sourcePathIds="0:100010-0:120071" />
-        <Shape x="0" y="-50" rotation="0" name="Energy halo" id="0:104509">
+        <Shape x="0" y="-50" rotation="0" name="Energy halo" id="0:104520">
           <Ellipse width="280" height="330" originX="0.5" originY="0.5" />
           <Fill>
             <SolidColor colorValue="2246D8FF" />
           </Fill>
         </Shape>
       </Node>
-      <Shape x="0" y="126" rotation="0" name="Contact shadow" id="0:104510">
+      <Shape x="0" y="126" rotation="0" name="Contact shadow" id="0:104521">
         <Ellipse width="215" height="18" originX="0.5" originY="0.5" />
         <Fill>
           <SolidColor colorValue="6620344B" />

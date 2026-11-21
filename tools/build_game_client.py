@@ -31,7 +31,7 @@ def main():
     client = ROOT / "tools/game_client/build/web"
     bundle_wasm(client / "rive")
     write_contract(ROOT, client)
-    print("Custom game client ready: GameRive, GameCountdown, GameFactory")
+    print("Custom game client ready: GameRive, GameCountdown, GameFactory, GameMusic")
 
 
 if __name__ == "__main__":

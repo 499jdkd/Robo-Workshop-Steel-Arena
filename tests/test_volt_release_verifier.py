@@ -141,6 +141,19 @@ class VoltReleaseVerifierTests(unittest.TestCase):
         for i, name in enumerate(verifier.ROBOT_SOUNDS):
             self.sound(self.current / "src/assets/audio" / name, 100 + i)
 
+    def test_v36_adds_only_three_small_music_tracks_preserving_every_previous_wav(self):
+        self.polish_baseline()
+        for name in verifier.ROBOT_SOUNDS:
+            shutil.copyfile(self.current/'src/assets/audio'/name,self.before/'src/assets/audio'/name)
+        for name in verifier.MUSIC_SOUNDS:
+            (self.current/'src/assets/audio'/name).write_bytes(b'OggS'+b'\x00'*1500)
+        scope=verifier.verify_scope(self.current,self.before,character_audio=True,application_music=True)
+        self.assertEqual(scope['counts']['new_music_audio'],3)
+        self.assertEqual(scope['counts']['new_robot_audio'],0)
+        (self.current/'src/assets/audio/music_workshop.ogg').write_bytes(b'invalid')
+        with self.assertRaisesRegex(verifier.VerificationError,'Invalid or oversized music'):
+            verifier.verify_scope(self.current,self.before,character_audio=True,application_music=True)
+
     def test_v35_permits_only_the_explicit_character_sound_inventory(self):
         self.polish_baseline()
         scope = verifier.verify_scope(self.current, self.before, character_audio=True)

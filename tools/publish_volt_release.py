@@ -206,6 +206,7 @@ def main():
     parser.add_argument("--title", default=None)
     parser.add_argument("--report", type=Path, default=None)
     parser.add_argument("--publish", action="store_true")
+    parser.add_argument("--prerelease", action="store_true", help="Publish a test build without replacing the latest stable release")
     args = parser.parse_args()
     if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", args.repo):
         parser.error("--repo must be owner/name")
@@ -218,7 +219,7 @@ def main():
     report_file = (args.report or apk.parent / f"github-release-{args.tag}.json").resolve()
     report = {"repo": args.repo, "tag": args.tag, "target_sha": target_sha,
               "apk": str(apk), "bytes": size, "sha256": digest,
-              "mode": "publish" if args.publish else "read-only-plan", "stage": "preflight"}
+              "mode": "publish" if args.publish else "read-only-plan", "stage": "preflight", "prerelease":args.prerelease}
 
     def save():
         report_file.parent.mkdir(parents=True, exist_ok=True)
@@ -249,7 +250,7 @@ def main():
 
         release = api.request("POST", "/releases", expected=(201,), json={
             "tag_name": args.tag, "target_commitish": target_sha, "name": report["title"],
-            "body": notes, "draft": True, "prerelease": False, "make_latest": "false",
+            "body": notes, "draft": True, "prerelease": args.prerelease, "make_latest": "false",
         }).json()
         if not release.get("draft") or release.get("tag_name") != args.tag:
             raise ReleaseError("GitHub did not return the requested new draft")
@@ -276,7 +277,7 @@ def main():
         if final_tag is not None and final_tag != target_sha:
             raise ReleaseError("Tag changed while uploading; draft retained without publishing")
         published = api.request("PATCH", "/releases/" + str(release["id"]),
-            json={"draft": False, "make_latest": "true"}).json()
+            json={"draft": False, "make_latest": "false" if args.prerelease else "true"}).json()
         if published.get("draft") or published.get("tag_name") != args.tag:
             raise ReleaseError("GitHub did not publish the requested release")
         if api.resolved_tag(args.tag) != target_sha:

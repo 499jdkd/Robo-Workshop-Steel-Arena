@@ -6,11 +6,14 @@ import 'robot_scene.dart';
 import 'game_scene.dart';
 import 'game_countdown.dart';
 import 'game_factory.dart';
+import 'game_music.dart';
 
 class Extension extends FletExtension {
   @override
   Widget? createWidget(Key? key, Control control) {
     switch (control.type) {
+      case "GameMusic":
+        return GameMusicControl(key: key, control: control);
       case "GameFactory":
         return GameFactoryControl(key: key, control: control);
       case "GameCountdown":

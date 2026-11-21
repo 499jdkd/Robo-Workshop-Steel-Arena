@@ -1,8 +1,8 @@
 """Verify Volt visual scope, character audio, and the real APK's assets.
 
 These are static source/package checks, not Android execution or FPS tests.
-Builds before v35 use the snapshot taken before the Volt task; v35 and later
-use the preserved v34 source snapshot. --baseline selects another snapshot.
+Builds before v35 use the snapshot taken before the Volt task; v35 uses the
+v34 snapshot and v36 uses v35. --baseline selects another snapshot.
 Existing audio and the other 31 robot visuals remain byte/structure checked.
 """
 
@@ -21,6 +21,8 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 BASELINE = ROOT / ".cache/volt-refinement/before"
 POLISH_BASELINE = ROOT / ".cache/volt-polish-v35/baseline"
+MOTION_BASELINE = ROOT / ".cache/volt-motion-v36/baseline"
+MUSIC_SOUNDS = ('music_workshop.ogg','music_arena.ogg','music_victory.ogg')
 ABIS = ("arm64-v8a", "armeabi-v7a", "x86_64")
 MARKERS = ("flutter-canvas-articulated", "voltPower", "volt_pulse", "volt_charge", "volt_storm", "volt_shutdown")
 VOLT_SOUNDS = tuple(f"volt_{cue}.wav" for cue in ("pulse", "charge", "storm", "shutdown"))
@@ -113,7 +115,7 @@ def sound_report(audio, names):
     return report
 
 
-def verify_scope(root=ROOT, baseline=BASELINE, *, character_audio=False):
+def verify_scope(root=ROOT, baseline=BASELINE, *, character_audio=False, application_music=False):
     root, baseline = Path(root), Path(baseline)
     current_src, before_src = root / "src", baseline / "src"
     rows, before_rows = ability_rows(current_src / "robot_abilities.py"), ability_rows(before_src / "robot_abilities.py")
@@ -153,12 +155,18 @@ def verify_scope(root=ROOT, baseline=BASELINE, *, character_audio=False):
         relative = path.relative_to(before_audio)
         report["existing_audio"][relative.as_posix()] = unchanged_file(audio / relative, path, "audio/" + relative.as_posix())
     new_relatives = {path.relative_to(audio).as_posix() for path in audio.rglob("*") if path.is_file()} - old_relatives
-    permitted = set(VOLT_SOUNDS) | (set(ROBOT_SOUNDS) if character_audio else set())
+    permitted = set(VOLT_SOUNDS) | (set(ROBOT_SOUNDS) if character_audio else set()) | (set(MUSIC_SOUNDS) if application_music else set())
     expected_new = permitted - old_relatives
     require(new_relatives == expected_new, "Unexpected new audio inventory: "
             f"missing={sorted(expected_new - new_relatives)}, extra={sorted(new_relatives - expected_new)}")
     report["volt_audio"] = sound_report(audio, VOLT_SOUNDS)
     report["robot_audio"] = sound_report(audio, ROBOT_SOUNDS) if character_audio else {}
+    report['music_audio'] = {}
+    if application_music:
+        for name in MUSIC_SOUNDS:
+            data=(audio/name).read_bytes()
+            require(data.startswith(b'OggS') and 1000<len(data)<64000, f'Invalid or oversized music track: {name}')
+            report['music_audio'][name]={'bytes':len(data),'sha256':sha256(data)}
     portrait = current_src / "assets/art/portraits/volt.svg"
     old_portrait = before_src / "assets/art/portraits/volt.svg"
     report["volt_portrait"] = {"sha256": file_hash(portrait), "bytes": portrait.stat().st_size,
@@ -169,6 +177,7 @@ def verify_scope(root=ROOT, baseline=BASELINE, *, character_audio=False):
                         "other_view_models": len(report["rml_other_view_models"]),
                         "unchanged_existing_audio": len(old_files), "new_volt_audio": len(set(VOLT_SOUNDS) - old_relatives),
                         "new_robot_audio": len(set(ROBOT_SOUNDS) - old_relatives) if character_audio else 0,
+                        "new_music_audio":len(set(MUSIC_SOUNDS)-old_relatives) if application_music else 0,
                         "unchanged_combat_files": len(COMBAT_FILES)}
     return report
 
@@ -179,6 +188,8 @@ def verify_package(apk, scope, root=ROOT):
     result = {"apk": str(apk.resolve()), "bytes": apk.stat().st_size, "sha256": file_hash(apk),
               "native_marker_checks": {}, "asset_checks": {}}
     markers = MARKERS + (ROBOT_MARKERS if scope.get("robot_audio") else ())
+    if scope.get('music_audio'):
+        markers += ('GameMusic','music_workshop','music_victory','voltLegLY')
     with zipfile.ZipFile(apk) as package:
         native_abis = {name.split("/")[1] for name in package.namelist()
                        if name.startswith("lib/") and name.endswith("/libapp.so")}
@@ -191,6 +202,7 @@ def verify_package(apk, scope, root=ROOT):
             checks = ["assets/animation/game_robot.riv", "assets/art/portraits/volt.svg"]
             checks.extend("assets/audio/" + name for name in VOLT_SOUNDS)
             checks.extend("assets/audio/" + name for name in scope.get("robot_audio", {}))
+            checks.extend("assets/audio/" + name for name in scope.get("music_audio", {}))
             checks.extend("assets/audio/" + name for name in scope["existing_audio"])
             checks.extend(f"assets/art/portraits/{identity}.svg" for identity in scope["other_portraits"])
             for name in sorted(set(checks)):
@@ -219,8 +231,8 @@ def main():
     try:
         apk = ROOT / f"build/apk-game-v{args.build_number}/clicker.apk"
         require(apk.is_file(), "Final APK is not ready")
-        baseline = args.baseline or (POLISH_BASELINE if args.build_number >= 35 else BASELINE)
-        report["scope"] = verify_scope(baseline=baseline, character_audio=args.build_number >= 35)
+        baseline = args.baseline or (MOTION_BASELINE if args.build_number >= 36 else POLISH_BASELINE if args.build_number >= 35 else BASELINE)
+        report["scope"] = verify_scope(baseline=baseline, character_audio=args.build_number >= 35, application_music=args.build_number >= 36)
         report["package"] = verify_package(apk, report["scope"])
         report["status"] = "passed"
     except Exception as error:

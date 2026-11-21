@@ -21,6 +21,7 @@ import flet as ft
 from importlib import import_module
 
 from advertising import BannerFooter
+from game_music import music_control
 from display_mode import set_arena_expanded
 from game_session import GameSession, demo_requested, preview_session
 from main_screen import main_screen
@@ -137,6 +138,7 @@ def App(page: ft.Page, device_id: str = "", session=None, start_tab=0):
                     ),
                 ],
             ),
+            music_control(session, selected_index),
             ft.SafeArea(
                 content=ft.Container(
                     BannerFooter(page=page, key="advertising-footer"),

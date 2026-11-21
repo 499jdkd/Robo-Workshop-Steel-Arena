@@ -9,11 +9,29 @@ from pathlib import Path
 import subprocess
 import threading
 import time
+import psutil
 from urllib.request import urlopen
 
 from websockets.sync.client import connect
 
 ROOT = Path(__file__).resolve().parents[1]
+
+AUDIO_OBSERVER = r"""
+(()=>{
+ const events=window.__roboAudio=[];let serial=0;
+ function identify(el){if(!el.__roboId){el.__roboId=++serial;el.addEventListener('ended',()=>log('ended',el));}return el.__roboId;}
+ function log(kind,el,extra={}){if(events.length<4000)events.push({kind,id:identify(el),ms:performance.now(),src:el.currentSrc||el.src,pos:el.currentTime,duration:el.duration,...extra});}
+ const play=HTMLMediaElement.prototype.play,pause=HTMLMediaElement.prototype.pause;
+ HTMLMediaElement.prototype.play=function(...args){log('play',this);const el=this;return Promise.resolve(play.apply(this,args)).then(v=>{log('playing',el);return v;},e=>{log('blocked',el,{error:e.name});throw e;});};
+ HTMLMediaElement.prototype.pause=function(...args){log('pause',this);return pause.apply(this,args);};
+ const source=AudioContext.prototype.createMediaElementSource;
+ AudioContext.prototype.createMediaElementSource=function(el){const n=source.call(this,el);n.__roboElement=el;return n;};
+ const connect=AudioNode.prototype.connect;
+ AudioNode.prototype.connect=function(dest,...args){if(this.__roboElement&&dest instanceof GainNode){dest.__roboElement=this.__roboElement;dest.gain.__roboElement=this.__roboElement;}return connect.call(this,dest,...args);};
+ const value=Object.getOwnPropertyDescriptor(AudioParam.prototype,'value');
+ Object.defineProperty(AudioParam.prototype,'value',{get:value.get,set:function(v){if(this.__roboElement)log('gain',this.__roboElement,{gain:v});return value.set.call(this,v);}});
+})();
+"""
 
 
 def main():
@@ -28,6 +46,7 @@ def main():
     parser.add_argument("--dpr", type=float, default=1)
     parser.add_argument("--seconds", type=float, default=20)
     parser.add_argument("--network", action="store_true", help="Record verbose network events for startup diagnosis")
+    parser.add_argument("--audio-observe", action="store_true", help="Observe actual browser media playback without replacing the audio engine")
     args = parser.parse_args()
     out = ROOT / ".cache/rework-review" / args.name
     out.mkdir(parents=True, exist_ok=True)
@@ -61,6 +80,7 @@ def main():
         stderr=log,
     )
     events = []
+    memory = []
     try:
         for _ in range(100):
             try:
@@ -106,12 +126,17 @@ def main():
                     "mobile": False,
                 },
             )
+            if args.audio_observe:
+                call('Page.addScriptToEvaluateOnNewDocument',{'source':AUDIO_OBSERVER})
             call(
                 "Page.navigate",
                 {
                     "url": f"http://127.0.0.1:{httpd.server_port}/?server=http://127.0.0.1:{args.port}"
                 },
             )
+            call("Performance.enable")
+            capture_began = time.monotonic()
+            gestures=0
             for seconds in (
                 10,
                 max(1, (args.seconds - 10) / 2),
@@ -119,6 +144,10 @@ def main():
             ):
                 deadline = time.monotonic() + seconds
                 while time.monotonic() < deadline:
+                    if args.audio_observe and gestures<2 and time.monotonic()-capture_began>1.6+gestures:
+                        call('Input.dispatchMouseEvent',{'type':'mousePressed','x':195,'y':300,'button':'left','clickCount':1,'buttons':1})
+                        call('Input.dispatchMouseEvent',{'type':'mouseReleased','x':195,'y':300,'button':'left','clickCount':1,'buttons':0})
+                        gestures+=1
                     try:
                         events.append(json.loads(ws.recv(timeout=min(.2, max(.001, deadline-time.monotonic())))))
                     except TimeoutError:
@@ -130,6 +159,21 @@ def main():
                 (out / f"frame-{counter}.png").write_bytes(
                     base64.b64decode(image["data"])
                 )
+                processes = [psutil.Process(child.pid), *psutil.Process(child.pid).children(recursive=True)]
+                info = []
+                for process in processes:
+                    try:
+                        m = process.memory_info()
+                        info.append({'pid':process.pid, 'rss_bytes':m.rss, 'private_bytes':getattr(m,'private',0)})
+                    except psutil.Error:
+                        pass
+                perf = call('Performance.getMetrics')
+                values = {m['name']:m['value'] for m in perf['metrics']}
+                memory.append({'elapsed_seconds':round(time.monotonic()-capture_began,2),
+                               'chrome_processes':len(info),
+                               'chrome_rss_bytes':sum(m['rss_bytes'] for m in info),
+                               'chrome_private_bytes':sum(m['private_bytes'] for m in info),
+                               'js_heap_used_bytes':values.get('JSHeapUsedSize')})
             result = call(
                 "Runtime.evaluate",
                 {
@@ -143,6 +187,15 @@ def main():
                 ),
                 encoding="utf8",
             )
+            if args.audio_observe:
+                observed=call('Runtime.evaluate',{'expression':'JSON.stringify(window.__roboAudio)','returnByValue':True})
+                (out/'audio-events.json').write_text(observed['result']['value'],encoding='utf-8')
+        (out / 'memory.json').write_text(json.dumps({
+            'measurement':'Windows Chrome process-tree working/private bytes and CDP JS heap snapshots; includes browser/renderer overhead, not Android or Dart-only memory',
+            'samples':memory,
+            'max_chrome_rss_bytes':max(s['chrome_rss_bytes'] for s in memory),
+            'max_chrome_private_bytes':max(s['chrome_private_bytes'] for s in memory),
+        },indent=2),encoding='utf-8')
         print(out, flush=True)
     finally:
         child.terminate()

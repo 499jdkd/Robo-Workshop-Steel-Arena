@@ -82,6 +82,6 @@ class DesktopStartupTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "stock Flet client"):
                 validate_client(client)
             (client / "main.dart.js").write_text(
-                json.dumps(["GameRive", "GameCountdown", "GameFactory"])
+                json.dumps(["GameRive", "GameCountdown", "GameFactory", "GameMusic"])
             )
             validate_client(client)
