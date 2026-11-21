@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:ui' as ui;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flet_rive/src/robot/game_motion.dart';
@@ -199,7 +199,7 @@ void main() {
       expect(storm, greaterThan(skill * 3));
     },
   );
-  test('untouched Volt actions retain their original v37 pixels', () async {
+  test('other Volt actions retain v39 pixels on Flutter 3.47', () async {
     const actions = [
       'attack',
       'quick',
@@ -227,7 +227,7 @@ void main() {
     }
     final picture = recorder.endRecording(),
         actual = await picture.toImage(3200, 690);
-    final referenceFile = File('test/fixtures/volt-non-super-v37.png');
+    final referenceFile = File('test/fixtures/volt-other-actions-v39-flutter347.png');
     if (const bool.fromEnvironment('VOLT_CAPTURE_BASELINE')) {
       referenceFile.parent.createSync(recursive: true);
       final png = (await actual.toByteData(format: ui.ImageByteFormat.png))!;

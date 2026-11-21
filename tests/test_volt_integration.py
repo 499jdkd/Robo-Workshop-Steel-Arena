@@ -188,6 +188,30 @@ class VoltInputRaceTests(unittest.IsolatedAsyncioTestCase):
 
 
 class VoltPreviewIsolationTests(unittest.IsolatedAsyncioTestCase):
+    async def test_titan_preview_buttons_work_for_locked_and_owned_robot_without_spending(self):
+        expected = {"attack", "special", "ultimate", "guard", "quick", "dodge", "charge", "dance", "victory", "defeat"}
+        for owned in (False, True):
+            session = GameSession.preview()
+            session.state = GameState(level=30, coin=1234, food=32,
+                                      robot_levels={"spark": 3, **({"titan": 4} if owned else {})},
+                                      active_robot="titan" if owned else "spark", egg_id="")
+            session.persist()
+            before, saved = session.state.to_dict(), deepcopy(session.store.load())
+            try:
+                buttons = {control.key.removeprefix("preview-").removesuffix("-titan"): control
+                           for control in render_controls(preview_controls(session, "titan"))
+                           if isinstance(control, ft.Button) and str(control.key).startswith("preview-")}
+                self.assertEqual(set(buttons), expected)
+                for action, button in buttons.items():
+                    await button.on_click(None)
+                    payload = json.loads(animated_scene(session, identity="titan").payload)
+                    self.assertEqual(payload["combatAction"], action)
+                    self.assertEqual(payload["robot"], "titan")
+                self.assertEqual(session.state.to_dict(), before)
+                self.assertEqual(session.store.load(), saved)
+            finally:
+                await session.close()
+
     async def test_ten_owned_and_locked_volt_preview_buttons_never_change_progress(self):
         expected = {"attack", "special", "ultimate", "guard", "quick", "dodge", "charge", "dance", "victory", "defeat"}
         for owned in (False, True):
@@ -231,10 +255,10 @@ class VoltPreviewIsolationTests(unittest.IsolatedAsyncioTestCase):
             for action in extended:
                 self.assertTrue(session.preview_robot("volt", action))
                 snapshot = (session.preview_identity, session.preview_action, session.preview_event)
-                for identity in set(DESIGNS) - {"volt"}:
+                for identity in set(DESIGNS) - {"volt", "titan"}:
                     self.assertFalse(session.preview_robot(identity, action), (identity, action))
                     self.assertEqual((session.preview_identity, session.preview_action, session.preview_event), snapshot)
-            for identity in set(DESIGNS) - {"volt"}:
+            for identity in set(DESIGNS) - {"volt", "titan"}:
                 controls = render_controls(preview_controls(session, identity))
                 self.assertEqual(sum(isinstance(control, ft.Button) and str(control.key).startswith("preview-")
                                      for control in controls), 4)

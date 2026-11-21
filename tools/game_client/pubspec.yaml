@@ -5,7 +5,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flet: 1.0.4
+  material_ui: ^1.6.0
+  flet: 1.1.2
   http: 1.6.0
   rive: 0.14.11
   flet_rive:

@@ -4,7 +4,7 @@ import 'package:flet_rive/src/game_music.dart';
 import 'package:flet_rive/src/robot/music_director.dart';
 import 'package:flet_rive/src/game_scene.dart';
 import 'package:flet_rive/src/robot/scene_audio.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'music_director_test.dart' show MusicFake;
 import 'robot_audio_test.dart' show FakeVoice;

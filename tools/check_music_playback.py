@@ -17,7 +17,7 @@ from run_volt_profile_comparison import python
 ROOT=Path(__file__).resolve().parents[1]
 
 
-def verify_events(events):
+def verify_events(events, *, robot='volt'):
     music=[e for e in events if 'music_' in e.get('src','')]
     wins=[e for e in music if e['kind']=='playing' and 'music_victory' in e['src']]
     endings=[e for e in music if e['kind']=='ended' and 'music_victory' in e['src']]
@@ -47,14 +47,17 @@ def verify_events(events):
     assert maximum==1,'Duplicate background instances overlap'
     gains=[e['gain'] for e in music if e['kind']=='gain' and 'music_workshop' in e['src']]
     assert len({round(g,5) for g in gains if 0<g<.115})>=4,'No real fade steps observed'
-    storms=[e for e in events if e['kind']=='playing' and 'volt_storm.wav' in e['src']]
-    assert storms and .29<=storms[-1]['pos']<.45,'Storm did not seek to its actual strike'
+    strike = 'titan_quake.wav' if robot == 'titan' else 'volt_storm.wav'
+    storms=[e for e in events if e['kind']=='playing' and strike in e['src']]
+    low, high = (0, .18) if robot == 'titan' else (.29, .45)
+    assert storms and low<=storms[-1]['pos']<high,'Character strike did not start at its actual cue'
     assert not any(e['kind']=='playing' and '/victory.wav' in e.get('src','') for e in events),'Legacy SFX duplicated the music jingle'
     return {'status':'passed','real_main_game':True,'isolated_player_state':True,
             'first_victory_uninterrupted_seconds':round(first_seconds,3),
             'second_victory_resumed_at_seconds':round(second[1]['pos'],3),
             'victory_completion_events':len(endings),'max_simultaneous_backgrounds':maximum,
             'fade_gain_steps':sorted({round(g,5) for g in gains}),
+            'robot':robot,'strike_file':strike,
             'storm_starts_at_seconds':round(storms[-1]['pos'],3),
             'physical_android_tested':False,'speaker_auditioned':False}
 
@@ -62,6 +65,7 @@ def verify_events(events):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--name',default='volt-v36-music-live-02')
+    parser.add_argument('--robot',default='volt',choices=['volt','titan'])
     parser.add_argument('--client',type=Path,default=ROOT/'.cache/volt-motion-v36/profile-client')
     parser.add_argument('--out-root',type=Path,default=ROOT/'.cache/volt-motion-v36')
     args=parser.parse_args()
@@ -75,7 +79,7 @@ def main():
     try:
         for label,cmd in [
             ('metrics',python('collect_volt_metrics.py','--out',out/'frames.jsonl')),
-            ('server',python('profile_interactive_game.py','--out',out,'--port',18580,'--music-check','--robot','volt')),
+            ('server',python('profile_interactive_game.py','--out',out,'--port',18580,'--music-check','--robot',args.robot)),
         ]:
             stream=(out/(label+'.log')).open('w',encoding='utf-8');streams.append(stream)
             children.append(subprocess.Popen(cmd,cwd=ROOT,env=env,stdout=stream,stderr=stream,creationflags=subprocess.CREATE_NO_WINDOW))
@@ -89,7 +93,7 @@ def main():
                               '--width',390,'--height',844,'--seconds',27,'--audio-observe'),
                        cwd=ROOT,env=env,check=True,timeout=85)
         observed=ROOT/'.cache/rework-review'/args.name/'audio-events.json'
-        report=verify_events(json.loads(observed.read_text()))
+        report=verify_events(json.loads(observed.read_text()),robot=args.robot)
         report['events_file']=str(observed)
         (out/'summary.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
         print(json.dumps(report,indent=2),flush=True)

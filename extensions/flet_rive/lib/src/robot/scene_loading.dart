@@ -1,5 +1,5 @@
 import 'dart:math' as math;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Immediate Flutter placeholder while the single shared Rive file decodes.
 class SceneLoadingRobot extends StatefulWidget {

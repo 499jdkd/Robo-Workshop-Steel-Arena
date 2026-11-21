@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flet_rive/src/robot/volt_energy.dart';
 import 'volt_phone_readability_test.dart' as phone;
@@ -97,7 +97,7 @@ void main() {
     },
   );
   test(
-    'approved ultimate and other untouched actions keep their v38 pixels',
+    'approved v39 Volt actions keep identical pixels on Flutter 3.47',
     () async {
       final samples = <(String, double)>[
         for (final action in [
@@ -126,7 +126,7 @@ void main() {
       }
       final picture = recorder.endRecording(),
           actual = await picture.toImage(1920, 1380);
-      final file = File('test/fixtures/volt-protected-v38.png');
+      final file = File('test/fixtures/volt-protected-v39-flutter347.png');
       if (const bool.fromEnvironment('VOLT_CAPTURE_BASELINE')) {
         file.parent.createSync(recursive: true);
         final png = (await actual.toByteData(format: ui.ImageByteFormat.png))!;

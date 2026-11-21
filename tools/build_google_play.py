@@ -142,7 +142,7 @@ def build_environment():
         }
     )
     env["PATH"] = (
-        str(Path.home() / "flutter/3.44.8/bin")
+        str(Path.home() / "flutter/3.47.9/bin")
         + os.pathsep
         + str(Path(env["JAVA_HOME"]) / "bin")
         + os.pathsep

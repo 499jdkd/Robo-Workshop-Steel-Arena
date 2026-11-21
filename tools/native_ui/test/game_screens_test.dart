@@ -4,7 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flet/flet.dart';
 import 'package:flet_rive/flet_rive.dart' as robot;
 import 'package:rive/rive.dart' as rive;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

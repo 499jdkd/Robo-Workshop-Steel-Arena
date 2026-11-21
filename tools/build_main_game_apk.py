@@ -17,7 +17,7 @@ def main():
     stage=ROOT/f'.cache/game-test-v{args.build_number}'
     prepare_stage(ROOT,stage,number=args.build_number,version='0.2.0',ads_mode='test')
     env=dict(os.environ,PYTHONUTF8='1',PYTHONIOENCODING='utf-8',PYTHONUNBUFFERED='1',JAVA_HOME=str(Path.home()/'java/17.0.13+11'))
-    env['PATH']=str(Path.home()/'flutter/3.44.8/bin')+os.pathsep+str(Path(env['JAVA_HOME'])/'bin')+os.pathsep+env['PATH']
+    env['PATH']=str(Path.home()/'flutter/3.47.9/bin')+os.pathsep+str(Path(env['JAVA_HOME'])/'bin')+os.pathsep+env['PATH']
     # An upload key is deliberately not used for this sideloaded update.
     for key in list(env):
         if key.startswith('FLET_ANDROID_SIGNING_'):env.pop(key)

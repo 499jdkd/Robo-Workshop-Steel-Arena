@@ -28,7 +28,7 @@ def free_port():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-number", type=int, required=True)
-    parser.add_argument("--robot", default="spark", choices=("spark", "volt"))
+    parser.add_argument("--robot", default="spark", choices=("spark", "volt", "titan"))
     parser.add_argument("--source", action="store_true", help="Use the current game source and its compiled Flutter client")
     parser.add_argument("--tap-x", type=float, default=195,
                         help="Screen X of the visible robot after the floor movement")
@@ -54,7 +54,7 @@ def main():
                HTTP_PROXY="http://127.0.0.1:9", HTTPS_PROXY="http://127.0.0.1:9", NO_PROXY="127.0.0.1,localhost")
     log = (out / "server.log").open("w", encoding="utf-8")
     command = [sys._base_executable, "-c",
-        "import site,sys,runpy;site.addsitedir(sys.argv[1]);p=sys.argv[2];sys.argv=sys.argv[2:];runpy.run_path(p,run_name='__main__')",
+        "import site,sys,runpy;site.addsitedir(sys.argv[1]);sys.path.insert(0,sys.argv[1]);p=sys.argv[2];sys.argv=sys.argv[2:];runpy.run_path(p,run_name='__main__')",
         str(Path(sys.prefix) / "Lib/site-packages"), str(ROOT / "tools/windows_game.py")] if args.source else [str(game / "Clicker.exe")]
     worker = subprocess.Popen([*command, "--serve", str(port)], env=env,
                               stdout=log, stderr=log, creationflags=subprocess.CREATE_NO_WINDOW)

@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'package:flet/flet.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Presentation only: inventory is committed by Python before receipt changes.
 class GameFactoryControl extends StatefulWidget {

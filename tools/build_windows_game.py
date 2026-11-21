@@ -15,7 +15,7 @@ from pathlib import Path
 from flutter_cached import command as flutter_command, environment as flutter_environment
 
 ROOT = Path(__file__).resolve().parents[1]
-FLUTTER = Path.home() / "flutter/3.44.8/bin/flutter.bat"
+FLUTTER = Path.home() / "flutter/3.47.9/bin/flutter.bat"
 
 
 def bundle_wasm(destination):

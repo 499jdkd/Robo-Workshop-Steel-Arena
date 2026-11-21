@@ -7,6 +7,7 @@ leaderboard write or public matchmaking is involved.
 import argparse
 import asyncio
 import json
+from importlib.metadata import version
 import os
 from pathlib import Path
 import sys
@@ -38,7 +39,11 @@ from gameplay import GameState
 from robot_arena import suggested_action
 from battle_ui import animate_turn
 
-(args.out / "python-import.json").write_text(json.dumps({"import_ms": (time.perf_counter()-import_started)*1000}), encoding="utf-8")
+(args.out / "python-import.json").write_text(json.dumps({
+    "import_ms": (time.perf_counter()-import_started)*1000,
+    "flet": version("flet"), "flet_module": ft.__file__,
+    "main_source": game.__file__, "robot": args.robot,
+}), encoding="utf-8")
 
 
 async def main(page):
@@ -86,32 +91,32 @@ async def main(page):
                 with (args.out/'music-scenario.jsonl').open('a',encoding='utf-8') as stream:
                     stream.write(json.dumps({'name':name,'since_session_ms':(time.perf_counter()-created)*1000})+'\n')
             await asyncio.sleep(3)
-            mark('victory-1');session.preview_robot('volt','victory')
+            mark('victory-1');session.preview_robot(args.robot,'victory')
             await asyncio.sleep(.8)
-            mark('pulse-during-victory');session.preview_robot('volt','attack')
+            mark('pulse-during-victory');session.preview_robot(args.robot,'attack')
             await asyncio.sleep(.6)
             mark('leave-inspection');session.robot_detail='';session.notify()
             await asyncio.sleep(3.7)
-            mark('arena');session.act('battle_start','volt');session.focus_scene='battle';session.notify()
+            mark('arena');session.act('battle_start',args.robot);session.focus_scene='battle';session.notify()
             await asyncio.sleep(1.4)
-            mark('inspection');session.focus_scene='';session.robot_detail='volt';session.notify()
+            mark('inspection');session.focus_scene='';session.robot_detail=args.robot;session.notify()
             await asyncio.sleep(.7)
-            mark('victory-2');session.preview_robot('volt','victory')
+            mark('victory-2');session.preview_robot(args.robot,'victory')
             await asyncio.sleep(1.6)
             mark('pause');session.pause()
             await asyncio.sleep(1)
             mark('resume');session.resume()
             for action in ['attack','special','quick']:
-                session.preview_robot('volt',action);await asyncio.sleep(.15)
+                session.preview_robot(args.robot,action);await asyncio.sleep(.15)
             await asyncio.sleep(5)
-            mark('storm');session.preview_robot('volt','ultimate')
+            mark('storm');session.preview_robot(args.robot,'ultimate')
             await asyncio.sleep(2.8)
             mark('complete')
         elif args.mode == "robot":
             while session.ui_alive:
                 for action in ([args.showcase_action] if args.showcase_action else ("attack", "special", "ultimate", "guard")):
                     session.preview_robot(args.robot, action)
-                    await asyncio.sleep(2.8)
+                    await asyncio.sleep(3.6 if args.robot == 'titan' and action == 'ultimate' else 2.8)
         elif args.mode == "battle":
             await asyncio.sleep(2)
             while session.ui_alive:

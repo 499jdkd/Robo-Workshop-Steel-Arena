@@ -19,7 +19,7 @@ def python(script, *args):
     # Start the actual interpreter, not the Windows venv forwarding launcher,
     # so terminating our owned child also terminates its loopback server.
     return [sys._base_executable, "-c",
-            "import site,sys,runpy;site.addsitedir(sys.argv[1]);p=sys.argv[2];sys.argv=sys.argv[2:];runpy.run_path(p,run_name='__main__')",
+            "import site,sys,runpy;site.addsitedir(sys.argv[1]);sys.path.insert(0,sys.argv[1]);p=sys.argv[2];sys.argv=sys.argv[2:];runpy.run_path(p,run_name='__main__')",
             str(Path(sys.prefix) / "Lib/site-packages"), str(ROOT / "tools" / script), *map(str, args)]
 
 
@@ -30,6 +30,7 @@ def main():
     parser.add_argument('--before-client', type=Path, default=ROOT / '.cache/volt-refinement/before-profile-client')
     parser.add_argument('--after-client', type=Path, default=ROOT / '.cache/volt-refinement/after-profile-client')
     parser.add_argument('--revision', choices=['all','before','after'], default='all')
+    parser.add_argument('--robot', default='volt', help='Character ID used in both revisions')
     parser.add_argument('--scenarios', nargs='+', choices=['workshop','combat','ultimate','skill','shield'], default=['workshop','combat'])
     args = parser.parse_args()
     output = args.out.resolve()
@@ -63,7 +64,7 @@ def main():
                 ("metrics", python("collect_volt_metrics.py", "--out", metrics)),
                 ("server", python("profile_interactive_game.py", "--source", source,
                                   "--out", folder, "--port", port, "--mode", mode,
-                                  "--robot", "volt", "--silent", *(['--showcase-action', showcase] if showcase else []))),
+                                  "--robot", args.robot, "--silent", *(['--showcase-action', showcase] if showcase else []))),
             ]:
                 stream = (folder / f"{label}.log").open("w", encoding="utf-8")
                 streams.append(stream)
@@ -88,6 +89,7 @@ def main():
             summarise(metrics, folder / "summary.json")
             report = json.loads((folder / "summary.json").read_text(encoding="utf-8"))
             report["first_render"] = json.loads((folder / "first-render.json").read_text(encoding="utf-8"))
+            report["python_import"] = json.loads((folder / "python-import.json").read_text(encoding="utf-8"))
             report["first_native_paint"] = json.loads((folder / "first-paint.jsonl").read_text(encoding="utf-8").splitlines()[0])
             report["dpr"] = dpr
             report["capture"] = capture_name
