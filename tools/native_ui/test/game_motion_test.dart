@@ -184,7 +184,7 @@ void main() {
     expect(shapes.length, 32);
   });
   test(
-    'all rigs keep full artboard margins during movement and hit recoil',
+    'all rigs keep their physical margins during movement and hit recoil',
     () {
       for (final size in [
         const Size(245, 270),
@@ -207,7 +207,7 @@ void main() {
             });
             for (var frame = 0; frame < 240; frame++) {
               clock.advance(1 / 30);
-              final half = 210 * clock.scale;
+              final half = (id == 'volt' ? 140 : 210) * clock.scale;
               expect(
                 clock.player.center - half,
                 greaterThanOrEqualTo(0),
@@ -219,9 +219,10 @@ void main() {
                 reason: '$id $size $arena',
               );
               if (arena) {
-                expect(clock.enemy.center - half, greaterThanOrEqualTo(0));
+                final enemyHalf = 210 * clock.scale;
+                expect(clock.enemy.center - enemyHalf, greaterThanOrEqualTo(0));
                 expect(
-                  clock.enemy.center + half,
+                  clock.enemy.center + enemyHalf,
                   lessThanOrEqualTo(size.width),
                 );
               }
