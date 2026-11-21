@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'game_motion.dart';
+import 'volt_choreography.dart';
 
 /// Volt is animated from semantic actions on the local Flutter clock. All
 /// values are sampled from absolute time, so a dropped frame cannot accumulate
@@ -21,6 +22,8 @@ const voltActionSeconds = <String, double>{
   'anger': 1.25,
   'dance': 2.2,
   'inspect': 1.7,
+  'wave': 1.25,
+  'playful': .95,
 };
 
 class VoltCue {
@@ -40,13 +43,17 @@ const voltCues = <String, List<VoltCue>>{
   'ultimate': [
     VoltCue(.04, 'volt_charge'),
     VoltCue(.31, 'ion'),
+    // SceneAudio seeks to the recording's strike; this stays synchronous at
+    // every arena speed without introducing a fixed wall-clock delay.
     VoltCue(.62, 'volt_storm'),
-    VoltCue(.72, 'impact'),
+    VoltCue(.67, 'impact'),
   ],
   'victory': [VoltCue(.08, 'victory'), VoltCue(.48, 'volt_pulse')],
   'defeat': [VoltCue(.12, 'volt_shutdown')],
   'jump': [VoltCue(.18, 'deploy')],
   'surprise': [VoltCue(.16, 'volt_pulse')],
+  'wave': [VoltCue(.08, 'robot_reply_electric'), VoltCue(.42, 'robot_servo')],
+  'playful': [VoltCue(.32, 'electric')],
 };
 
 Iterable<String> voltCuesCrossed(
@@ -75,6 +82,10 @@ class VoltFrame {
     this.smoke = 0,
     this.sparks = 0,
     this.power = 1,
+    this.shieldHit = 0,
+    this.camera = 0,
+    this.cameraZoom = 0,
+    this.energyField = 0,
   });
   final String action;
   final double t,
@@ -88,7 +99,11 @@ class VoltFrame {
       flash,
       smoke,
       sparks,
-      power;
+      power,
+      shieldHit,
+      camera,
+      cameraZoom,
+      energyField;
 }
 
 double _ramp(double t, double begin, double end) =>
@@ -107,6 +122,7 @@ VoltFrame applyVoltPose(
   double normalizedT, {
   String equippedWeapon = '',
   double clock = 0,
+  double? guardImpact,
 }) {
   final t = normalizedT.isFinite ? unit(normalizedT) : 0.0;
   final idle = .5 + .5 * math.sin(clock * 3.2);
@@ -114,6 +130,7 @@ VoltFrame applyVoltPose(
   var charge = 0.0, discharge = 0.0, shield = 0.0, trail = 0.0;
   var wave = 0.0, flash = 0.0, smoke = 0.0, sparks = 0.0, power = 1.0;
   final f = p.extra;
+  final baseX = p.x, baseY = p.y, baseHeadY = p.headY, baseBodyY = p.bodyY;
   p.weapon = equippedWeapon;
   p.deploy = equippedWeapon.isEmpty ? 0 : .55;
   // Idle suspension, the head gimbal and the core spin have separate phases.
@@ -128,16 +145,7 @@ VoltFrame applyVoltPose(
   switch (action) {
     case 'attack':
       final load = _hold(t, 0, .18, .22, .46);
-      final kick = _hold(t, .22, .27, .34, .7);
       p.mode = t < .22 ? 4 : 2;
-      p.x -= 7 * load + 17 * kick;
-      p.body = -.1 * load - .17 * kick;
-      p.head = .09 * kick;
-      p.armR = -.3 - .7 * load + .24 * kick;
-      p.foreR = -.25 * load;
-      p.armL = .25 + .22 * load;
-      f['joint0'] = .18 * load;
-      f['joint1'] = -.5 * load + .24 * kick;
       f['joint2'] = .55 * load;
       f['joint3'] = -.85 * load;
       f['joint5'] = -.12 * load;
@@ -149,20 +157,8 @@ VoltFrame applyVoltPose(
       p.focus = load;
       p.smile = 1 - load;
     case 'quick':
-      final crouch = _hold(t, 0, .1, .14, .25);
       final dash = _hold(t, .12, .28, .4, .83);
-      final recoil = _hold(t, .27, .32, .39, .65);
       p.mode = 2;
-      p.x += -12 * crouch + 61 * dash - 9 * recoil;
-      p.y += 8 * crouch - 11 * dash;
-      p.body = -.22 * crouch + .2 * dash;
-      p.head = -.14 * dash;
-      p.armL = .5 + .4 * dash;
-      p.armR = -.4 - .55 * dash;
-      p.foreL = -.65 * dash;
-      p.foreR = .55 * dash;
-      f['joint0'] = -.28 * dash;
-      f['joint1'] = -.55 * dash;
       f['joint2'] = .7 * dash;
       f['joint3'] = -.7 * dash;
       f['jet'] = 1 + .7 * dash;
@@ -175,18 +171,7 @@ VoltFrame applyVoltPose(
       p.smile = 1 - dash;
     case 'special':
       final load = _hold(t, 0, .38, .46, .8);
-      final kick = _hold(t, .46, .51, .58, .84);
       p.mode = t < .46 ? 4 : 2;
-      p.y -= 11 * load;
-      p.x -= 24 * kick;
-      p.body = -.16 * load - .15 * kick;
-      p.head = .1 * kick - .07 * load;
-      p.armL = .15 + .95 * load;
-      p.armR = -.15 - .95 * load;
-      p.foreL = -.55 * load;
-      p.foreR = .55 * load;
-      f['joint0'] = .44 * load;
-      f['joint1'] = -.44 * load;
       f['joint2'] = .92 * load;
       f['joint3'] = -.92 * load;
       f['joint4'] = clock * .35 + 2.5 * load;
@@ -202,15 +187,6 @@ VoltFrame applyVoltPose(
     case 'guard':
       final hold = _hold(t, 0, .2, .72, 1);
       p.mode = 3;
-      p.y += 6 * hold;
-      p.armL = .3 + .65 * hold;
-      p.armR = -.3 - .65 * hold;
-      p.foreL = -.7 * hold;
-      p.foreR = .7 * hold;
-      p.head = -.08 * hold;
-      p.body = -.08 * hold;
-      f['joint0'] = -.3 * hold;
-      f['joint1'] = .3 * hold;
       f['joint2'] = .85 * hold;
       f['joint3'] = -.85 * hold;
       p.shield = 0; // The electrical shell has its own bounded painter.
@@ -220,18 +196,8 @@ VoltFrame applyVoltPose(
       p.focus = hold;
       p.smile = 1 - hold;
     case 'dodge':
-      final load = _hold(t, 0, .12, .14, .3);
       final dash = _hold(t, .14, .3, .48, .94);
       p.mode = 1;
-      p.x += 8 * load - 62 * dash;
-      p.y -= 15 * dash;
-      p.rotation = -.15 * dash;
-      p.body = .18 * load - .17 * dash;
-      p.head = .17 * dash;
-      p.armL = -.2 - .55 * dash;
-      p.armR = .2 + .55 * dash;
-      f['joint0'] = -.35 * dash;
-      f['joint1'] = .35 * dash;
       f['joint2'] = .45 * dash;
       f['joint3'] = -.45 * dash;
       f['jet'] = 1 + .75 * dash;
@@ -243,14 +209,6 @@ VoltFrame applyVoltPose(
     case 'charge':
       final connect = _hold(t, 0, .34, .7, 1);
       p.mode = 4;
-      p.y -= 8 * connect;
-      p.armL = .15 + .8 * connect;
-      p.armR = -.15 - .8 * connect;
-      p.foreL = -.8 * connect;
-      p.foreR = .8 * connect;
-      p.head = -.12 * connect;
-      f['joint0'] = .72 * connect;
-      f['joint1'] = -.72 * connect;
       f['joint2'] = .8 * connect;
       f['joint3'] = -.8 * connect;
       f['joint4'] = clock * .35 + t * 5 * connect;
@@ -262,21 +220,9 @@ VoltFrame applyVoltPose(
       p.eyeY = 1 - .4 * connect;
       p.smile = 1;
     case 'ultimate':
-      final crouch = _hold(t, 0, .1, .13, .3);
       final flight = _hold(t, .1, .34, .74, 1);
       final open = _hold(t, .17, .44, .76, .99);
-      final kick = _hold(t, .62, .66, .71, .88);
       p.mode = t < .62 ? 4 : 2;
-      p.y += 10 * crouch - 82 * flight;
-      p.x -= 19 * kick;
-      p.body = -.13 * open - .2 * kick;
-      p.head = -.1 * open + .14 * kick;
-      p.armL = .1 + 1.75 * open;
-      p.armR = -.1 - 1.75 * open;
-      p.foreL = -.72 * open;
-      p.foreR = .72 * open;
-      f['joint0'] = -.78 * open;
-      f['joint1'] = .78 * open;
       f['joint2'] = 1.12 * open;
       f['joint3'] = -1.12 * open;
       f['joint4'] = clock * .35 + 7 * t * open;
@@ -313,19 +259,9 @@ VoltFrame applyVoltPose(
       f['joint0'] = -.22 * delight;
       f['joint1'] = .22 * delight;
     case 'jump':
-      final crouch = _hold(t, 0, .14, .18, .3);
       final airborne = pulse(t, .18, .78);
       final land = pulse(t, .78, 1);
       p.mode = 6;
-      p.y += 11 * crouch - 57 * airborne + 7 * land;
-      p.body = -.14 * crouch + .13 * land;
-      p.head = .12 * crouch - .13 * airborne;
-      p.armL = .1 + 1.3 * airborne;
-      p.armR = -.1 - 1.3 * airborne;
-      p.foreL = -.55 * airborne;
-      p.foreR = .55 * airborne;
-      f['joint0'] = -.3 * airborne;
-      f['joint1'] = .3 * airborne;
       f['jet'] = 1 + .8 * airborne;
       p.eyeY = 1 - .35 * airborne;
       light += .35 * airborne;
@@ -370,15 +306,6 @@ VoltFrame applyVoltPose(
       final dance = _hold(t, 0, .14, .84, 1);
       final beat = t * math.pi * 6;
       p.mode = 6;
-      p.body = .18 * math.sin(beat) * dance;
-      p.head = -.2 * math.sin(beat - .4) * dance;
-      p.y -= 13 * math.sin(beat).abs() * dance;
-      p.armL = .1 + (1 + .65 * math.sin(beat)) * dance;
-      p.armR = -.1 - (1 - .65 * math.sin(beat)) * dance;
-      p.foreL = -.7 * dance;
-      p.foreR = .7 * dance;
-      f['joint0'] = -.2 * dance + .2 * math.sin(beat - .6) * dance;
-      f['joint1'] = .2 * dance + .2 * math.sin(beat - .6) * dance;
       f['joint4'] = clock * .35 + beat * dance;
       light += .4 * dance;
       sparks = .5 * dance;
@@ -395,19 +322,33 @@ VoltFrame applyVoltPose(
       p.eyeY = 1 - .15 * look;
       p.brow = -.12 * look;
       light += .3 * look;
+    case 'wave':
+      final greet = _hold(t, 0, .17, .72, 1);
+      p.y -= 4 * greet;
+      p.head = -.15 * greet;
+      p.body = .08 * greet;
+      p.armR = -1.45 * greet - .1;
+      p.foreR = (.65 + .5 * math.sin(t * math.pi * 7)) * greet;
+      p.armL = .1 + .3 * greet;
+      p.eyeY = 1 - .2 * greet;
+      f['joint1'] = .18 * math.sin(t * math.pi * 4) * greet;
+      light += .2 * greet;
+    case 'playful':
+      final aim = _hold(t, 0, .22, .48, 1);
+      final ping = pulse(t, .3, .48);
+      p.head = -.2 * aim + .1 * ping;
+      p.body = -.1 * aim;
+      p.armR = -.1 - .8 * aim;
+      p.foreR = .5 * aim;
+      p.armL = .1 + .45 * aim;
+      f['joint1'] = -.55 * aim + .18 * ping;
+      f['joint3'] = -.5 * aim;
+      light += .5 * aim;
+      sparks = .35 * ping;
+      p.smile = 1;
     case 'victory':
       final cheer = _hold(t, 0, .16, .82, 1);
-      final bounce = math.sin(t * math.pi * 4).abs() * cheer;
       p.mode = 6;
-      p.y -= 31 * bounce;
-      p.head = .16 * math.sin(t * math.pi * 4) * cheer;
-      p.body = -.13 * math.sin(t * math.pi * 4) * cheer;
-      p.armL = .1 + 2.1 * cheer;
-      p.armR = -.1 - 2.1 * cheer;
-      p.foreL = -.7 * cheer;
-      p.foreR = .7 * cheer;
-      f['joint0'] = -.55 * cheer;
-      f['joint1'] = .55 * cheer;
       f['joint2'] = .8 * cheer;
       f['joint3'] = -.8 * cheer;
       p.eyeY = 1 - .45 * cheer;
@@ -420,17 +361,6 @@ VoltFrame applyVoltPose(
       final stutter = (1 - fail) * .5 * (1 + math.sin(t * 72));
       p.mode = 7;
       power = 1 - fail;
-      p.y += 27 * fail;
-      p.bodyY += 13 * fail;
-      p.body = -.2 * fail;
-      p.head = .3 * fail;
-      p.headY += 12 * fail;
-      p.armL = .05 - .35 * fail;
-      p.armR = -.05 + .35 * fail;
-      p.foreL = .6 * fail;
-      p.foreR = -.6 * fail;
-      f['joint0'] = -.1 - .32 * fail;
-      f['joint1'] = .1 + .32 * fail;
       f['joint2'] = .35 * (1 - fail);
       f['joint3'] = -.35 * (1 - fail);
       f['joint4'] = math.sin(t * 9) * .35 * (1 - fail);
@@ -438,7 +368,7 @@ VoltFrame applyVoltPose(
       f['joint6'] = .1 * (1 - fail);
       f['jet'] = .12 + .88 * power;
       light = .5 * power * stutter;
-      core = .45 * power;
+      core = .45 * power * (.6 + .4 * stutter);
       smoke = _hold(t, .16, .45, .82, 1);
       sparks = .25 * pulse(t, .08, .46);
       p.smile = 0;
@@ -446,6 +376,30 @@ VoltFrame applyVoltPose(
       p.sad = fail;
       p.eyeY = 1 - .7 * fail;
       p.brow = -.28 * fail;
+  }
+  applyVoltChoreography(
+    p,
+    action,
+    t,
+    baseX: baseX,
+    baseY: baseY,
+    baseHeadY: baseHeadY,
+    baseBodyY: baseBodyY,
+  );
+  final hit = action == 'guard'
+      ? unit(guardImpact ?? .9 * pulse(t, .47, .69))
+      : 0.0;
+  if (hit > 0) {
+    p.x -= 8 * hit;
+    p.body -= .16 * hit;
+    p.head += .12 * hit;
+    p.foreL -= .14 * hit;
+    p.foreR += .17 * hit;
+    f['joint0'] = f['joint0']! - .12 * hit;
+    f['joint1'] = f['joint1']! + .15 * hit;
+    f['voltPistonL'] = f['voltPistonL']! - 2 * hit;
+    f['voltPistonR'] = f['voltPistonR']! - 2 * hit;
+    light += .25 * hit;
   }
   // The detailed optical iris, brow actuator, counter-rotor and radiator
   // shutters are independent of the head/body/coil mechanisms above.
@@ -460,6 +414,7 @@ VoltFrame applyVoltPose(
   f['joint12'] = -.5 * ventilation * power;
   f['joint13'] = .5 * ventilation * power * (.94 + .06 * math.sin(clock * 3));
   p.aura = 0; // Avoid the common solid disc covering Volt's reactor detail.
+  f['voltFacePower'] = power;
   return VoltFrame(
     action: action,
     t: t,
@@ -474,6 +429,10 @@ VoltFrame applyVoltPose(
     smoke: smoke,
     sparks: sparks,
     power: power,
+    shieldHit: hit,
+    camera: action == 'ultimate' ? unit(discharge * .5 + flash * .5) : hit * .2,
+    cameraZoom: action == 'ultimate' ? unit((baseY - p.y) / 83) : 0,
+    energyField: action == 'ultimate' ? .7 * _hold(t, .23, .48, .62, .82) : 0,
   );
 }
 
@@ -491,15 +450,60 @@ void blendVoltPose(GamePose pose, GamePose previous, double weight) {
     'joint5',
     'joint6',
     'joint7',
+    'joint8',
+    'joint9',
     'joint10',
     'joint11',
     'joint12',
     'joint13',
+    'joint14',
+    'joint15',
     'jet',
+    ...voltMechanismDefaults.keys,
   ]) {
-    pose.extra[key] =
-        previous.extra[key]! + (pose.extra[key]! - previous.extra[key]!) * w;
+    final old = previous.extra[key] ?? voltMechanismDefaults[key] ?? 0;
+    var delta = pose.extra[key]! - old;
+    if (key == 'joint4' || key == 'joint7') {
+      delta = (delta + math.pi) % (math.pi * 2) - math.pi;
+    }
+    pose.extra[key] = old + delta * w;
   }
+}
+
+double voltBlendSeconds(String action) => switch (action) {
+  'quick' => .055,
+  'attack' => .075,
+  'dodge' => .065,
+  'surprise' => .07,
+  'guard' => .10,
+  'ultimate' => .18,
+  'defeat' => .22,
+  _ => .14,
+};
+
+VoltFrame blendVoltFrame(VoltFrame next, VoltFrame? before, double weight) {
+  if (before == null || weight >= 1) return next;
+  final w = smooth(weight);
+  double mix(double a, double b) => a + (b - a) * w;
+  return VoltFrame(
+    action: next.action,
+    t: next.t,
+    coilGlow: mix(before.coilGlow, next.coilGlow),
+    coreGlow: mix(before.coreGlow, next.coreGlow),
+    charge: mix(before.charge, next.charge),
+    discharge: mix(before.discharge, next.discharge),
+    shield: mix(before.shield, next.shield),
+    trail: mix(before.trail, next.trail),
+    shockwave: mix(before.shockwave, next.shockwave),
+    flash: mix(before.flash, next.flash),
+    smoke: mix(before.smoke, next.smoke),
+    sparks: mix(before.sparks, next.sparks),
+    power: mix(before.power, next.power),
+    shieldHit: mix(before.shieldHit, next.shieldHit),
+    camera: mix(before.camera, next.camera),
+    cameraZoom: mix(before.cameraZoom, next.cameraZoom),
+    energyField: mix(before.energyField, next.energyField),
+  );
 }
 
 void voltTrackGaze(GamePose pose, Offset gaze, {double weight = 1}) {
@@ -565,6 +569,7 @@ void paintVoltEffects(
   const cyan = Color(0xFF45DFFF), white = Color(0xFFE8FCFF);
   final t = frame.t;
   final paint = Paint()..strokeCap = StrokeCap.round;
+  var boltBudget = reduced ? 4 : 8;
   void line(
     Offset a,
     Offset b,
@@ -629,7 +634,8 @@ void paintVoltEffects(
     double spread = 8,
     double bow = 0,
   }) {
-    if (intensity <= .01) return;
+    if (intensity <= .01 || boltBudget <= 0) return;
+    boltBudget--;
     final path = Path()..moveTo(from.dx, from.dy);
     final delta = to - from;
     final normal = delta.distance < .001
@@ -670,6 +676,18 @@ void paintVoltEffects(
   }
 
   final left = anchors.leftCoil, right = anchors.rightCoil;
+  if (frame.energyField > .01) {
+    for (var i = 0; i < (reduced ? 1 : 3); i++) {
+      final u = (t * 2 + i / 3) % 1;
+      ring(
+        anchors.core + Offset(0, (u - .5) * 145 * scale),
+        72 + 11 * math.sin(u * math.pi),
+        frame.energyField * .28 * math.sin(u * math.pi),
+        squash: .38,
+        width: 1.2,
+      );
+    }
+  }
   final mid = Offset.lerp(left, right, .5)!;
   final crown =
       mid +
@@ -772,29 +790,62 @@ void paintVoltEffects(
   if (frame.shield > .01) {
     final center = anchors.core + Offset(0, -18 * scale);
     final radius = 110 * frame.shield;
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: center,
-        width: radius * 2 * scale,
-        height: radius * 2.15 * scale,
-      ),
+    Offset surface(double angle) {
+      final front = math.pow(math.max(0, math.cos(angle) * facing), 8);
+      final deform = 1 - .14 * frame.shieldHit * front;
+      final flow = 1 + .012 * math.sin(angle * 4 + t * 25);
+      return center +
+          Offset(math.cos(angle), math.sin(angle) * 1.08) *
+              radius *
+              scale *
+              deform *
+              flow;
+    }
+
+    final shell = Path();
+    final segments = reduced ? 16 : 28;
+    for (var i = 0; i <= segments; i++) {
+      final point = surface(i / segments * math.pi * 2);
+      if (i == 0) {
+        shell.moveTo(point.dx, point.dy);
+      } else {
+        shell.lineTo(point.dx, point.dy);
+      }
+    }
+    shell.close();
+    canvas.drawPath(
+      shell,
       paint
         ..style = PaintingStyle.fill
-        ..color = cyan.withValues(alpha: .06 * frame.shield),
+        ..color = cyan.withValues(
+          alpha: (.045 + .07 * frame.shieldHit) * frame.shield,
+        ),
     );
-    ring(center, radius, frame.shield * .75, squash: 1.08, width: 2.2);
+    canvas.drawPath(
+      shell,
+      paint
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = (1.8 + 1.6 * frame.shieldHit) * scale
+        ..color = cyan.withValues(alpha: frame.shield * .75),
+    );
     final count = reduced ? 2 : 5;
     for (var i = 0; i < count; i++) {
       final angle = i * math.pi * 2 / count + t * 3;
-      final a =
-          center +
-          Offset(math.cos(angle), math.sin(angle) * 1.08) * radius * scale;
-      final b =
-          center +
-          Offset(math.cos(angle + .42), math.sin(angle + .42) * 1.08) *
-              radius *
-              scale;
+      final a = surface(angle), b = surface(angle + .42);
       bolt(a, b, frame.shield * .7, i, width: 1.2, spread: 3);
+    }
+    if (frame.shieldHit > .01) {
+      final contact = surface(facing < 0 ? math.pi : 0);
+      glow(contact, 12 + 8 * frame.shieldHit, frame.shieldHit);
+      ring(
+        contact,
+        9 + 24 * (1 - frame.shieldHit),
+        frame.shieldHit,
+        width: 2.2,
+      );
+      bolt(contact, right, frame.shieldHit * .75, 7, width: 1.5, spread: 5);
+      if (!reduced)
+        bolt(contact, left, frame.shieldHit * .5, 8, width: 1.1, spread: 4);
     }
   }
   if (frame.trail > .01) {

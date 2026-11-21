@@ -76,6 +76,7 @@ async def fixture(
         session=SimpleNamespace(components_mode=True),
     )
     session = GameSession.preview(page)
+    session.motion_sound = False  # Static layout fixtures never start platform audio.
     session.clock = lambda: 1008
     session.state = GameState(
         level=6,

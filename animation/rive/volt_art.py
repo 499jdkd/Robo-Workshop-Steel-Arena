@@ -83,6 +83,8 @@ def chassis(r):
     r.head_w, r.head_h, r.head_y = 108, 80, -85
     r.eye = "optic"
     b = r.body
+    r.bind(b, "scaleX", "bodyscaleX", 1)
+    r.bind(b, "scaleY", "bodyscaleY", 1)
     # Foreground first: a glass energy cell inside a machined, rotating cage.
     core = r.node(b, "Volt reactor", y=8)
     energy = r.node(core, "Volt live core")
@@ -176,17 +178,25 @@ def chassis(r):
         cable(r, r.robot, f"Coil hose reflection {side}", [(side * 49, -24), (side * 64, -21), (side * 79, -31), (side * 76, -44)], "FF59899D", 2)
         cable(r, r.robot, f"Coil flexible cable {side}", [(side * 49, -24), (side * 64, -21), (side * 79, -31), (side * 76, -44)], DEEP, 8)
         # Nozzle body and separate gimbal respond to acceleration and landing.
+        label = "L" if side < 0 else "R"
         thruster = r.joint(r.robot, f"Volt gimbal {side}", side * 43, 78, 8 if side < 0 else 9)
-        glow(r, thruster, f"Nozzle charge {side}", 0, 13, 25, 8)
+        r.bind(thruster, "x", "voltLeg" + label + "X", side * 43)
+        r.bind(thruster, "y", "voltLeg" + label + "Y", 78)
+        ankle = r.joint(thruster, "Volt ankle " + label, 0, 0, 14 if side < 0 else 15)
+        glow(r, ankle, f"Nozzle charge {side}", 0, 13, 25, 8)
         for dx in (-14, 14):
-            pin(r, thruster, f"Gimbal pin {side}-{dx}", dx, 0, 5)
-        r.oval(thruster, f"Nozzle mouth {side}", 0, 16, 37, 12, DEEP)
-        r.rect(thruster, f"Nozzle shell {side}", 0, 2, 35, 26, STEEL, r=8)
-        flame = r.node(thruster, f"Volt ion exhaust {side}", y=18)
+            pin(r, ankle, f"Gimbal pin {side}-{dx}", dx, 0, 5)
+        r.oval(ankle, f"Nozzle mouth {side}", 0, 16, 37, 12, DEEP)
+        r.rect(ankle, f"Nozzle shell {side}", 0, 2, 35, 26, STEEL, r=8)
+        flame = r.node(ankle, f"Volt ion exhaust {side}", y=18)
         r.bind(flame, "scaleY", "jet", 1)
         r.bind(flame, "opacity", "voltPower", 1)
         r.oval(flame, f"Ion exhaust core {side}", 0, 12, 12, 27, ("CCECFFFF", "0040CBFF"))
         r.oval(flame, f"Ion exhaust halo {side}", 0, 15, 26, 42, ("5577EFFF", "002175C9"))
+        strut = r.node(r.robot, "Volt suspension " + label, x=side * 43, y=56)
+        r.bind(strut, "scaleY", "voltStrut" + label, 1)
+        for dx in (-7, 7):
+            r.rect(strut, f"Suspension rod {label}-{dx}", dx, 10, 3, 22, STEEL, r=1)
     fit_materials(r.robot)
 
 
@@ -197,18 +207,22 @@ def face(r):
     gaze = r.node(h, "Gaze")
     r.bind(gaze, "x", "lookX", 0)
     r.bind(gaze, "y", "lookY", 0)
+    phosphor = r.node(gaze, "Volt phosphor screen")
+    r.bind(phosphor, "opacity", "voltFacePower", 1)
     for name, field, points in [
         ("Smile", "Smile.opacity", [(-12, 20), (-6, 24), (4, 25), (13, 20)]),
         ("Focus mouth", "Focus mouth.opacity", [(-11, 23), (11, 23)]),
         ("Sad mouth", "Sad mouth.opacity", [(-12, 24), (-5, 19), (5, 19), (12, 24)]),
     ]:
-        mouth = r.node(gaze, name)
+        mouth = r.node(phosphor, name)
         r.bind(mouth, "opacity", field, 1 if name == "Smile" else 0)
         r.path(mouth, name + " phosphor", points, "FFB7FAFF", stroke=3)
-    shock = r.node(gaze, "Surprised mouth")
+    shock = r.node(phosphor, "Surprised mouth")
     r.bind(shock, "opacity", "shock", 0)
     r.oval(shock, "Volt surprised mouth", 0, 23, 11, 13, LIGHT)
     eyes = r.node(gaze, "Eyes", y=-9)
+    r.bind(eyes, "y", "voltOpticY", -9)
+    r.bind(eyes, "rotation", "voltOpticRoll", 0)
     r.bind(eyes, "scaleX", "Eyes.scaleX", 1)
     r.bind(eyes, "scaleY", "Eyes.scaleY", 1)
     # Six blades turn about separate eccentric pivots. Positive joint10 closes
@@ -258,10 +272,13 @@ def finish_arms(r):
         arm = next(n for n in r.robot if n.get("name") == "Arm " + label)
         fore = next(n for n in arm if n.get("name") == "Forearm " + label)
         detail = forward(arm, r.node(arm, "Volt shoulder detail " + label))
+        r.bind(detail, "rotation", "voltShoulder" + label, 0)
         pin(r, detail, "Shoulder cap " + label, 0, 0, 12)
         r.oval(detail, "Shoulder copper ring " + label, 0, 0, 22, 22, COPPER)
         r.oval(detail, "Shoulder armored rim " + label, 0, 0, 32, 32, BLUE)
-        r.rect(detail, "Upper arm chromed piston " + label, side * 5, 19, 5, 25, STEEL, r=2)
+        piston = r.node(detail, "Volt piston slider " + label, y=19)
+        r.bind(piston, "y", "voltPiston" + label, 19)
+        r.rect(piston, "Upper arm chromed piston " + label, side * 5, 0, 5, 25, STEEL, r=2)
         r.rect(detail, "Upper arm rod coupling " + label, side * 5, 31, 10, 6, DEEP, r=2)
         cable(r, detail, "Elbow service hose " + label, [(side * 12, 8), (side * 15, 23), (side * 9, 36)], COPPER, 2.3)
         cuff = forward(fore, r.node(fore, "Volt wrist mechanism " + label))

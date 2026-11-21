@@ -118,6 +118,7 @@ class GameSession:
         self.motion_sound = True
         preferences = cached.get("presentation", {})
         preferences = preferences if isinstance(preferences, dict) else {}
+        self.motion_sound = preferences.get("motion_sound", True) is not False
         self.battle_speed = preferences.get("battle_speed", 1.5)
         if self.battle_speed not in (1.0, 1.5, 2.0):
             self.battle_speed = 1.5
@@ -253,7 +254,7 @@ class GameSession:
                     "pending": self._journal if not self.trusted else [],
                     "leaderboard": self.board,
                     "board_updated_at": self.board_updated_at,
-                    "presentation": {"battle_speed": self.battle_speed, "reduced_effects": self.reduced_effects},
+                    "presentation": {"battle_speed": self.battle_speed, "reduced_effects": self.reduced_effects, "motion_sound": self.motion_sound},
                 }
             )
             self._last_save = self.clock()
@@ -421,11 +422,13 @@ class GameSession:
         self.notify()
         return True
 
-    def presentation(self, *, speed=None, reduced=None):
+    def presentation(self, *, speed=None, reduced=None, sound=None):
         if speed in (1.0, 1.5, 2.0):
             self.battle_speed = float(speed)
         if reduced is not None:
             self.reduced_effects = bool(reduced)
+        if sound is not None:
+            self.motion_sound = bool(sound)
         self.persist()
         self.notify()
 
@@ -433,6 +436,7 @@ class GameSession:
         self.tick()
         self._paused = True
         self.persist()
+        self.notify()
 
     def resume(self):
         if not self._paused:

@@ -83,6 +83,19 @@ class PublicationTests(unittest.TestCase):
         self.assertEqual(self.writes, [])
         self.assertEqual(json.loads(self.report.read_text())["stage"], "plan-verified")
 
+    def test_test_build_is_not_promoted_over_latest_stable(self):
+        self.api.resolved_tag.side_effect=[None,None,self.sha]
+        with patch.object(release,'GitHub',return_value=self.api), \
+             patch.object(release,'credential_token',return_value='test-only-secret'), \
+             patch.object(release,'verify_public_download',return_value={'http_status':200}), \
+             patch('sys.argv',self.argv+['--publish','--prerelease']),patch('builtins.print'):
+            release.main()
+        creations=[c.kwargs['json'] for c in self.api.request.call_args_list if c.args[:2]==('POST','/releases')]
+        publications=[c.kwargs['json'] for c in self.api.request.call_args_list if c.args[:2]==('PATCH','/releases/1')]
+        self.assertTrue(creations[0]['prerelease'])
+        self.assertEqual(publications[0]['make_latest'],'false')
+        self.assertTrue(json.loads(self.report.read_text())['prerelease'])
+
     def test_existing_draft_is_never_reused_or_overwritten(self):
         self.api.release_with_tag.return_value = {"id": 99, "draft": True}
         with patch.object(release, "GitHub", return_value=self.api), \

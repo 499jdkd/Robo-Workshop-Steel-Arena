@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:collection';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flet/flet.dart';
+import 'music_director.dart';
+import 'game_audio_context.dart';
 
 /// Injectable player boundary for deterministic asynchronous race tests.
 abstract class SceneVoice {
@@ -16,12 +18,16 @@ abstract class SceneVoice {
 }
 
 class _NativeSceneVoice implements SceneVoice {
-  final player = AudioPlayer();
+  final player = AudioPlayer()..positionUpdater = null;
+  String cue = '';
   bool disposed = false;
   @override
   Future<void> prepare(FletBackend? backend, String cue) async {
     if (backend == null || disposed) return;
+    this.cue = cue;
     final asset = backend.getAssetSource('audio/$cue.wav');
+    await player.setAudioContext(gameAudioContext());
+    if (disposed) return;
     await player.setReleaseMode(ReleaseMode.stop);
     if (disposed) return;
     await player.setSource(
@@ -40,7 +46,12 @@ class _NativeSceneVoice implements SceneVoice {
     if (disposed || !canPlay()) return false;
     await player.setVolume(volume);
     if (disposed || !canPlay()) return false;
-    await player.seek(Duration.zero);
+    await player.seek(
+      Duration(
+        microseconds: ((SceneAudio.cueStartSeconds[cue] ?? 0) * 1000000)
+            .round(),
+      ),
+    );
     if (disposed || !canPlay()) return false;
     await player.resume();
     return !disposed && canPlay();
@@ -131,6 +142,9 @@ class SceneAudio {
     'robot_charge': .34,
   };
   static final cues = cueSeconds.keys.toList(growable: false);
+  // The preserved storm WAV begins with 300ms of charging. Charging has its
+  // own cues; start at its strike so arena speed cannot desynchronise the hit.
+  static const cueStartSeconds = <String, double>{'volt_storm': .30};
   final SceneVoice Function() _voiceFactory;
   final bool _injected;
   late final double Function() _now;
@@ -147,6 +161,7 @@ class SceneAudio {
   int epoch = 0;
   bool disposed = false, configured = false;
   bool _enabled = true, _muted = false;
+  String _musicToken = '';
   int get activeVoiceCount => _active.length;
   bool get enabled => _enabled;
   set enabled(bool value) {
@@ -155,10 +170,12 @@ class SceneAudio {
     if (!value) pause();
   }
 
-  bool get muted => _muted;
+  bool get muted =>
+      _muted || (backend != null && musicFor(backend!)?.enabled == false);
   set muted(bool value) {
-    if (_muted == value) return;
+    if (_muted == value && muted == value) return;
     _muted = value;
+    if (backend != null) musicFor(backend!)?.preference(!value);
     if (value) pause();
   }
 
@@ -225,7 +242,15 @@ class SceneAudio {
   }
 
   void unlock() {
-    /* User gestures are delivered to the native/browser audio plugin. */
+    if (backend != null) musicFor(backend!)?.unlock();
+  }
+
+  void celebrate(String token) {
+    if (backend == null || token == _musicToken) return;
+    final music = musicFor(backend!);
+    if (music == null) return;
+    _musicToken = token;
+    music.celebrate(token);
   }
 
   void play(
@@ -234,6 +259,10 @@ class SceneAudio {
     double volume = 1,
     String channel = '',
   }) {
+    // The persistent application music controller owns the complete victory
+    // phrase. Scene changes and the bounded SFX pool must not stop it.
+    if (cue == 'victory' && backend != null && musicFor(backend!) != null)
+      return;
     if (!enabled ||
         muted ||
         disposed ||
@@ -295,7 +324,7 @@ class SceneAudio {
             _active[cue] = _ActiveVoice(
               voice,
               channel,
-              _now() + cueSeconds[cue]! / speed,
+              _now() + (cueSeconds[cue]! - (cueStartSeconds[cue] ?? 0)) / speed,
             );
           } else {
             await voice.pause().catchError((_) {});

@@ -52,12 +52,14 @@ String legacyAction(String action) => switch (action) {
 };
 
 void main() {
-  test('spaced touches cycle through five distinct Volt reactions', () {
+  test('spaced touches use seven distinct shuffled Volt reactions', () {
     final scene = createScene(demo: true);
     final signatures = <String>{};
-    for (final action in ['joy', 'jump', 'surprise', 'inspect', 'dance']) {
+    final actions = <String>{};
+    for (var i = 0; i < 7; i++) {
       scene.react();
-      expect(scene.localAction, action);
+      final action = scene.localAction;
+      actions.add(action);
       scene.advance(0);
       scene.advance(voltActionSeconds[action]! * .35);
       expect(scene.playerVoltFrame!.action, action);
@@ -70,7 +72,16 @@ void main() {
       if (action == 'surprise') expect(pose.shock, greaterThan(.5));
       scene.advance(voltActionSeconds[action]! + .6);
     }
-    expect(signatures.length, 5);
+    expect(signatures.length, 7);
+    expect(actions, {
+      'joy',
+      'jump',
+      'surprise',
+      'inspect',
+      'dance',
+      'playful',
+      'wave',
+    });
   });
 
   test(

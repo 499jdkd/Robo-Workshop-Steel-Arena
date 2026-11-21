@@ -8,7 +8,7 @@ import runpy
 import subprocess
 import sys
 
-CONTROLS = ("GameRive", "GameCountdown", "GameFactory")
+CONTROLS = ("GameRive", "GameCountdown", "GameFactory", "GameMusic")
 CLI_TRANSPORT = (
     "FLET_SERVER_PORT",
     "FLET_SERVER_IP",

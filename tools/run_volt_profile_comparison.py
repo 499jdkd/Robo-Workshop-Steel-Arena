@@ -29,14 +29,17 @@ def main():
     parser.add_argument('--baseline-source', type=Path, default=ROOT / '.cache/volt-refinement/before/src')
     parser.add_argument('--before-client', type=Path, default=ROOT / '.cache/volt-refinement/before-profile-client')
     parser.add_argument('--after-client', type=Path, default=ROOT / '.cache/volt-refinement/after-profile-client')
+    parser.add_argument('--revision', choices=['all','before','after'], default='all')
     args = parser.parse_args()
     output = args.out.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    reports = {}
+    reports = json.loads((output/'summary.json').read_text()) if (output/'summary.json').exists() else {}
     for index, (revision, scenario) in enumerate((
         ("before", "workshop"), ("after", "workshop"),
         ("before", "combat"), ("after", "combat"),
     )):
+        if args.revision != 'all' and revision != args.revision:
+            continue
         name = f"{revision}-{scenario}"
         folder = output / name
         folder.mkdir(exist_ok=True)
@@ -80,6 +83,7 @@ def main():
             report["first_native_paint"] = json.loads((folder / "first-paint.jsonl").read_text(encoding="utf-8").splitlines()[0])
             report["dpr"] = dpr
             report["capture"] = capture_name
+            report['memory'] = json.loads((ROOT/'.cache/rework-review'/capture_name/'memory.json').read_text())
             reports[name] = report
             (output / "summary.json").write_text(json.dumps(reports, indent=2), encoding="utf-8")
             print(f"Completed {name}: {report['samples_after_warmup']} windows, median unique FPS {report['median_unique_vsync_fps']:.1f}", flush=True)
