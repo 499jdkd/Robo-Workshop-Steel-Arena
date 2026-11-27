@@ -1184,6 +1184,7 @@ class GameSceneClock extends ChangeNotifier {
   }
 
   ({String action, double t}) _voltPresentation(bool opponent) {
+    final titan = data[opponent ? 'enemy' : 'robot'] == 'titan';
     final actorSeconds = data[opponent ? 'enemy' : 'robot'] == 'titan'
         ? titanActionSeconds
         : voltActionSeconds;
@@ -1217,13 +1218,16 @@ class GameSceneClock extends ChangeNotifier {
     }
     if (opponent) {
       final name = data['enemyCombatAction'] as String? ?? 'attack';
+      final hit = titan && {'special', 'emp'}.contains(name)
+          ? titanSkillImpact
+          : .9;
       if (phase == 'enemy-flight' && data['stunned'] != true)
         return (
           action: data['intent'] == 'windup' ? 'charge' : name,
-          t: unit(age / .72) * .9,
+          t: unit(age / .72) * hit,
         );
       if (phase == 'reply' && data['stunned'] != true)
-        return (action: name, t: .9 + .1 * unit(age / .25));
+        return (action: name, t: hit + (1 - hit) * unit(age / .25));
       return (action: 'idle', t: 0.0);
     }
     final name = phase.startsWith('counter-') ? 'attack' : combatAction;
@@ -1237,6 +1241,9 @@ class GameSceneClock extends ChangeNotifier {
       'emp': .46,
     };
     final release = releases[name];
+    final hit = titan && {'special', 'emp'}.contains(name)
+        ? titanSkillImpact
+        : .9;
     final prepare =
         (data['prepareSeconds'] as num? ??
                 (name == 'ultimate'
@@ -1252,9 +1259,9 @@ class GameSceneClock extends ChangeNotifier {
       if (phase == 'approach')
         return (action: name, t: release * unit(age / prepare));
       if (phase == 'flight' || phase == 'counter-flight')
-        return (action: name, t: release + (.9 - release) * progress);
+        return (action: name, t: release + (hit - release) * progress);
       if (phase == 'impact' || phase == 'counter-hit')
-        return (action: name, t: .9 + .1 * unit(age / impactSeconds));
+        return (action: name, t: hit + (1 - hit) * unit(age / impactSeconds));
     } else if ({'guard', 'dodge', 'charge'}.contains(name)) {
       if (phase == 'approach')
         return (action: name, t: .3 * unit(age / prepare));
@@ -1342,8 +1349,10 @@ class GameSceneClock extends ChangeNotifier {
     final frame = blendVoltFrame(rawFrame, playback.fromFrame, blendWeight);
     if (mounted.isNotEmpty &&
         {'attack', 'quick', 'pierce', 'burst'}.contains(sample.action)) {
-      pose.armR = -1.48 + .12 * math.sin(sample.t * math.pi * 6);
-      pose.foreR = -.08;
+      if (!titan) {
+        pose.armR = -1.48 + .12 * math.sin(sample.t * math.pi * 6);
+        pose.foreR = -.08;
+      }
       pose.deploy = smooth(sample.t / .15);
       pose.barrel = 18 - 9 * math.sin(sample.t * math.pi).abs();
     }
@@ -2159,19 +2168,6 @@ class GameEffectsPainter extends CustomPainter {
           actor.facing,
           gaze: opponent ? Offset.zero : scene.gaze,
         );
-        paintTitanEffects(
-          canvas,
-          frame,
-          actor.pose,
-          origin,
-          scene.arena
-              ? scene.target(opponent ? scene.player : scene.enemy)
-              : Offset(size.width * .87, scene.floor - 130 * s),
-          scene.floor,
-          s,
-          facing: actor.facing,
-          reduced: scene.reduced,
-        );
         return;
       }
       paintVoltMotionEchoes(
@@ -2210,6 +2206,29 @@ class GameEffectsPainter extends CustomPainter {
       drawVolt(scene.player, scene.playerVoltFrame, false);
     if (scene.arena && {'volt', 'titan'}.contains(scene.data['enemy']))
       drawVolt(scene.enemy, scene.enemyVoltFrame, true);
+    // Titan's travelling fists must remain visible when they contact a native
+    // defender. Draw both bodies first, then these foreground mechanisms.
+    void titanEffects(GameActor actor, VoltFrame? frame, bool opponent) {
+      if (frame == null || scene.data[opponent ? 'enemy' : 'robot'] != 'titan')
+        return;
+      paintTitanEffects(
+        canvas,
+        frame,
+        actor.pose,
+        Offset(actor.center, scene.floor + (actor.pose.y - 126) * s),
+        scene.arena
+            ? scene.target(opponent ? scene.player : scene.enemy)
+            : Offset(size.width * .87, scene.floor - 130 * s),
+        scene.floor,
+        s,
+        facing: actor.facing,
+        reduced: scene.reduced,
+        viewport: Offset.zero & size,
+      );
+    }
+
+    titanEffects(scene.player, scene.playerVoltFrame, false);
+    if (scene.arena) titanEffects(scene.enemy, scene.enemyVoltFrame, true);
     shield(scene.player);
     if (scene.arena) shield(scene.enemy);
     final dummy = Offset(size.width * .87, scene.floor - 130 * s);

@@ -6,9 +6,9 @@ import 'volt_motion.dart' show VoltFrame, VoltCue;
 // The presentation envelope is shared; Titan owns every pose, mechanism, cue
 // and effect. No Volt timeline or electrical effect is sampled here.
 const titanActionSeconds = <String, double>{
-  'attack': 1.15,
-  'quick': .85,
-  'special': 1.9,
+  'attack': 1.25,
+  'quick': 1.05,
+  'special': 2.4,
   'guard': 1.5,
   'dodge': 1.0,
   'charge': 1.8,
@@ -26,20 +26,21 @@ const titanActionSeconds = <String, double>{
   'feed': 1.7,
 };
 const titanCues = <String, List<VoltCue>>{
-  'attack': [
-    VoltCue(.08, 'titan_hydraulic'),
-    VoltCue(.22, 'titan_ram'),
-    VoltCue(.9, 'impact'),
-  ],
+  'attack': [VoltCue(.08, 'titan_hydraulic'), VoltCue(.9, 'titan_ram')],
   'quick': [
-    VoltCue(.12, 'titan_step'),
-    VoltCue(.26, 'titan_ram'),
+    VoltCue(.1, 'titan_hydraulic'),
+    VoltCue(.2, 'titan_step'),
+    VoltCue(.36, 'titan_ram'),
+    VoltCue(.54, 'impact'),
+    VoltCue(.72, 'titan_ram'),
     VoltCue(.9, 'impact'),
   ],
   'special': [
     VoltCue(.08, 'titan_pressure'),
-    VoltCue(.46, 'titan_quake'),
-    VoltCue(.9, 'titan_ram'),
+    VoltCue(.4, 'titan_hydraulic'),
+    VoltCue(.46, 'titan_ram'),
+    VoltCue(.78, 'impact'),
+    VoltCue(.94, 'titan_hydraulic'),
   ],
   'guard': [VoltCue(.14, 'titan_bastion')],
   'dodge': [VoltCue(.16, 'titan_step')],
@@ -47,7 +48,7 @@ const titanCues = <String, List<VoltCue>>{
   'ultimate': [
     VoltCue(.04, 'titan_pressure'),
     VoltCue(.35, 'titan_rumble'),
-    VoltCue(.62, 'titan_quake'),
+    VoltCue(.66, 'titan_quake'),
     VoltCue(.9, 'titan_ram'),
   ],
   'victory': [
@@ -108,38 +109,40 @@ const titanKeys = <String, List<TitanKey>>{
   ],
   'attack': [
     TitanKey(0),
-    TitanKey(.16, x: -14, y: 7, body: -.15, r: .55, er: .7, stance: 1),
-    TitanKey(.28, x: 24, body: .22, r: -1.45, er: -.1, hammer: 12, stance: 1),
-    TitanKey(.43, x: 12, body: .12, r: -1.2, er: -.2),
-    TitanKey(.76, x: -4, r: -.25),
+    TitanKey(.16, x: -14, y: 10, body: -.17, r: .55, er: .7, stance: 1),
+    TitanKey(.22, x: -10, y: 7, r: -.9, er: .2, stance: 1),
+    TitanKey(.44, x: 18, body: .18, r: -1.5, er: -.05, stance: 1),
+    TitanKey(.88, x: 22, y: 3, body: .21, r: -1.5, er: -.05, stance: 1),
+    TitanKey(.93, x: 9, y: 6, body: .1, r: -1.25, er: .18, stance: 1),
     TitanKey(1),
   ],
   'quick': [
     TitanKey(0),
-    TitanKey(.14, x: -24, y: 15, body: -.23, l: .4, r: .7, stance: 1),
-    TitanKey(
-      .34,
-      x: 102,
-      y: 4,
-      body: .32,
-      l: .6,
-      r: -1.25,
-      er: .2,
-      hammer: 12,
-      stance: 1,
-    ),
-    TitanKey(.57, x: 68, y: 7, body: .2, r: -.8),
-    TitanKey(.86, x: 8, y: 3, r: -.2),
+    TitanKey(.16, x: -15, y: 16, body: -.14, l: -.5, r: -.6, stance: 1),
+    TitanKey(.26, x: 14, y: 8, l: -.9, r: -1.3, stance: 1),
+    TitanKey(.36, x: 26, y: 4, body: .18, l: -.8, r: -1.6, stance: 1),
+    TitanKey(.54, x: 20, y: 8, body: -.16, l: -1.6, r: -.8, stance: 1),
+    TitanKey(.72, x: 28, y: 4, body: .2, l: -.8, r: -1.6, stance: 1),
+    TitanKey(.9, x: 22, y: 8, body: -.17, l: -1.6, r: -.8, stance: 1),
     TitanKey(1),
   ],
   'special': [
     TitanKey(0),
-    TitanKey(.14, y: 18, l: .5, r: -.5, stance: 1),
-    TitanKey(.35, y: -12, l: 2.65, r: -2.65, el: -.3, er: .3, stance: 1),
-    TitanKey(.46, y: -6, l: 2.75, r: -2.75, el: -.2, er: .2, stance: 1),
-    TitanKey(.55, y: 22, l: .1, r: -.1, hammer: 42, stance: 1),
-    TitanKey(.7, y: 13, l: .15, r: -.15, hammer: 30, stance: 1),
-    TitanKey(.88, y: 3, hammer: 5),
+    TitanKey(.14, x: -8, y: 11, body: -.12, l: -.4, r: -.8, er: .3, stance: 1),
+    TitanKey(.35, x: -12, y: 8, l: -.55, r: -1.5, er: -.04, stance: 1),
+    TitanKey(
+      .46,
+      x: -16,
+      y: 10,
+      body: -.12,
+      l: -.55,
+      r: -1.5,
+      er: -.04,
+      stance: 1,
+    ),
+    TitanKey(.54, x: -5, y: 6, body: .05, l: -.45, r: -1.4, stance: 1),
+    TitanKey(.82, x: -4, y: 5, l: -.4, r: -1.4, stance: 1),
+    TitanKey(.94, x: -7, y: 8, body: -.07, r: -1.35, er: .15, stance: 1),
     TitanKey(1),
   ],
   'guard': [
@@ -323,6 +326,50 @@ const titanKeys = <String, List<TitanKey>>{
 double _ramp(double t, double a, double b) => smooth((t - a) / (b - a));
 double _hold(double t, double a, double b, double c, double d) =>
     _ramp(t, a, b) * (1 - _ramp(t, c, d));
+
+const titanSkillRelease = .46;
+const titanSkillImpact = .78;
+const titanQuakeRelease = .66;
+const titanQuickHits = [.36, .54, .72, .9];
+
+double titanPunchReach(String action, double t, bool left) {
+  if (action == 'attack') {
+    return left ? 0 : _ramp(t, .22, .9) * (1 - _ramp(t, .915, 1));
+  }
+  if (action != 'quick') return 0;
+  var result = 0.0;
+  for (var i = 0; i < titanQuickHits.length; i++) {
+    if (left != i.isOdd) continue;
+    final hit = titanQuickHits[i];
+    result = math.max(
+      result,
+      _hold(t, hit - .085, hit - .005, hit + .012, hit + .085),
+    );
+  }
+  return result;
+}
+
+double titanPunchImpact(String action, double t, bool left) {
+  final hits = action == 'quick'
+      ? [
+          for (var i = 0; i < titanQuickHits.length; i++)
+            if (left == i.isOdd) titanQuickHits[i],
+        ]
+      : action == 'special'
+      ? [titanSkillImpact]
+      : left
+      ? <double>[]
+      : [.9];
+  var impact = 0.0;
+  for (final hit in hits) {
+    impact = math.max(
+      impact,
+      _hold(t, hit - .004, hit + .012, hit + .045, math.min(1, hit + .105)),
+    );
+  }
+  return impact;
+}
+
 VoltFrame applyTitanPose(
   GamePose p,
   String action,
@@ -408,6 +455,18 @@ VoltFrame applyTitanPose(
   f['titanPistonR'] = 26 - 8 * math.sin(p.foreR);
   f['titanHammerL'] = hammer;
   f['titanHammerR'] = hammer;
+  f['titanExternalFistL'] = action == 'quick' && t >= .26 && t < 1 ? 1 : 0;
+  f['titanExternalFistR'] =
+      ((action == 'attack' && t >= .22) ||
+              (action == 'quick' && t >= .26) ||
+              (skill && t >= titanSkillRelease)) &&
+          t < 1
+      ? 1
+      : 0;
+  if (action == 'quick') {
+    f['titanHammerL'] = 10 * titanPunchReach(action, t, true);
+    f['titanHammerR'] = 10 * titanPunchReach(action, t, false);
+  }
   f['bodyscaleY'] = 1 - .02 * unit(math.max(0, p.y) / 24);
   f['bodyscaleX'] = 1 + .012 * stance;
   for (final side in [-1, 1]) {
@@ -465,15 +524,16 @@ VoltFrame applyTitanPose(
     trail: {'quick', 'dodge', 'move'}.contains(action)
         ? _hold(t, .1, .27, .6, .94)
         : 0,
-    shockwave: (skill || heavy)
-        ? _ramp(t, release, release + .035) * (1 - _ramp(t, .94, 1))
+    shockwave: heavy
+        ? _ramp(t, titanQuakeRelease, titanQuakeRelease + .035) *
+              (1 - _ramp(t, .94, 1))
         : 0,
     camera: heavy
         ? 1.8 * _hold(t, .62, .65, .8, 1)
         : skill
-        ? .7 * _hold(t, .46, .5, .65, .85)
+        ? .45 * titanPunchImpact(action, t, false)
         : hit * .4,
-    flash: heavy ? .8 * pulse(t, .62, .72) : 0,
+    flash: heavy ? .8 * pulse(t, titanQuakeRelease, .76) : 0,
     smoke: action == 'defeat' ? _hold(t, .2, .4, .85, 1) : charge * .5,
     sparks: action == 'victory' ? pulse(t, .15, .92) : 0,
     energyField: heavy ? charge : 0,
@@ -484,6 +544,7 @@ void blendTitanPose(GamePose pose, GamePose old, double weight) {
   final w = smooth(weight);
   pose.blendFrom(old, w);
   for (final key in pose.extra.keys.toList()) {
+    if (key.startsWith('titanExternalFist')) continue;
     if (!key.startsWith('titan') &&
         !key.startsWith('joint') &&
         !key.startsWith('bodyscale'))
@@ -515,5 +576,20 @@ Offset titanFist(
         arm + fore,
       );
   point = _rotate(point, p.rotation);
+  return origin + Offset(point.dx * facing, point.dy) * scale;
+}
+
+Offset titanWrist(
+  GamePose p,
+  Offset origin,
+  double scale,
+  double facing,
+  bool left,
+) {
+  final arm = left ? p.armL : p.armR;
+  final point = _rotate(
+    Offset(left ? -99 : 99, -55) + _rotate(const Offset(0, 48), arm),
+    p.rotation,
+  );
   return origin + Offset(point.dx * facing, point.dy) * scale;
 }

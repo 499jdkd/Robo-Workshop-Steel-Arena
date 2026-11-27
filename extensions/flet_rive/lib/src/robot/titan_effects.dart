@@ -3,6 +3,172 @@ import 'package:material_ui/material_ui.dart';
 import 'game_motion.dart';
 import 'volt_motion.dart' show VoltFrame;
 import 'titan_motion.dart';
+import 'titan_model.dart';
+import 'titan_strikes.dart';
+
+void _paintTitanFists(
+  Canvas c,
+  VoltFrame frame,
+  GamePose pose,
+  Offset origin,
+  Offset target,
+  double s,
+  double facing,
+  bool reduced,
+) {
+  const gold = Color(0xFFFFCB60),
+      white = Color(0xFFFFF2CD),
+      steel = Color(0xFFBBCED0),
+      dark = Color(0xFF17242E);
+  final p = Paint()..strokeCap = StrokeCap.round;
+  void line(Offset a, Offset b, Color color, double width, [double alpha = 1]) {
+    c.drawLine(
+      a,
+      b,
+      p
+        ..color = color.withValues(alpha: unit(alpha))
+        ..strokeWidth = width * s
+        ..style = PaintingStyle.stroke,
+    );
+  }
+
+  for (final strike in titanFistStrikes(
+    frame,
+    pose,
+    origin,
+    target,
+    s,
+    facing,
+  )) {
+    final emphasis = strike.detached
+        ? smooth((frame.t - .46) / .07) * (1 - smooth((frame.t - .92) / .08))
+        : titanPunchReach(frame.action, frame.t, strike.left);
+    final fistScale = s * (1 + .18 * emphasis);
+    final axis = Offset(
+      -math.sin(strike.rotation) * facing,
+      math.cos(strike.rotation),
+    );
+    final back = strike.tip - axis * 75 * fistScale;
+    if (!strike.detached) {
+      final length = (back - strike.socket).distance;
+      if (length > 4 * s) {
+        line(strike.socket, back, dark, 25);
+        line(strike.socket, back, steel, 16);
+        line(
+          strike.socket + Offset(0, -3 * s),
+          back + Offset(0, -3 * s),
+          white,
+          2.5,
+        );
+        final angle = math.atan2(
+          (back - strike.socket).dy,
+          (back - strike.socket).dx,
+        );
+        c.save();
+        c.translate(strike.socket.dx, strike.socket.dy);
+        c.rotate(angle);
+        for (var i = 1; i <= (reduced ? 2 : 3); i++) {
+          final x = length * i / (reduced ? 3 : 4);
+          c.drawRRect(
+            RRect.fromRectAndRadius(
+              Rect.fromCenter(
+                center: Offset(x, 0),
+                width: 10 * s,
+                height: 29 * s,
+              ),
+              Radius.circular(2 * s),
+            ),
+            p
+              ..style = PaintingStyle.fill
+              ..color = gold,
+          );
+          c.drawLine(
+            Offset(x - 2 * s, -8 * s),
+            Offset(x - 2 * s, 8 * s),
+            p
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2 * s
+              ..color = white,
+          );
+        }
+        c.restore();
+      }
+    } else {
+      c.drawOval(
+        Rect.fromCenter(center: strike.socket, width: 19 * s, height: 27 * s),
+        p
+          ..style = PaintingStyle.fill
+          ..color = dark,
+      );
+      c.drawOval(
+        Rect.fromCenter(center: strike.socket, width: 19 * s, height: 27 * s),
+        p
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3 * s
+          ..color = gold,
+      );
+      if (strike.thrust > 0) {
+        final side = Offset(-axis.dy, axis.dx);
+        final jet = Path()
+          ..moveTo(back.dx + side.dx * 9 * s, back.dy + side.dy * 9 * s)
+          ..lineTo(
+            back.dx - axis.dx * (34 + 8 * math.sin(frame.t * 100)) * s,
+            back.dy - axis.dy * (34 + 8 * math.sin(frame.t * 100)) * s,
+          )
+          ..lineTo(back.dx - side.dx * 9 * s, back.dy - side.dy * 9 * s)
+          ..close();
+        c.drawPath(
+          jet,
+          p
+            ..style = PaintingStyle.fill
+            ..color = gold,
+        );
+        line(back, back - axis * 23 * s, white, 5);
+        for (var i = 1; i <= (reduced ? 2 : 4); i++) {
+          final tail = back - axis * (35 + i * 13) * s;
+          line(tail, tail - axis * 8 * s, steel, 3, .65 / i);
+        }
+      }
+    }
+    drawTitanFistPart(
+      c,
+      pose,
+      strike.tip,
+      fistScale,
+      facing,
+      strike.rotation,
+      left: strike.left,
+    );
+    final hit = strike.impact;
+    if (hit > .01) {
+      c.drawOval(
+        Rect.fromCenter(center: target, width: 54 * s, height: 70 * s),
+        p
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4 * s
+          ..color = gold.withValues(alpha: hit),
+      );
+      for (var i = 0; i < (reduced ? 5 : 10); i++) {
+        final angle = i * math.pi * 2 / (reduced ? 5 : 10);
+        final axis = Offset(math.cos(angle), math.sin(angle));
+        line(
+          target + axis * 15 * s,
+          target + axis * (32 + 28 * hit) * s,
+          i.isEven ? white : gold,
+          i.isEven ? 4 : 2.5,
+          hit,
+        );
+      }
+      c.drawCircle(
+        target,
+        10 * s * hit,
+        p
+          ..style = PaintingStyle.fill
+          ..color = white.withValues(alpha: hit),
+      );
+    }
+  }
+}
 
 /// Mechanical armor and seismic terrain. All loops have a small fixed budget;
 /// no blur, saveLayer, asynchronous particles or Python frame messages.
@@ -16,7 +182,9 @@ void paintTitanEffects(
   double s, {
   double facing = 1,
   bool reduced = false,
+  Rect? viewport,
 }) {
+  if (!s.isFinite || s <= 0 || !floor.isFinite) return;
   final t = frame.t,
       heavy = frame.action == 'ultimate',
       skill = frame.action == 'special';
@@ -81,7 +249,7 @@ void paintTitanEffects(
     }
   }
   // Pressure seal and swarf lift before the physical impact: no electric orb.
-  if (frame.charge > .01) {
+  if (frame.charge > .01 && !skill) {
     final load = frame.charge;
     oval(ground, heavy ? 140 : 86, heavy ? 28 : 16, gold, load * .14);
     for (var i = 0; i < (reduced ? 1 : 3); i++) {
@@ -134,7 +302,7 @@ void paintTitanEffects(
       }
     }
   }
-  if ({'attack', 'quick', 'playful'}.contains(frame.action) &&
+  if (frame.action == 'playful' &&
       pose.weapon.isEmpty &&
       frame.discharge > .02) {
     final fist = titanFist(pose, origin, s, facing, false);
@@ -167,14 +335,21 @@ void paintTitanEffects(
       oval(p, 5 + u * 14, 3 + u * 6, steel, frame.trail * (1 - u) * .4);
     }
   }
-  if ((skill || heavy) && frame.shockwave > .01) {
-    final release = heavy ? .62 : .46;
-    final travel = unit((t - release) / (.9 - release));
-    final end = Offset.lerp(
+  _paintTitanFists(c, frame, pose, origin, target, s, facing, reduced);
+  if (heavy && frame.shockwave > .01) {
+    final travel = unit((t - titanQuakeRelease) / (.9 - titanQuakeRelease));
+    final end = titanWaveFront(
       ground,
-      Offset(target.dx, floor - 2 * s),
-      smooth(travel),
-    )!;
+      target,
+      floor,
+      s,
+      t,
+      facing: facing,
+      viewport: viewport,
+    );
+    final direction = (target.dx - ground.dx).abs() < .001
+        ? facing
+        : (target.dx - ground.dx).sign;
     final envelope = frame.shockwave;
     final waveCount = reduced
         ? 1
@@ -183,7 +358,7 @@ void paintTitanEffects(
         : 2;
     for (var i = 0; i < waveCount; i++) {
       final u = unit(travel - i * .055);
-      final radius = (heavy ? 32 : 18) + (heavy ? 300 : 150) * u;
+      final radius = math.max(0.0, (end.dx - ground.dx).abs() / s - i * 28);
       oval(
         ground,
         radius,
@@ -214,7 +389,7 @@ void paintTitanEffects(
               : 4);
       i++
     ) {
-      final back = i * 22 * facing * s;
+      final back = i * 22 * direction * s;
       final x = end.dx - back;
       final height = (heavy ? 42 : 24) * (1 - i / (heavy ? 10 : 7));
       final shard = Path()

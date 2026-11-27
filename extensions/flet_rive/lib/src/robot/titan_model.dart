@@ -7,7 +7,7 @@ import 'titan_geometry.dart';
 
 /// Native presentation of our authored Titan vector source. The geometry is
 /// compiled by our own source tool, not extracted from or signed as a .riv.
-/// All other characters continue to use their existing Rive artboards.
+/// Volt retains his own renderer; the other characters keep their Rive artboards.
 final _model = _TitanCanvasModel();
 
 /// Caches only immutable local assemblies. Dynamic joints, gaze, glow and
@@ -77,6 +77,36 @@ void drawTitanModel(
   );
 }
 
+/// Draw the exact authored gauntlet, with its knuckles at [tip]. The same
+/// cached assemblies are reused for the attached punches and detachable skill.
+void drawTitanFistPart(
+  Canvas canvas,
+  GamePose pose,
+  Offset tip,
+  double scale,
+  double facing,
+  double rotation, {
+  bool left = false,
+}) {
+  if (!scale.isFinite || scale <= 0 || !tip.dx.isFinite || !tip.dy.isFinite)
+    return;
+  canvas.save();
+  canvas.translate(tip.dx, tip.dy);
+  canvas.scale(facing * scale, scale);
+  canvas.rotate(rotation);
+  _model.draw(
+    canvas,
+    pose,
+    const Offset(0, -75),
+    1,
+    1,
+    const Color(0xFFFFCF64),
+    Offset.zero,
+    root: left ? _model.leftFist : _model.rightFist,
+  );
+  canvas.restore();
+}
+
 class _TitanMaterial {
   _TitanMaterial(this.paint, this.color, this.shader);
   final Paint paint;
@@ -144,6 +174,12 @@ class _TitanCanvasModel {
   static const pictureBudgetBytes = 2 * 1024 * 1024;
   static const rasterBudgetBytes = 16 * 1024 * 1024;
   static const rasterDensity = 3.0;
+  final leftFist = titanGeometryNodes.indexWhere(
+    (n) => n.name == 'Titan piledriver L',
+  );
+  final rightFist = titanGeometryNodes.indexWhere(
+    (n) => n.name == 'Titan piledriver R',
+  );
   final rasterPaint = Paint()..filterQuality = FilterQuality.low;
   bool rasterSupported = true;
   int rasterBytes = 0, rasterizations = 0;
@@ -572,6 +608,7 @@ class _TitanCanvasModel {
     Color accent,
     Offset gaze, {
     bool cacheStaticAssemblies = true,
+    int root = 0,
   }) {
     final paints = materials(accent);
     final recorded = cacheStaticAssemblies ? pictures(accent) : null;
@@ -580,6 +617,12 @@ class _TitanCanvasModel {
     canvas.scale(scale * (facing < 0 ? -1 : 1), scale);
     void node(int index, double inheritedAlpha) {
       final n = titanGeometryNodes[index];
+      if (root == 0 &&
+          ((index == leftFist &&
+                  (pose.extra['titanExternalFistL'] ?? 0) >= .5) ||
+              (index == rightFist &&
+                  (pose.extra['titanExternalFistR'] ?? 0) >= .5)))
+        return;
       final alpha =
           inheritedAlpha *
           value(n.opacityBinding, n.opacity, pose, gaze).clamp(0, 1);
@@ -588,7 +631,7 @@ class _TitanCanvasModel {
       final sy = value(n.scaleYBinding, n.scaleY, pose, gaze);
       if (sx.abs() < .0001 || sy.abs() < .0001) return;
       canvas.save();
-      if (index != 0)
+      if (index != root)
         canvas.translate(
           value(n.xBinding, n.x, pose, gaze),
           value(n.yBinding, n.y, pose, gaze),
@@ -639,7 +682,7 @@ class _TitanCanvasModel {
       canvas.restore();
     }
 
-    node(0, 1);
+    node(root, 1);
     canvas.restore();
   }
 }

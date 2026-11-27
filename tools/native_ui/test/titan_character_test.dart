@@ -295,7 +295,7 @@ void main() {
         scene.dispose();
       }
       File(
-        '../../.cache/titan-v40/raster-quality.json',
+        '../../.cache/titan-v43/raster-quality.json',
       ).writeAsStringSync(jsonEncode(report));
     },
   );
@@ -355,11 +355,38 @@ void main() {
       final picture = recorder.endRecording(),
           image = await picture.toImage(1600, 2760);
       final png = (await image.toByteData(format: ui.ImageByteFormat.png))!;
-      final out = Directory('../../.cache/titan-v40/review')
+      final out = Directory('../../.cache/titan-v43/review')
         ..createSync(recursive: true);
       File(
         '${out.path}/all-actions.png',
       ).writeAsBytesSync(png.buffer.asUint8List());
+      final approvedCodec = await ui.instantiateImageCodec(
+        File('test/fixtures/titan-approved-v42.png').readAsBytesSync(),
+      );
+      final approved = (await approvedCodec.getNextFrame()).image;
+      final before = (await approved.toByteData())!.buffer.asUint8List();
+      final after = (await image.toByteData())!.buffer.asUint8List();
+      var differences = 0;
+      for (var y = 0; y < 2760; y++) {
+        final row = y ~/ 230;
+        if (![3, 4, 5, 7, 8, 9, 10, 11].contains(row) && row != 6) continue;
+        for (var x = 0; x < 1600; x++) {
+          if (row == 6 && x >= 960) continue;
+          final i = (y * 1600 + x) * 4;
+          for (var channel = 0; channel < 4; channel++) {
+            if (before[i + channel] != after[i + channel]) differences++;
+          }
+        }
+      }
+      expect(
+        differences,
+        0,
+        reason:
+            'Approved shield, dodge, focus, dance, jump, surprise, '
+            'victory, defeat and ultimate wind-up retain v42 pixels',
+      );
+      approved.dispose();
+      approvedCodec.dispose();
       final focusRecorder = ui.PictureRecorder(),
           focusCanvas = Canvas(focusRecorder);
       focusCanvas.scale(2);
