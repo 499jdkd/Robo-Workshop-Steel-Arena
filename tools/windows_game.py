@@ -161,7 +161,7 @@ def main():
         else [
             getattr(sys, "_base_executable", sys.executable),
             "-c",
-            "import site,sys,runpy;site.addsitedir(sys.argv[1]);p=sys.argv[2];sys.argv=sys.argv[2:];runpy.run_path(p,run_name='__main__')",
+            "import site,sys,runpy;site.addsitedir(sys.argv[1]);sys.path.insert(0,sys.argv[1]);p=sys.argv[2];sys.argv=sys.argv[2:];runpy.run_path(p,run_name='__main__')",
             str(Path(sys.prefix) / "Lib/site-packages"),
             str(Path(__file__).resolve()),
         ]

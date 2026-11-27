@@ -18,6 +18,7 @@ if __name__ == "__main__":
             os.execv(str(project_python), [str(project_python), str(Path(__file__).resolve()), *sys.argv[1:]])
 
 import flet as ft
+from flet.controls.theme import ThemeSurfaces
 from importlib import import_module
 
 from advertising import BannerFooter
@@ -163,7 +164,8 @@ async def main(page: ft.Page):
     page.bgcolor = BG
     page.theme_mode = ft.ThemeMode.DARK
     session = GameSession(page, demo=demo)
-    page.theme = ft.Theme(color_scheme_seed=session.state.accent)
+    page.theme = ft.Theme(color_scheme_seed=session.state.accent,
+                          surfaces=ThemeSurfaces.TONAL)
     prefs = None if demo else ft.SharedPreferences()
 
     # No network or platform storage RPC is awaited before the first render.

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flet/flet.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Elapsed monotonic time, independent of server latency and phone wall clock.
 class GameCountdown extends StatefulWidget {

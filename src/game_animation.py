@@ -101,7 +101,7 @@ def animated_scene(session, *, arena=False, battle=None, expanded=False, identit
     if phase not in {"idle", "approach", "flight"}:
         animation_battle["turn"] = max(0, battle.get("turn", 0) - 1)
     visible_equipment = state.loadouts.get(robot.id, [])[:2]
-    if arena and robot.id == "volt":
+    if arena and robot.id in {"volt", "titan"}:
         visible_equipment = [item["id"] for item in battle.get("equipment", []) if isinstance(item, dict) and "id" in item][:2]
     enemy_equipment = [item["id"] for item in battle.get("enemy_equipment", []) if isinstance(item, dict) and "id" in item][:2]
     if battle.get("kind") == "human-ranked" and battle.get("enemy_weapon"):

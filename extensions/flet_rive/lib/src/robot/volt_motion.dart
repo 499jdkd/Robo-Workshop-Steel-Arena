@@ -1,7 +1,9 @@
 import 'dart:math' as math;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'game_motion.dart';
 import 'volt_choreography.dart';
+import 'volt_energy.dart';
+import 'volt_storm.dart';
 
 /// Volt is animated from semantic actions on the local Flutter clock. All
 /// values are sampled from absolute time, so a dropped frame cannot accumulate
@@ -34,9 +36,17 @@ class VoltCue {
 
 /// Original coil sounds, placed at mechanical charge/release milestones.
 const voltCues = <String, List<VoltCue>>{
-  'attack': [VoltCue(.22, 'volt_pulse')],
-  'quick': [VoltCue(.12, 'deploy'), VoltCue(.26, 'volt_pulse')],
-  'special': [VoltCue(.05, 'volt_charge'), VoltCue(.46, 'volt_pulse')],
+  'attack': [VoltCue(.22, 'volt_pulse'), VoltCue(.90, 'impact')],
+  'quick': [
+    VoltCue(.12, 'deploy'),
+    VoltCue(.26, 'volt_pulse'),
+    VoltCue(.90, 'impact'),
+  ],
+  'special': [
+    VoltCue(.05, 'volt_charge'),
+    VoltCue(.46, 'ion'),
+    VoltCue(.90, 'impact'),
+  ],
   'guard': [VoltCue(.14, 'shield')],
   'dodge': [VoltCue(.16, 'volt_pulse')],
   'charge': [VoltCue(.15, 'volt_charge'), VoltCue(.52, 'repair')],
@@ -46,7 +56,7 @@ const voltCues = <String, List<VoltCue>>{
     // SceneAudio seeks to the recording's strike; this stays synchronous at
     // every arena speed without introducing a fixed wall-clock delay.
     VoltCue(.62, 'volt_storm'),
-    VoltCue(.67, 'impact'),
+    VoltCue(.90, 'impact'),
   ],
   'victory': [VoltCue(.08, 'victory'), VoltCue(.48, 'volt_pulse')],
   'defeat': [VoltCue(.12, 'volt_shutdown')],
@@ -151,7 +161,7 @@ VoltFrame applyVoltPose(
       f['joint5'] = -.12 * load;
       f['joint6'] = .12 * load;
       charge = load;
-      discharge = _hold(t, .22, .26, .4, .58);
+      discharge = _hold(t, .22, .26, .90, 1);
       light += .6 * load + .55 * discharge;
       core += .4 * load;
       p.focus = load;
@@ -162,7 +172,7 @@ VoltFrame applyVoltPose(
       f['joint2'] = .7 * dash;
       f['joint3'] = -.7 * dash;
       f['jet'] = 1 + .7 * dash;
-      discharge = _hold(t, .26, .3, .4, .54);
+      discharge = _hold(t, .26, .3, .87, 1);
       trail = dash;
       light += .7 * discharge;
       core += .45 * dash;
@@ -178,14 +188,14 @@ VoltFrame applyVoltPose(
       f['joint5'] = -.3 * load;
       f['joint6'] = .3 * load;
       charge = load;
-      discharge = _hold(t, .46, .5, .65, .8);
+      discharge = _hold(t, .46, .5, .89, 1);
       light += .8 * load;
       core += .65 * load;
       p.focus = load;
       p.smile = 1 - load;
       p.eyeY = 1 - .3 * load;
     case 'guard':
-      final hold = _hold(t, 0, .2, .72, 1);
+      final hold = _hold(t, 0, .2, .86, 1);
       p.mode = 3;
       f['joint2'] = .85 * hold;
       f['joint3'] = -.85 * hold;
@@ -220,21 +230,22 @@ VoltFrame applyVoltPose(
       p.eyeY = 1 - .4 * connect;
       p.smile = 1;
     case 'ultimate':
+      final storm = VoltStorm(t);
       final flight = _hold(t, .1, .34, .74, 1);
       final open = _hold(t, .17, .44, .76, .99);
       p.mode = t < .62 ? 4 : 2;
-      f['joint2'] = 1.12 * open;
-      f['joint3'] = -1.12 * open;
-      f['joint4'] = clock * .35 + 7 * t * open;
-      f['joint5'] = -.7 * open;
-      f['joint6'] = .7 * open;
+      f['joint2'] = 1.35 * open;
+      f['joint3'] = -1.35 * open;
+      f['joint4'] = clock * .35 + 13 * t * open;
+      f['joint5'] = -.85 * open;
+      f['joint6'] = .85 * open;
       f['jet'] = 1 + .8 * flight;
-      charge = _hold(t, .12, .57, .62, .78);
-      discharge = _hold(t, .62, .65, .76, .9);
+      charge = storm.charge;
+      discharge = storm.discharge;
       light += .9 * open;
       core += .9 * charge;
-      wave = t > .67 && t < 1 ? _ring(t, .67, 1) : 0;
-      flash = pulse(t, .62, .72);
+      wave = t > .88 && t < 1 ? _ring(t, .88, 1) : 0;
+      flash = storm.ignition;
       sparks = open;
       p.focus = open;
       p.smile = 1 - open;
@@ -386,6 +397,25 @@ VoltFrame applyVoltPose(
     baseHeadY: baseHeadY,
     baseBodyY: baseBodyY,
   );
+  final emitter =
+      {'attack', 'quick', 'special', 'ultimate', 'playful'}.contains(action)
+      ? unit(math.max(charge, discharge))
+      : 0.0;
+  f['voltEmitterTravel'] = -6 - (action == 'ultimate' ? 18 : 12) * emitter;
+  if (action == 'ultimate') {
+    final pressure = VoltStorm(t).pressure;
+    f['joint0'] = f['joint0']! + .025 * pressure * math.sin(clock * 43);
+    f['joint1'] = f['joint1']! - .025 * pressure * math.sin(clock * 43 + .4);
+  }
+  f['voltEmitterGlow'] = emitter * power;
+  f['voltEmitterAimR'] =
+      (action == 'attack'
+          ? 1.4
+          : action == 'quick'
+          ? 1.05
+          : 0) *
+      emitter;
+  f['voltEmitterAimL'] = action == 'attack' ? -.2 * emitter : 0;
   final hit = action == 'guard'
       ? unit(guardImpact ?? .9 * pulse(t, .47, .69))
       : 0.0;
@@ -430,9 +460,11 @@ VoltFrame applyVoltPose(
     sparks: sparks,
     power: power,
     shieldHit: hit,
-    camera: action == 'ultimate' ? unit(discharge * .5 + flash * .5) : hit * .2,
+    camera: action == 'ultimate'
+        ? unit(discharge * .8 + flash * .75 + VoltStorm(t).arrival * .65)
+        : hit * .2,
     cameraZoom: action == 'ultimate' ? unit((baseY - p.y) / 83) : 0,
-    energyField: action == 'ultimate' ? .7 * _hold(t, .23, .48, .62, .82) : 0,
+    energyField: action == 'ultimate' ? .95 * VoltStorm(t).charge : 0,
   );
 }
 
@@ -459,6 +491,7 @@ void blendVoltPose(GamePose pose, GamePose previous, double weight) {
     'joint14',
     'joint15',
     'jet',
+    'voltEmitterGlow',
     ...voltMechanismDefaults.keys,
   ]) {
     final old = previous.extra[key] ?? voltMechanismDefaults[key] ?? 0;
@@ -517,8 +550,38 @@ Offset _rot(Offset point, double angle) => Offset(
 );
 
 class VoltAnchors {
-  const VoltAnchors(this.leftCoil, this.rightCoil, this.core);
-  final Offset leftCoil, rightCoil, core;
+  const VoltAnchors(
+    this.leftCoil,
+    this.rightCoil,
+    this.core, {
+    Offset? leftEmitter,
+    Offset? rightEmitter,
+  }) : leftEmitter = leftEmitter ?? leftCoil,
+       rightEmitter = rightEmitter ?? rightCoil;
+  final Offset leftCoil, rightCoil, core, leftEmitter, rightEmitter;
+}
+
+/// The large charge stays in front of the visor and within a phone scene.
+Offset voltStormCenter(
+  VoltAnchors anchors,
+  VoltFrame frame,
+  double scale, {
+  double facing = 1,
+  Rect? viewport,
+}) {
+  final mid = Offset.lerp(anchors.leftEmitter, anchors.rightEmitter, .5)!;
+  final inset = VoltStorm.boundsRadius * scale + 8;
+  var x = mid.dx + facing * (42 + 104 * frame.cameraZoom) * scale;
+  var y = math.max(mid.dy - 28 * scale, (viewport?.top ?? 0) + inset);
+  if (viewport != null) {
+    x = viewport.width > inset * 2
+        ? x.clamp(viewport.left + inset, viewport.right - inset)
+        : viewport.center.dx;
+    y = viewport.height > inset * 2
+        ? y.clamp(viewport.top + inset, viewport.bottom - inset)
+        : viewport.center.dy;
+  }
+  return Offset(x, y);
 }
 
 /// [origin] is the Robot root, i.e. actor.center / floor+(pose.y-126)*scale.
@@ -545,14 +608,101 @@ VoltAnchors voltAnchors(
           pose.extra[side < 0 ? 'joint0' : 'joint1']!,
         ),
   );
+  Offset emitter(int side) {
+    final crown =
+        Offset(0, -coilLength) +
+        _rot(
+          _rot(
+            Offset(0, (pose.extra['voltEmitterTravel'] ?? -6) - 2),
+            pose.extra[side < 0 ? 'voltEmitterAimL' : 'voltEmitterAimR'] ?? 0,
+          ),
+          pose.extra[side < 0 ? 'joint2' : 'joint3'] ?? 0,
+        );
+    return world(
+      Offset(side * coilX, coilY) +
+          _rot(crown, pose.extra[side < 0 ? 'joint0' : 'joint1'] ?? 0),
+    );
+  }
+
   return VoltAnchors(
     coil(-1),
     coil(1),
     world(_rot(Offset(0, 6), pose.body) + Offset(0, pose.bodyY)),
+    leftEmitter: emitter(-1),
+    rightEmitter: emitter(1),
   );
 }
 
-/// At most 8 bolts × 12 segments; no particles, timers, saveLayer or blur
+/// A pair of analytic outlines make a short displacement visible on a phone.
+/// They are lightweight motion echoes, not repeated recordings of the model.
+void paintVoltMotionEchoes(
+  Canvas canvas,
+  VoltFrame frame,
+  Offset origin,
+  double scale, {
+  double facing = 1,
+  bool reduced = false,
+}) {
+  if (reduced ||
+      scale <= 0 ||
+      !scale.isFinite ||
+      frame.trail <= .04 ||
+      !{'quick', 'dodge'}.contains(frame.action))
+    return;
+  final direction = frame.action == 'dodge' ? -facing : facing;
+  final energy = VoltEnergyPainter(canvas, scale, frame.t);
+  for (var i = 2; i >= 1; i--) {
+    final center =
+        origin + Offset(-direction * (30 + i * 28) * scale, i * 3 * scale);
+    final alpha = frame.trail * (.24 - i * .055);
+    final head = RRect.fromRectAndRadius(
+      Rect.fromCenter(
+        center: center + Offset(0, -85 * scale),
+        width: 107 * scale,
+        height: 77 * scale,
+      ),
+      Radius.circular(20 * scale),
+    );
+    final body = RRect.fromRectAndRadius(
+      Rect.fromCenter(
+        center: center + Offset(0, 8 * scale),
+        width: 125 * scale,
+        height: 112 * scale,
+      ),
+      Radius.circular(27 * scale),
+    );
+    final paint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = VoltEnergyPainter.cyan.withValues(alpha: alpha * .45);
+    canvas.drawRRect(head, paint);
+    canvas.drawRRect(body, paint);
+    paint
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = math.max(1, 2 * scale)
+      ..color = VoltEnergyPainter.cyan.withValues(alpha: alpha);
+    canvas.drawRRect(head, paint);
+    canvas.drawRRect(body, paint);
+    for (final side in [-1, 1]) {
+      energy.line(
+        center + Offset(side * 76, -105) * scale,
+        center + Offset(side * 76, -43) * scale,
+        9,
+        VoltEnergyPainter.cyan,
+        alpha,
+      );
+      energy.line(
+        center + Offset(side * 43, 73) * scale,
+        center + Offset(side * 43 - direction * 17, 91) * scale,
+        7,
+        VoltEnergyPainter.cyan,
+        alpha,
+      );
+    }
+  }
+}
+
+/// At most 8 bolts of 12 segments plus bounded beam/orb paths; no extra timers,
+/// saveLayer or blur
 /// filters are allocated. Reduced effects keep the discharge readable with
 /// fewer branches and no screen wash, idle sparks or smoke.
 void paintVoltEffects(
@@ -564,10 +714,13 @@ void paintVoltEffects(
   double scale, {
   bool reduced = false,
   double facing = 1,
+  bool preview = false,
+  Rect? viewport,
 }) {
   if (scale <= 0 || !scale.isFinite) return;
   const cyan = Color(0xFF45DFFF), white = Color(0xFFE8FCFF);
   final t = frame.t;
+  final energy = VoltEnergyPainter(canvas, scale, t, reduced: reduced);
   final paint = Paint()..strokeCap = StrokeCap.round;
   var boltBudget = reduced ? 4 : 8;
   void line(
@@ -606,22 +759,6 @@ void paintVoltEffects(
         ..style = PaintingStyle.stroke
         ..strokeWidth = math.max(.6, width * scale)
         ..color = cyan.withValues(alpha: unit(opacity)),
-    );
-  }
-
-  void glow(Offset center, double radius, double strength) {
-    if (strength <= .01) return;
-    canvas.drawCircle(
-      center,
-      radius * scale,
-      paint
-        ..style = PaintingStyle.fill
-        ..color = cyan.withValues(alpha: .13 * strength),
-    );
-    canvas.drawCircle(
-      center,
-      radius * .42 * scale,
-      paint..color = white.withValues(alpha: .75 * strength),
     );
   }
 
@@ -675,47 +812,62 @@ void paintVoltEffects(
     );
   }
 
-  final left = anchors.leftCoil, right = anchors.rightCoil;
+  final left = anchors.leftEmitter, right = anchors.rightEmitter;
+  final storm = frame.action == 'ultimate';
+  final skill = frame.action == 'special';
+  final mid = Offset.lerp(left, right, .5)!;
+  // Fit the complete capacitor inside a short phone scene during flight.
+  final crown = storm
+      ? voltStormCenter(
+          anchors,
+          frame,
+          scale,
+          facing: facing,
+          viewport: viewport,
+        )
+      : Offset(
+          mid.dx,
+          math.max(
+            mid.dy - (skill ? 34 : 0) * scale,
+            (skill ? 46 : 0) * scale + 8,
+          ),
+        );
+  final flight = unit(
+    (t -
+            (storm
+                ? .62
+                : skill
+                ? .46
+                : .22)) /
+        (.9 -
+            (storm
+                ? .62
+                : skill
+                ? .46
+                : .22)),
+  );
+  final impact = pulse(t, .86, 1);
   if (frame.energyField > .01) {
     for (var i = 0; i < (reduced ? 1 : 3); i++) {
       final u = (t * 2 + i / 3) % 1;
       ring(
-        anchors.core + Offset(0, (u - .5) * 145 * scale),
-        72 + 11 * math.sin(u * math.pi),
-        frame.energyField * .28 * math.sin(u * math.pi),
+        anchors.core + Offset(0, (u - .5) * 160 * scale),
+        126 + 18 * math.sin(u * math.pi),
+        frame.energyField * .7 * math.sin(u * math.pi),
         squash: .38,
-        width: 1.2,
+        width: 2.8,
       );
     }
   }
-  final mid = Offset.lerp(left, right, .5)!;
-  final crown =
-      mid +
-      Offset(
-        0,
-        -(frame.action == 'ultimate'
-                ? 38
-                : frame.action == 'special'
-                ? 20
-                : 0) *
-            scale,
-      );
-  glow(left, 15 + frame.charge * 7, frame.coilGlow);
-  glow(right, 15 + frame.charge * 7, frame.coilGlow);
-  glow(anchors.core, 21 + frame.charge * 11, frame.coreGlow);
   if (frame.charge > .02) {
-    bolt(
-      left,
-      right,
-      frame.charge,
-      0,
-      width: frame.action == 'ultimate' ? 3.5 : 2,
-      bow: frame.action == 'ultimate'
-          ? 38
-          : frame.action == 'special'
-          ? 20
-          : 0,
-    );
+    energy.transfer(anchors.core, left, right, frame.charge * .8);
+    if (storm || skill) {
+      bolt(left, crown, frame.charge, 0, width: storm ? 6.5 : 2.8, bow: 12);
+      bolt(right, crown, frame.charge, 1, width: storm ? 6.5 : 2.8, bow: 12);
+      if (!skill) energy.capacitor(crown, frame.charge, storm: storm);
+    } else {
+      bolt(left, right, frame.charge * .7, 0, width: 2.4);
+    }
     if (frame.action == 'charge') {
       bolt(mid, anchors.core, frame.charge * .8, 5, width: 1.8);
       for (var i = 0; i < (reduced ? 1 : 3); i++) {
@@ -730,132 +882,119 @@ void paintVoltEffects(
       }
     }
   }
-  if (frame.discharge > .02) {
-    final storm = frame.action == 'ultimate';
-    final start = frame.action == 'attack' || frame.action == 'quick'
-        ? right
-        : crown;
-    bolt(
-      start,
-      target,
-      frame.discharge,
-      1,
-      width: storm ? 5 : 2.7,
-      spread: storm ? 17 : 8,
+  if (skill) energy.skillLens(crown, frame.charge, frame.discharge);
+  if (frame.action == 'attack' || frame.action == 'quick') {
+    energy.muzzle(
+      right,
+      frame.charge,
+      frame.discharge * (1 - flight * .6),
+      facing,
     );
-    if (storm || frame.action == 'special') {
-      // Both articulated masts feed a node above the visor; the face stays
-      // readable instead of being crossed by a generic muzzle-to-target beam.
+  }
+  if (frame.action == 'quick') {
+    energy.dashContact(
+      anchors.core + Offset(facing * 84, -18) * scale,
+      frame.trail * (1 - _ramp(t, .48, .85)),
+      facing,
+    );
+  }
+  if (frame.discharge > .02) {
+    if (frame.action == 'attack') {
+      energy.pulse(right, target, flight, frame.discharge);
+    } else if (frame.action == 'quick') {
+      energy.pulse(
+        right,
+        target,
+        unit((t - .42) / .48),
+        frame.discharge * _ramp(t, .4, .48),
+      );
+    } else if (storm || skill) {
+      if (skill) {
+        energy.skillBeam(crown, target, _ramp(t, .46, .76), frame.discharge);
+      } else {
+        energy.beam(
+          crown,
+          target,
+          storm ? VoltStorm(t).extension : _ramp(t, .46, .89),
+          frame.discharge,
+          storm: storm,
+        );
+      }
       bolt(
         left,
         crown,
-        frame.discharge * .8,
+        frame.discharge * .85,
         2,
-        width: storm ? 3 : 1.8,
-        bow: 8,
+        width: storm ? 6 : 2.5,
+        bow: 10,
       );
       bolt(
         right,
         crown,
-        frame.discharge * .8,
+        frame.discharge * .85,
         3,
-        width: storm ? 3 : 1.8,
-        bow: 8,
+        width: storm ? 6 : 2.5,
+        bow: 10,
       );
-      glow(crown, storm ? 16 : 10, frame.discharge);
-    }
-    if (storm && !reduced) {
-      for (var i = 0; i < 3; i++) {
-        final end =
-            target +
-            Offset((i - 1) * 36 * scale, (i.isEven ? -1 : 1) * 22 * scale);
-        bolt(
-          crown + Offset((i - 1) * 16 * scale, -20 * scale),
-          end,
-          frame.discharge * .72,
-          6 + i,
-          width: 2.5,
-          spread: 18,
-        );
+      if (storm) {
+        final blast = VoltStorm(t).ignition;
+        energy.impact(crown, blast, unit((t - .62) / .15), storm: true);
+        if (!reduced) {
+          for (var i = 0; i < 3; i++) {
+            bolt(
+              crown,
+              Offset.lerp(crown, target, flight)! +
+                  Offset((i - 1) * 34, (i.isEven ? -1 : 1) * 25) * scale,
+              frame.discharge * .8,
+              6 + i,
+              width: 3.6,
+              spread: 19,
+            );
+          }
+        }
       }
+    } else {
+      bolt(right, target, frame.discharge, 1, width: 3.2);
     }
-    glow(target, storm ? 39 : 17, frame.discharge);
-    ring(
-      target,
-      (storm ? 45 : 21) * frame.discharge,
-      frame.discharge * .8,
-      width: storm ? 3 : 1.5,
-    );
+    if ({'attack', 'quick', 'special', 'ultimate'}.contains(frame.action)) {
+      energy.impact(
+        target,
+        impact * frame.discharge,
+        unit((t - .86) / .14),
+        storm: storm,
+      );
+    }
   }
   if (frame.shield > .01) {
-    final center = anchors.core + Offset(0, -18 * scale);
-    final radius = 110 * frame.shield;
-    Offset surface(double angle) {
-      final front = math.pow(math.max(0, math.cos(angle) * facing), 8);
-      final deform = 1 - .14 * frame.shieldHit * front;
-      final flow = 1 + .012 * math.sin(angle * 4 + t * 25);
-      return center +
-          Offset(math.cos(angle), math.sin(angle) * 1.08) *
-              radius *
-              scale *
-              deform *
-              flow;
-    }
-
-    final shell = Path();
-    final segments = reduced ? 16 : 28;
-    for (var i = 0; i <= segments; i++) {
-      final point = surface(i / segments * math.pi * 2);
-      if (i == 0) {
-        shell.moveTo(point.dx, point.dy);
-      } else {
-        shell.lineTo(point.dx, point.dy);
-      }
-    }
-    shell.close();
-    canvas.drawPath(
-      shell,
-      paint
-        ..style = PaintingStyle.fill
-        ..color = cyan.withValues(
-          alpha: (.045 + .07 * frame.shieldHit) * frame.shield,
-        ),
+    energy.shield(
+      anchors.core + Offset(0, -18 * scale),
+      frame.shield,
+      frame.shieldHit,
+      facing,
+      preview: preview,
     );
-    canvas.drawPath(
-      shell,
-      paint
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = (1.8 + 1.6 * frame.shieldHit) * scale
-        ..color = cyan.withValues(alpha: frame.shield * .75),
-    );
-    final count = reduced ? 2 : 5;
-    for (var i = 0; i < count; i++) {
-      final angle = i * math.pi * 2 / count + t * 3;
-      final a = surface(angle), b = surface(angle + .42);
-      bolt(a, b, frame.shield * .7, i, width: 1.2, spread: 3);
-    }
-    if (frame.shieldHit > .01) {
-      final contact = surface(facing < 0 ? math.pi : 0);
-      glow(contact, 12 + 8 * frame.shieldHit, frame.shieldHit);
-      ring(
-        contact,
-        9 + 24 * (1 - frame.shieldHit),
-        frame.shieldHit,
-        width: 2.2,
-      );
-      bolt(contact, right, frame.shieldHit * .75, 7, width: 1.5, spread: 5);
-      if (!reduced)
-        bolt(contact, left, frame.shieldHit * .5, 8, width: 1.1, spread: 4);
-    }
   }
   if (frame.trail > .01) {
     for (var i = 0; i < (reduced ? 2 : 4); i++) {
       final point =
           anchors.core +
-          Offset(-facing * (28 + i * 16) * scale, (i - 1.5) * 10 * scale);
+          Offset(
+            -facing *
+                (frame.action == 'dodge' ? -1 : 1) *
+                (28 + i * 16) *
+                scale,
+            (i - 1.5) * 10 * scale,
+          );
       line(
         point,
-        point + Offset(-facing * (20 + i * 4) * scale, 0),
+        point +
+            Offset(
+              -facing *
+                  (frame.action == 'dodge' ? -1 : 1) *
+                  (20 + i * 4) *
+                  scale,
+              0,
+            ),
         2.5 - i * .35,
         frame.trail * (.65 - i * .12),
       );
@@ -864,7 +1003,7 @@ void paintVoltEffects(
   if (frame.shockwave > 0) {
     ring(
       Offset(target.dx, ground),
-      20 + 155 * frame.shockwave,
+      20 + (storm ? 260 : 155) * frame.shockwave,
       (1 - frame.shockwave) * .85,
       squash: .3,
       width: 4 * (1 - frame.shockwave) + 1,
@@ -872,7 +1011,7 @@ void paintVoltEffects(
     if (!reduced)
       ring(
         Offset(target.dx, ground),
-        15 + 110 * frame.shockwave,
+        15 + (storm ? 195 : 110) * frame.shockwave,
         (1 - frame.shockwave) * .5,
         squash: .3,
         width: 1.5,
@@ -881,10 +1020,10 @@ void paintVoltEffects(
   if (!reduced && frame.flash > .01) {
     canvas.drawCircle(
       target,
-      (38 + frame.flash * 65) * scale,
+      (storm ? 70 + frame.flash * 145 : 38 + frame.flash * 65) * scale,
       paint
         ..style = PaintingStyle.fill
-        ..color = white.withValues(alpha: .14 * frame.flash),
+        ..color = white.withValues(alpha: (storm ? .18 : .14) * frame.flash),
     );
   }
   if (!reduced && frame.sparks > .01) {

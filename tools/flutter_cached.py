@@ -10,7 +10,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-SDK = Path.home() / "flutter/3.44.8"
+SDK = Path.home() / "flutter/3.47.9"
 
 
 def command():
@@ -18,7 +18,7 @@ def command():
     snapshot = SDK / "bin/cache/flutter_tools.snapshot"
     packages = SDK / "packages/flutter_tools/.dart_tool/package_config.json"
     if not all(p.is_file() for p in (runtime, snapshot, packages)):
-        raise RuntimeError("Flutter 3.44.8 must be installed and initialized first")
+        raise RuntimeError("Flutter 3.47.9 must be installed and initialized first")
     return [str(runtime), f"--packages={packages}", str(snapshot)]
 
 

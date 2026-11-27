@@ -37,7 +37,7 @@ def preview_controls(session, identity):
         ("ultimate", "Супер", "gold", ft.Icons.AUTO_AWESOME_ROUNDED),
         ("guard", "Защита", "green", ft.Icons.SHIELD_ROUNDED),
     ]
-    if identity == "volt":
+    if identity in {"volt", "titan"}:
         actions += [
             ("quick", "Быстрый", "blue", ft.Icons.BOLT_ROUNDED),
             ("dodge", "Уворот", "blue", ft.Icons.DOUBLE_ARROW_ROUNDED),

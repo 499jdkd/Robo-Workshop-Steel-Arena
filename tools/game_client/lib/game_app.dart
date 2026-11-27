@@ -1,6 +1,6 @@
 import 'package:flet/flet.dart';
 import 'package:flet_rive/flet_rive.dart' as robot;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'frame_budget.dart';
 import 'profile_report.dart';
 

@@ -1,0 +1,1578 @@
+{
+  "build": 42,
+  "version_name": "0.2.0",
+  "status": "local-validation-passed",
+  "baseline_commit": "72a1cce81e21196c15577e8772f0361f9a9ccc48",
+  "scope": "Titan character design, native animation and original audio; compatible framework update",
+  "apk": {
+    "apk": "C:\\Clicker\\build\\apk-game-v42\\clicker.apk",
+    "bytes": 182439137,
+    "sha256": "89dfec6e0011e24a6daf9ff930902125fdef7578d64bcaf3300dc4d47678ffc8",
+    "version_code": 42,
+    "certificate_sha256": "67f16d1bdbaa503c69f514076d056a21a14b5c7e9db7e00b3b485491f9421e85",
+    "modules": 49,
+    "published_rive_bytes": 850270,
+    "sound_assets": 54,
+    "native_libraries_16kb": 128,
+    "abis": 3,
+    "test_ads": true,
+    "phone_tested": false,
+    "arena_url": "https://robo-workshop-arena.onrender.com"
+  },
+  "framework": {
+    "flet_python": "1.1.2",
+    "flet_dart": "1.1.2",
+    "flutter": "3.47.9",
+    "dart": "3.13.7",
+    "material_ui": "1.11.1",
+    "newer_transitives_blocked_by_upstream_constraints": 13,
+    "python_runtime": "3.14.10",
+    "minimum_android_sdk": 24,
+    "target_android_sdk": 36
+  },
+  "character": {
+    "concept": "hydraulic siege colossus with long pile-driver arms and folding armored bastion",
+    "rml_shapes": 396,
+    "nodes": 518,
+    "unique_paths": 198,
+    "materials": 173,
+    "rml_sha256": "5831326ba20a18d670f5fe775ae1503210c8745b442fc981203f559c490113e0",
+    "authored_sequences": 18,
+    "ultimate_showcase_seconds": 3.35,
+    "additional_audio_bytes": 332864,
+    "shared_signed_rive_unchanged": true,
+    "other_artboards_preserved": 31,
+    "other_portraits_preserved": 31,
+    "old_audio_files_preserved": 49,
+    "damage_timing_rules_storage_and_server_unchanged": true
+  },
+  "source_and_package": {
+    "build": 42,
+    "status": "passed",
+    "baseline": "72a1cce81e21196c15577e8772f0361f9a9ccc48",
+    "physical_android_tested": false,
+    "scope": {
+      "artboards_and_models": {
+        "Artboard": {
+          "preserved_count": 31,
+          "preserved": {
+            "Spark": "809115693c93b9fe042629753725bd5b1117c440ec4f940ac3ee3a37f34e2693",
+            "volt": "43bd4f1d26a778f6bb99d0ec5348bebd6d0b082d3f9110a3d92e40a39f414e04",
+            "flora": "d2c9255362abc7cd3244eced96a1afce4553c78325a9b6f9d36c1cde6910c9a9",
+            "forge": "5ce9b46d10135b5a4d802a6bf30a96a191177e15865d9037bcb8c778baaa0157",
+            "nova": "981b3adc5ca75b877475c7d6aba9375c091e4a70ba4862c00cf4dd1379fa5598",
+            "glacier": "ba7c4d9f56624db4d5f4d4badfe2730f06e89afcbef7a94056eba8258b8d0eae",
+            "aegis": "72652dd633521b76b85a6d5f43c9473b339c9ab4de17773bec4683fced1f61da",
+            "solar": "0c3da1754c7ce489fb1b5ed8c268dc511ac8a71ffaa9264fdc316f5339ee9a18",
+            "arachna": "6d764dfc1b45e06544e948fbf3425eacc6c0df9881769a734732ac540289165b",
+            "phantom": "0f46aa68fa773a76c9503ef93dfe1ffddf9ea54365cd0c09d2781aebc663bd74",
+            "falcon": "f2c48d05cdfea0d6044aa89a8e5e501e5c74fd235de94008babf46cb309febb4",
+            "cyclops": "b1bbc86cf44e82be506a4afaee2eac9951895cc5937d9f9ca8de675b51f17f4f",
+            "medic": "ee5c1a7166142349b788539f81e421fe7522fddf78ac98b29289d895c17e033f",
+            "atlas": "88d32ead996aa8f6503247a06a063e68cce0c0724f5764ecb741c6c8f8012be8",
+            "cerberus": "85efd81069af933f7532847fd71203ed8bef148b46bf3c75a365596a52fb2ad7",
+            "cobra": "fbc522a5e567e173bc9af2bb87632acb9b19d1f11327d94e0b75096c80950ef0",
+            "phoenix": "06be9bb9bba1c355ab53164ec3d0e292b971acb1a1118ffbcc93241a3da12137",
+            "driller": "c251261cbb4061223289c700227e4845e287dd1f16c526dc309503b747aabd62",
+            "ninja": "868ecacb4051715d48b0c47323ce56e1e71b3e185dd508faca99e871bd42a17b",
+            "specter": "c0895f1f7319916e8569019c5980d36588fe4097206acc5b603c6d0b706c1abc",
+            "magneto": "195c5db8fdf8b4da1d9584d1e43b5fced9ec467977ff5a84b8cbf2c4d798d3e4",
+            "rocketeer": "87e8f62bd431c8f5f74b0af1e33b5d9dcdea418c4fb3606c370e304a5e9363ac",
+            "octopus": "73e5126f5c970c9f3fe0d7e3c79114a1dcb0a61d3eb6400a800526bd0381ca1a",
+            "scarab": "85cf8b2602958b7e4ff1671da445eb4193be7d65627adfe4a3eb4bc0b5d5ff48",
+            "orbit": "f2ef812a1ca4ec42ee38dbf9dc33303ab50fa4a460ddf57f87b5c52e040e7b0a",
+            "guardian": "79942c0832ab9b80a087fb5d5a7b819639e8d7903bcd10f68cb4ffc32b27c374",
+            "goliath": "604cb3933de5d52a6c4df0909e2a2976f4c6044e91f84631ec48e8918bef064b",
+            "chronos": "f198d266823b0a4d95b21d81001317656dce004049980fe1e4de6375e752773f",
+            "omega": "84c381dd9bfe504ea3e8362ae7df8423f29e6a516cc5efce524a63ef735011fe",
+            "storm": "f9541c6ea1dee53cbc58888daaf8edcf5ba88cfcbad4cd9f4ec8fd58e3604aab",
+            "chameleon": "6d10a3512cb5073683536382c821fa1b742dd465b58d2f641b4559275027bee7"
+          }
+        },
+        "ViewModel": {
+          "preserved_count": 31,
+          "preserved": {
+            "Motion_spark": "33e35e54a13ef9eda67441f791841c51218f89104c24524ff670ec9f53150965",
+            "Motion_volt": "e5e21c4931e8dc5b3cb22fc04c6749c39856083131f6e086b37ee2b251053aab",
+            "Motion_flora": "ba49239a8b941e2899ec6c1bd43b1904b90374a8ec76d067e3b5060ac6482acb",
+            "Motion_forge": "9a6995069c7887cf2a6a91a2076bce4b5a45e29eca2e0c7ed7ba5d74d12bd9e0",
+            "Motion_nova": "ef878c82a55725585207ec21d33e7caedeaac73f7ccae43d0361723c5f2de22c",
+            "Motion_glacier": "e43baad1f469d8390084de50f562f83e993b17dc60a0363e146e9bb9c6e3a30a",
+            "Motion_aegis": "96c24bb5366fd0984eb6bffaafd1919858a3b18311275c6683c56d93102c904f",
+            "Motion_solar": "62b563da7aa5e197306deb0d14a47edaf9c7aac95041e071675922a33c675267",
+            "Motion_arachna": "1116e6ba486992f55e3cb4ba6b669bc38edee3c594ff8207298d91b1fb880c6d",
+            "Motion_phantom": "4d612844abef9662358bd800f1de0f9492b3089c615cef8356726d458a7e197b",
+            "Motion_falcon": "d8c06b37a5e23f03ba3c757be685806b8ff5bbbfca1d152ba300c43119e510a3",
+            "Motion_cyclops": "f418bc6409c0da09722a039307af97621dabba3e2d3d6c52e9e4d2c0123d568d",
+            "Motion_medic": "1d5cef4efe58806569c32d94d155e2c0490bcc267e2afd93493cd272b4972cb5",
+            "Motion_atlas": "b3a0126aaa3ee85abb93306f646be408fe911d82887593e9ee70043d12f2b684",
+            "Motion_cerberus": "393e4e7291170639281c5d230cf4ab01e962895e3da4eb05386e4161aeb9579c",
+            "Motion_cobra": "2eb7549a7dcb45f80e0da1845a13b7ac9beb0e3ca1f32e9a8f16922694183c3f",
+            "Motion_phoenix": "31dbb434f0624a6ac9413be60018cd8c5fd2b2ee053076d0dd7fe79509ba2782",
+            "Motion_driller": "7d0745e81db986bfcb1e80c5fdcb698b784c2bb3e48c552a3299ba4403d877e0",
+            "Motion_ninja": "655cdfbafdaf3caa79a292289c212f165c410b8c3ee560b981985ae9cb997c50",
+            "Motion_specter": "20013c102bb6e34e19304b8049cd2b255b22d5d1572d76483399921f58d7d4bd",
+            "Motion_magneto": "72f59cfd0438e5e16113ee8d1f299b1e2ad01b4bf1f7727ef561f5dba3908319",
+            "Motion_rocketeer": "bbbb966310ae0f663cd13afa1541196130ddef3d28828bf10439741842aa37a8",
+            "Motion_octopus": "af37c90ee7f54667ad1393b86b7bb5e14dcf4bfbc885d212caf89d6dcc737c5d",
+            "Motion_scarab": "d4321016908a29f054f2ad88cc20effce69307b2103ee2fa29a62dc75fe317c9",
+            "Motion_orbit": "7f7f1e637c0727872a7a388eeef363efc7d5d1772f717202d31178b6dd4305e4",
+            "Motion_guardian": "c03b07866864ed25b590149223b1887dac6674652fe09865b881dd046588cf80",
+            "Motion_goliath": "8b2819ad73295965505c1dd449b73022d6e5286957badced4cd4c905514f486c",
+            "Motion_chronos": "f12973262b0b3a3fc6754589a99f9d3a2d7d59beef55ff1fc4ee4abe5d5aa770",
+            "Motion_omega": "cb8f33d8d1127e3ad59aec01f22af1bf5aa59718f5276b25735e3876afb7539f",
+            "Motion_storm": "7e2d56449d10827139da4571c529e03e140bf738533f9308c59e0037ec99525a",
+            "Motion_chameleon": "c440a446574b37b618fcffea9946b0bf63ab8299517ab03e41b349c60dc7547e"
+          }
+        }
+      },
+      "other_ability_rows": 31,
+      "other_portraits": {
+        "spark": {
+          "sha256": "74bd05558b0b9746c267e277e0ee24e319403008af06d79df1aac99ff47b0776",
+          "bytes": 33139,
+          "unchanged": true
+        },
+        "volt": {
+          "sha256": "000c99ba7b3d029ebe7b9e5236422652a5a4121ee9fe629ba1a9e0b0de5d49d4",
+          "bytes": 122898,
+          "unchanged": true
+        },
+        "flora": {
+          "sha256": "255bbd364861128e35c829a10380708de8f4bcf4f8641a2e2875da81238482c1",
+          "bytes": 23007,
+          "unchanged": true
+        },
+        "forge": {
+          "sha256": "ab43206471c11f1abe0ae04206a39b600671a1d6721a2e3762d0a29d385e1e24",
+          "bytes": 56028,
+          "unchanged": true
+        },
+        "nova": {
+          "sha256": "097816495edf36ca5a9a52c0c26c75554175dbfc92df1648b5ff813b22a5b749",
+          "bytes": 12580,
+          "unchanged": true
+        },
+        "glacier": {
+          "sha256": "f753b34e997a0423f329e4ef612d8c58d6ad369df6f939f9899a866e1859c4df",
+          "bytes": 7768,
+          "unchanged": true
+        },
+        "aegis": {
+          "sha256": "3934ac780ec637f3ff41086e7360804ce4aec9d56e19320409f9e04d426f679d",
+          "bytes": 41348,
+          "unchanged": true
+        },
+        "solar": {
+          "sha256": "25af15ff3a2932b8c36c0b8580657bdd19f4333f1f4f947946e3cafc50e1b453",
+          "bytes": 14065,
+          "unchanged": true
+        },
+        "arachna": {
+          "sha256": "043f44b58a4ad3b69e996403fb362a0c000dd1d56389c524ae3e4240fc603181",
+          "bytes": 24842,
+          "unchanged": true
+        },
+        "phantom": {
+          "sha256": "b8b286b8fb8531247b359fe515d4f3eefb185b105c2a9df338d918b5b5f0dd93",
+          "bytes": 6997,
+          "unchanged": true
+        },
+        "falcon": {
+          "sha256": "265157a5d4ccdf46775c03c3f2c36681d214adb8caf19fe46391cc42aba3d1b7",
+          "bytes": 13058,
+          "unchanged": true
+        },
+        "cyclops": {
+          "sha256": "0e2c5ad564559a583d3b5d045afa942b49a840f1988c231ffe75371312fa487d",
+          "bytes": 23279,
+          "unchanged": true
+        },
+        "medic": {
+          "sha256": "43dccd65bfc67de01d70170eece5bee341c95330e16b3fb99dde54fa0212995e",
+          "bytes": 13442,
+          "unchanged": true
+        },
+        "atlas": {
+          "sha256": "48a9195fa1220ab486bc2708f3c899470adae80daf6d36b15b029ff9e07f282d",
+          "bytes": 23738,
+          "unchanged": true
+        },
+        "cerberus": {
+          "sha256": "5cd482bd19c563ca642e15e7d3d3eec3630807a577279eb14f1aa46ce8d699da",
+          "bytes": 21721,
+          "unchanged": true
+        },
+        "cobra": {
+          "sha256": "e8f424c4cfc505a63fff2eeb040e82cf92e81311a586a3532ead9a265003ad4e",
+          "bytes": 11397,
+          "unchanged": true
+        },
+        "phoenix": {
+          "sha256": "9a6b6503587d10bfcfa5342ae94cd5e1a36ec7812c06b73d7af61ee417a7f3d4",
+          "bytes": 12578,
+          "unchanged": true
+        },
+        "driller": {
+          "sha256": "d2cb6604b26b9b6b9ee7d6927f907f6c7688fede2e4ee3c567abc0195335effc",
+          "bytes": 42243,
+          "unchanged": true
+        },
+        "ninja": {
+          "sha256": "9006375b72b8325bd3d54028eb5b85c1de3cb5b882f458a542f98caeee4840b5",
+          "bytes": 22034,
+          "unchanged": true
+        },
+        "specter": {
+          "sha256": "e4a4c6c72a338ba1101ed19600346c656757b1bdb74354c55bf7356a2641e0b6",
+          "bytes": 9814,
+          "unchanged": true
+        },
+        "magneto": {
+          "sha256": "f1b6a98e273ef508f7ce229b73c3a5203a7d619765eb04209ed56a47ea325587",
+          "bytes": 8686,
+          "unchanged": true
+        },
+        "rocketeer": {
+          "sha256": "15aa9753999c2b39a56e9013e550d4f58d27b7c4504059882a6a956a90d920c8",
+          "bytes": 44370,
+          "unchanged": true
+        },
+        "octopus": {
+          "sha256": "96c3f1127fbcd0c19581cd3fb943b25192c7a80eea8a259471d134c89e170880",
+          "bytes": 20458,
+          "unchanged": true
+        },
+        "scarab": {
+          "sha256": "9f7cdabd8e5bf78d9d47a9a8994908be95245e5834520d786aae26cc58575d13",
+          "bytes": 20578,
+          "unchanged": true
+        },
+        "orbit": {
+          "sha256": "21cb0cc32e8221c7010007b812e47f4297110ef6b8da5010ebe3efaff70ddf3d",
+          "bytes": 11104,
+          "unchanged": true
+        },
+        "guardian": {
+          "sha256": "cbfdc5bfbe8157b6493b8d84271216f5af603b0302e14366bd77a5237bdf7abd",
+          "bytes": 22223,
+          "unchanged": true
+        },
+        "goliath": {
+          "sha256": "068176d64c87f45030e436f81dd3fb8a8911866aa8391e654f74be8742bedb89",
+          "bytes": 28637,
+          "unchanged": true
+        },
+        "chronos": {
+          "sha256": "5f044d19e293c695aa4d56c30d339df84d5612a9243262ec5f3f6bc74cba149f",
+          "bytes": 15015,
+          "unchanged": true
+        },
+        "omega": {
+          "sha256": "40261fade7c94bad7485c9b2ca3929547fb3fa20718f3be7b6887884d9d71112",
+          "bytes": 28771,
+          "unchanged": true
+        },
+        "storm": {
+          "sha256": "b9833a51b9dc257f1043ad5bd9c42e12efa5757ee01c52af867eb3dac8215467",
+          "bytes": 10705,
+          "unchanged": true
+        },
+        "chameleon": {
+          "sha256": "64a5f2a1d425a25a1cc448b9385261a6dd1103cb36d65ce5b8917b6319eb5181",
+          "bytes": 21956,
+          "unchanged": true
+        }
+      },
+      "preserved_audio": {
+        "aim.wav": {
+          "sha256": "b6dd187d16b50823936b79bfbfba8d0f490117f9a0dac37c50f0b73a874e9c89",
+          "bytes": 21212,
+          "unchanged": true
+        },
+        "blaster.wav": {
+          "sha256": "81ce1bccd685deaa82bef0ad586a7e881c6f08adf5fe821642046c6bb35bfd14",
+          "bytes": 17684,
+          "unchanged": true
+        },
+        "cryo.wav": {
+          "sha256": "471d923d823daa877e2740532518731d539d0077ac5bb5e574e697865b38a2ce",
+          "bytes": 27386,
+          "unchanged": true
+        },
+        "deploy.wav": {
+          "sha256": "f8952b86effa3b9b8243912585f01a44812bff3ed8b03ab30b32054e33cf12e4",
+          "bytes": 15478,
+          "unchanged": true
+        },
+        "disc.wav": {
+          "sha256": "17cd3a9d6b862e3b323934e549d92cd3753ffc43cddb7fed5c403dbe797d7298",
+          "bytes": 26504,
+          "unchanged": true
+        },
+        "drill.wav": {
+          "sha256": "53b2b64174435cd4fbc6e4d19508b71b6071f878eb845ea415a3fec1b4271a1a",
+          "bytes": 33118,
+          "unchanged": true
+        },
+        "drone.wav": {
+          "sha256": "19d136b6933f8e6e5abd18599f122bfa975ec2d711459de2840794a3561ad304",
+          "bytes": 28708,
+          "unchanged": true
+        },
+        "electric.wav": {
+          "sha256": "066270e297e1de15e781917a23af1cc061c50a1b636616ab81fe57c93b0cc6aa",
+          "bytes": 27386,
+          "unchanged": true
+        },
+        "emp.wav": {
+          "sha256": "7205c6bf7f67110200dacfcf58e66792cc28a9ff780c41b8e56a4788321b1bde",
+          "bytes": 30912,
+          "unchanged": true
+        },
+        "feed.wav": {
+          "sha256": "b15476419135a15326ad9a5191a0ed193b41b4e7f2bdc3f1cf83ba7995fcb82f",
+          "bytes": 24298,
+          "unchanged": true
+        },
+        "flame.wav": {
+          "sha256": "dde6eaa86444bf465ba096134de893f6aff3c0ad18223efb49deb6b70af57809",
+          "bytes": 35324,
+          "unchanged": true
+        },
+        "grenade.wav": {
+          "sha256": "bcdde24b3c1edbd1b498d76e38bdccd0e2e71cbf02889e9e625c0c69a5b423d3",
+          "bytes": 35324,
+          "unchanged": true
+        },
+        "impact.wav": {
+          "sha256": "8c9eef4888cea3dd17a24703d6bd76ceb9a05ff930c073dd52670e2344cb712b",
+          "bytes": 22976,
+          "unchanged": true
+        },
+        "ion.wav": {
+          "sha256": "e7060769df26bd7236ffe151ac74162d089ca4c3eb43ec89ffb93cc70072bdfa",
+          "bytes": 30912,
+          "unchanged": true
+        },
+        "laser.wav": {
+          "sha256": "da23dba7cc74a8b5947542024521d831629b560e7d9738e0a66f06abd366ca29",
+          "bytes": 24298,
+          "unchanged": true
+        },
+        "machinegun.wav": {
+          "sha256": "e11b4f6bb4032b927bb1f8a829aec4bc56a412afe4edef974b4c05fc12f41863",
+          "bytes": 22094,
+          "unchanged": true
+        },
+        "magnetic.wav": {
+          "sha256": "2436a879e68ad4b2725e60078ee80681b7cf8eb63bcdc3e2be579bbc4481b2d8",
+          "bytes": 28708,
+          "unchanged": true
+        },
+        "music_arena.ogg": {
+          "sha256": "da381062335347b000753303043eb4ef0fe17af2194916e28f56212e909f64ea",
+          "bytes": 16821,
+          "unchanged": true
+        },
+        "music_victory.ogg": {
+          "sha256": "e781e3e5cf18e40c06b7c289bdccef1d28918205fd83f9e4be44c7b521d45bb1",
+          "bytes": 13401,
+          "unchanged": true
+        },
+        "music_workshop.ogg": {
+          "sha256": "3a9158e8ab69501955c7dacd6447f504a1cb5275440d181f9a99ab20f12f728d",
+          "bytes": 16932,
+          "unchanged": true
+        },
+        "plasma.wav": {
+          "sha256": "53552ac40ad4492fe9882978e4bf142096b4b0e472214d0bc0cb0b37c8a3c0bf",
+          "bytes": 22094,
+          "unchanged": true
+        },
+        "repair.wav": {
+          "sha256": "713bfccac90f97264d6936ae237bc50e6b0bf54701fbe76196e3627b3b54f8f2",
+          "bytes": 35324,
+          "unchanged": true
+        },
+        "robot_charge.wav": {
+          "sha256": "7422741827e0370d578ba14dd73ffcc200becaff2620d4d207fc8d56c2b98e63",
+          "bytes": 15038,
+          "unchanged": true
+        },
+        "robot_dance_bass.wav": {
+          "sha256": "e3c2e673a732381e040076a931ccc6e9d5d22df9fca36bbace737f1348e53627",
+          "bytes": 7982,
+          "unchanged": true
+        },
+        "robot_dance_chime.wav": {
+          "sha256": "6335694f5b9eba9864a54626776cceb3f446bb6646755e76c0b145232bb998ba",
+          "bytes": 10188,
+          "unchanged": true
+        },
+        "robot_dance_tick.wav": {
+          "sha256": "5750f623d9b52639715f16bc1f247b43cea14750bc7b8575a0470206dec1d3f3",
+          "bytes": 4454,
+          "unchanged": true
+        },
+        "robot_grump.wav": {
+          "sha256": "05a9c681459beefaf30dd2419f5c4987134f510e900f9c569e37bf8d9188c515",
+          "bytes": 11510,
+          "unchanged": true
+        },
+        "robot_hover.wav": {
+          "sha256": "2ebb0dd839fd5d6b46519f718409cf11494e4d9da0eaf7ff7ceee0e2eb28e387",
+          "bytes": 9746,
+          "unchanged": true
+        },
+        "robot_powerdown.wav": {
+          "sha256": "80353a3013818a90025e9005989cb11bf4dfaf8fcc840260b0581c08c1e111c6",
+          "bytes": 19008,
+          "unchanged": true
+        },
+        "robot_reply_air.wav": {
+          "sha256": "4cf972ee7983ae825f405259395984247632c0f5c0bb6ce3ffae0b6658b4d2f7",
+          "bytes": 11068,
+          "unchanged": true
+        },
+        "robot_reply_beast.wav": {
+          "sha256": "a44fb906905ecbe8d5e57091276996bb89c4d1b02b431e344d874642c70feafd",
+          "bytes": 11510,
+          "unchanged": true
+        },
+        "robot_reply_bio.wav": {
+          "sha256": "bffca3785819ca06bdc0d104ee5ee213d223314181a37a2473d48e245332882f",
+          "bytes": 11952,
+          "unchanged": true
+        },
+        "robot_reply_electric.wav": {
+          "sha256": "b34697356628e2146fc4b29673243f806447c48e596fdfbffec7c4e1e675e86e",
+          "bytes": 10628,
+          "unchanged": true
+        },
+        "robot_reply_heavy.wav": {
+          "sha256": "44261697dc4a7917a470ee91bd34be753656409b748eda52fc3ecb2e74375107",
+          "bytes": 12392,
+          "unchanged": true
+        },
+        "robot_reply_light.wav": {
+          "sha256": "a4fad95b7f7e00a27b382de9a83d393860577c609d82053c778df979c50ca314",
+          "bytes": 9746,
+          "unchanged": true
+        },
+        "robot_reply_spectral.wav": {
+          "sha256": "a2dd35d6e0d58419274ea26964454c09431841179bb5c58535cc55bbfede46a9",
+          "bytes": 12832,
+          "unchanged": true
+        },
+        "robot_servo.wav": {
+          "sha256": "e150a8c861ef0b8b636832d80bcaf68aecc2d91161348987ebef70eb9b3d90d1",
+          "bytes": 7542,
+          "unchanged": true
+        },
+        "robot_step_heavy.wav": {
+          "sha256": "70e565762a1cb845762b8344818d32af62a03126d2efd88279d73aafa5d98e3a",
+          "bytes": 8424,
+          "unchanged": true
+        },
+        "robot_surprise.wav": {
+          "sha256": "de677f785bc55c5215d3c21bd9c17a08495f645dc38a8832a5305f59a8891aa6",
+          "bytes": 9746,
+          "unchanged": true
+        },
+        "robot_wheel.wav": {
+          "sha256": "3b1700e78de5c02b437802cedcde942fff0753b82773c6df4a82fcb0dbab5867",
+          "bytes": 10188,
+          "unchanged": true
+        },
+        "rocket.wav": {
+          "sha256": "1d85d5ea1a1628a685b8dd4d71762b6653c3c2a44165d77e7cad7d95dc1556f3",
+          "bytes": 33118,
+          "unchanged": true
+        },
+        "shield.wav": {
+          "sha256": "86aa047bb58d947f0a4661ac9ef628b9993a1f71d52d12c8466bee15c8d8da55",
+          "bytes": 26504,
+          "unchanged": true
+        },
+        "sniper.wav": {
+          "sha256": "34cf0f40f90d279842e2043cf1a86bac2cc1f9ebf252833909411469df7db05a",
+          "bytes": 18566,
+          "unchanged": true
+        },
+        "sword.wav": {
+          "sha256": "0ed828295b5c46bed63700a2d92c6c17fdab07ab6c87f1778d202ffdcff61c5d",
+          "bytes": 22094,
+          "unchanged": true
+        },
+        "victory.wav": {
+          "sha256": "498a401f404a61413f1a1b31cbdfef7058458cdfbd3aeedcabd823d82eca5463",
+          "bytes": 50758,
+          "unchanged": true
+        },
+        "volt_charge.wav": {
+          "sha256": "87b7bde735e9bb1d3f7436f06d7f160459f2bac4a03f98a0548e80449842a00f",
+          "bytes": 24740,
+          "unchanged": true
+        },
+        "volt_pulse.wav": {
+          "sha256": "bc6c1f0c2a84bae5ba17a507ecead44dfeb5e1d205b8f4c87da3d07136ff39b5",
+          "bytes": 19008,
+          "unchanged": true
+        },
+        "volt_shutdown.wav": {
+          "sha256": "08a98d46bf262abec75852acb0fbd33a11dbde2c9165924f0a7c27e5793a3f39",
+          "bytes": 39734,
+          "unchanged": true
+        },
+        "volt_storm.wav": {
+          "sha256": "5f6b9fa314471a56e1e7b91196fc52156bf68bc1bb5d968903d46fe47aa733c5",
+          "bytes": 39734,
+          "unchanged": true
+        }
+      },
+      "new_titan_audio": {
+        "titan_bastion.wav": {
+          "bytes": 37528,
+          "sha256": "9ca8457ba39fa7e6633c02c379c1e72dd9799de26bdce461ec826feb85f30af3",
+          "duration": 0.8499773242630385
+        },
+        "titan_hydraulic.wav": {
+          "bytes": 20330,
+          "sha256": "4272b572da7bea5e828069528cfc8f58f2885daa094a2450e592739f09234ac5",
+          "duration": 0.46
+        },
+        "titan_pressure.wav": {
+          "bytes": 66194,
+          "sha256": "ecb9badcdc83918ee611a3b316b43d5958ba73258b9e4f0c0f9dba0d77aacdf0",
+          "duration": 1.5
+        },
+        "titan_quake.wav": {
+          "bytes": 63988,
+          "sha256": "b39482f2207677fa857b9f225804427c318c64b398c8bff871e297a4d0012866",
+          "duration": 1.4499773242630385
+        },
+        "titan_ram.wav": {
+          "bytes": 21212,
+          "sha256": "4363b066aefca1150c084c0fd9350403ae58401a6f81e67220e55342b0bac0d0",
+          "duration": 0.48
+        },
+        "titan_rumble.wav": {
+          "bytes": 38852,
+          "sha256": "a1990d195e2cd2274827209b8e97eeaf566b172fdb387488dab76e0fbb69941d",
+          "duration": 0.88
+        },
+        "titan_shutdown.wav": {
+          "bytes": 70604,
+          "sha256": "79fd5498744472d438f659fd972bada26a69ded0eb804da373b8ba93d267d51d",
+          "duration": 1.6
+        },
+        "titan_step.wav": {
+          "bytes": 14156,
+          "sha256": "f23cd317b4685a6e60e6ed7c45229a77584419084df599456b67ab4c9276faa9",
+          "duration": 0.32
+        }
+      },
+      "preserved_game_and_storage": {
+        "combat_rules.py": {
+          "sha256": "5b7982a91c47e5692ec8ad717e50ed2aad7273fb0fd5b2000506daaae74bdbb0",
+          "bytes": 20491,
+          "unchanged": true
+        },
+        "robot_arena.py": {
+          "sha256": "2ee815b4ef12d894952cdf699172b2c4f37ad0bac4ac60bc70c95bb13dc7daa5",
+          "bytes": 23335,
+          "unchanged": true
+        },
+        "armory.py": {
+          "sha256": "07e1d280432497420ad8dbce646c939f839987f2896b9d07266beae5ed4f5b8e",
+          "bytes": 17569,
+          "unchanged": true
+        },
+        "gameplay.py": {
+          "sha256": "2c1afeb8cd0ae67dc08a0ff4a68c2f57e78f7e0adbb72f759d644ed3faad31c4",
+          "bytes": 38325,
+          "unchanged": true
+        },
+        "local_store.py": {
+          "sha256": "63f21434a9d587a48510e7661ccbb75f3d7f86a4ef8b4bf375e29d9477f57751",
+          "bytes": 2995,
+          "unchanged": true
+        },
+        "network_config.py": {
+          "sha256": "6204e284a4031f5298c7538f1f92b55590ee33dcc0ecc6028c699ee56380b333",
+          "bytes": 600,
+          "unchanged": true
+        }
+      },
+      "published_rive": {
+        "sha256": "4e01c982c53d7704e6dce14b62094bc74118cd53304df0975ce63a9a4b7cb8fd",
+        "bytes": 850270,
+        "unchanged": true
+      },
+      "titan_shapes": 396
+    },
+    "apk": {
+      "bytes": 182439137,
+      "sha256": "89dfec6e0011e24a6daf9ff930902125fdef7578d64bcaf3300dc4d47678ffc8",
+      "native_markers": {
+        "arm64-v8a": [
+          "applyTitanPose",
+          "paintTitanEffects",
+          "drawTitanModel",
+          "_TitanRaster",
+          "titan_ram",
+          "titan_quake",
+          "titan_bastion"
+        ],
+        "armeabi-v7a": [
+          "applyTitanPose",
+          "paintTitanEffects",
+          "drawTitanModel",
+          "_TitanRaster",
+          "titan_ram",
+          "titan_quake",
+          "titan_bastion"
+        ],
+        "x86_64": [
+          "applyTitanPose",
+          "paintTitanEffects",
+          "drawTitanModel",
+          "_TitanRaster",
+          "titan_ram",
+          "titan_quake",
+          "titan_bastion"
+        ]
+      },
+      "packaged_assets": {
+        "assets/art/portraits/titan.svg": "abfc500b6c9d9bff2ac59f8a55973a555f10810e92f204a6e5e7d283da2de93e",
+        "assets/animation/game_robot.riv": "4e01c982c53d7704e6dce14b62094bc74118cd53304df0975ce63a9a4b7cb8fd",
+        "assets/audio/aim.wav": "b6dd187d16b50823936b79bfbfba8d0f490117f9a0dac37c50f0b73a874e9c89",
+        "assets/audio/blaster.wav": "81ce1bccd685deaa82bef0ad586a7e881c6f08adf5fe821642046c6bb35bfd14",
+        "assets/audio/cryo.wav": "471d923d823daa877e2740532518731d539d0077ac5bb5e574e697865b38a2ce",
+        "assets/audio/deploy.wav": "f8952b86effa3b9b8243912585f01a44812bff3ed8b03ab30b32054e33cf12e4",
+        "assets/audio/disc.wav": "17cd3a9d6b862e3b323934e549d92cd3753ffc43cddb7fed5c403dbe797d7298",
+        "assets/audio/drill.wav": "53b2b64174435cd4fbc6e4d19508b71b6071f878eb845ea415a3fec1b4271a1a",
+        "assets/audio/drone.wav": "19d136b6933f8e6e5abd18599f122bfa975ec2d711459de2840794a3561ad304",
+        "assets/audio/electric.wav": "066270e297e1de15e781917a23af1cc061c50a1b636616ab81fe57c93b0cc6aa",
+        "assets/audio/emp.wav": "7205c6bf7f67110200dacfcf58e66792cc28a9ff780c41b8e56a4788321b1bde",
+        "assets/audio/feed.wav": "b15476419135a15326ad9a5191a0ed193b41b4e7f2bdc3f1cf83ba7995fcb82f",
+        "assets/audio/flame.wav": "dde6eaa86444bf465ba096134de893f6aff3c0ad18223efb49deb6b70af57809",
+        "assets/audio/grenade.wav": "bcdde24b3c1edbd1b498d76e38bdccd0e2e71cbf02889e9e625c0c69a5b423d3",
+        "assets/audio/impact.wav": "8c9eef4888cea3dd17a24703d6bd76ceb9a05ff930c073dd52670e2344cb712b",
+        "assets/audio/ion.wav": "e7060769df26bd7236ffe151ac74162d089ca4c3eb43ec89ffb93cc70072bdfa",
+        "assets/audio/laser.wav": "da23dba7cc74a8b5947542024521d831629b560e7d9738e0a66f06abd366ca29",
+        "assets/audio/machinegun.wav": "e11b4f6bb4032b927bb1f8a829aec4bc56a412afe4edef974b4c05fc12f41863",
+        "assets/audio/magnetic.wav": "2436a879e68ad4b2725e60078ee80681b7cf8eb63bcdc3e2be579bbc4481b2d8",
+        "assets/audio/music_arena.ogg": "da381062335347b000753303043eb4ef0fe17af2194916e28f56212e909f64ea",
+        "assets/audio/music_victory.ogg": "e781e3e5cf18e40c06b7c289bdccef1d28918205fd83f9e4be44c7b521d45bb1",
+        "assets/audio/music_workshop.ogg": "3a9158e8ab69501955c7dacd6447f504a1cb5275440d181f9a99ab20f12f728d",
+        "assets/audio/plasma.wav": "53552ac40ad4492fe9882978e4bf142096b4b0e472214d0bc0cb0b37c8a3c0bf",
+        "assets/audio/repair.wav": "713bfccac90f97264d6936ae237bc50e6b0bf54701fbe76196e3627b3b54f8f2",
+        "assets/audio/robot_charge.wav": "7422741827e0370d578ba14dd73ffcc200becaff2620d4d207fc8d56c2b98e63",
+        "assets/audio/robot_dance_bass.wav": "e3c2e673a732381e040076a931ccc6e9d5d22df9fca36bbace737f1348e53627",
+        "assets/audio/robot_dance_chime.wav": "6335694f5b9eba9864a54626776cceb3f446bb6646755e76c0b145232bb998ba",
+        "assets/audio/robot_dance_tick.wav": "5750f623d9b52639715f16bc1f247b43cea14750bc7b8575a0470206dec1d3f3",
+        "assets/audio/robot_grump.wav": "05a9c681459beefaf30dd2419f5c4987134f510e900f9c569e37bf8d9188c515",
+        "assets/audio/robot_hover.wav": "2ebb0dd839fd5d6b46519f718409cf11494e4d9da0eaf7ff7ceee0e2eb28e387",
+        "assets/audio/robot_powerdown.wav": "80353a3013818a90025e9005989cb11bf4dfaf8fcc840260b0581c08c1e111c6",
+        "assets/audio/robot_reply_air.wav": "4cf972ee7983ae825f405259395984247632c0f5c0bb6ce3ffae0b6658b4d2f7",
+        "assets/audio/robot_reply_beast.wav": "a44fb906905ecbe8d5e57091276996bb89c4d1b02b431e344d874642c70feafd",
+        "assets/audio/robot_reply_bio.wav": "bffca3785819ca06bdc0d104ee5ee213d223314181a37a2473d48e245332882f",
+        "assets/audio/robot_reply_electric.wav": "b34697356628e2146fc4b29673243f806447c48e596fdfbffec7c4e1e675e86e",
+        "assets/audio/robot_reply_heavy.wav": "44261697dc4a7917a470ee91bd34be753656409b748eda52fc3ecb2e74375107",
+        "assets/audio/robot_reply_light.wav": "a4fad95b7f7e00a27b382de9a83d393860577c609d82053c778df979c50ca314",
+        "assets/audio/robot_reply_spectral.wav": "a2dd35d6e0d58419274ea26964454c09431841179bb5c58535cc55bbfede46a9",
+        "assets/audio/robot_servo.wav": "e150a8c861ef0b8b636832d80bcaf68aecc2d91161348987ebef70eb9b3d90d1",
+        "assets/audio/robot_step_heavy.wav": "70e565762a1cb845762b8344818d32af62a03126d2efd88279d73aafa5d98e3a",
+        "assets/audio/robot_surprise.wav": "de677f785bc55c5215d3c21bd9c17a08495f645dc38a8832a5305f59a8891aa6",
+        "assets/audio/robot_wheel.wav": "3b1700e78de5c02b437802cedcde942fff0753b82773c6df4a82fcb0dbab5867",
+        "assets/audio/rocket.wav": "1d85d5ea1a1628a685b8dd4d71762b6653c3c2a44165d77e7cad7d95dc1556f3",
+        "assets/audio/shield.wav": "86aa047bb58d947f0a4661ac9ef628b9993a1f71d52d12c8466bee15c8d8da55",
+        "assets/audio/sniper.wav": "34cf0f40f90d279842e2043cf1a86bac2cc1f9ebf252833909411469df7db05a",
+        "assets/audio/sword.wav": "0ed828295b5c46bed63700a2d92c6c17fdab07ab6c87f1778d202ffdcff61c5d",
+        "assets/audio/titan_bastion.wav": "9ca8457ba39fa7e6633c02c379c1e72dd9799de26bdce461ec826feb85f30af3",
+        "assets/audio/titan_hydraulic.wav": "4272b572da7bea5e828069528cfc8f58f2885daa094a2450e592739f09234ac5",
+        "assets/audio/titan_pressure.wav": "ecb9badcdc83918ee611a3b316b43d5958ba73258b9e4f0c0f9dba0d77aacdf0",
+        "assets/audio/titan_quake.wav": "b39482f2207677fa857b9f225804427c318c64b398c8bff871e297a4d0012866",
+        "assets/audio/titan_ram.wav": "4363b066aefca1150c084c0fd9350403ae58401a6f81e67220e55342b0bac0d0",
+        "assets/audio/titan_rumble.wav": "a1990d195e2cd2274827209b8e97eeaf566b172fdb387488dab76e0fbb69941d",
+        "assets/audio/titan_shutdown.wav": "79fd5498744472d438f659fd972bada26a69ded0eb804da373b8ba93d267d51d",
+        "assets/audio/titan_step.wav": "f23cd317b4685a6e60e6ed7c45229a77584419084df599456b67ab4c9276faa9",
+        "assets/audio/victory.wav": "498a401f404a61413f1a1b31cbdfef7058458cdfbd3aeedcabd823d82eca5463",
+        "assets/audio/volt_charge.wav": "87b7bde735e9bb1d3f7436f06d7f160459f2bac4a03f98a0548e80449842a00f",
+        "assets/audio/volt_pulse.wav": "bc6c1f0c2a84bae5ba17a507ecead44dfeb5e1d205b8f4c87da3d07136ff39b5",
+        "assets/audio/volt_shutdown.wav": "08a98d46bf262abec75852acb0fbd33a11dbde2c9165924f0a7c27e5793a3f39",
+        "assets/audio/volt_storm.wav": "5f6b9fa314471a56e1e7b91196fc52156bf68bc1bb5d968903d46fe47aa733c5"
+      },
+      "temporary_and_excluded_modules_absent": true
+    }
+  },
+  "build_artifact_recovery": {
+    "reason": "Gradle compiled and signed APK42 successfully; final assembleRelease task failed only copying to redundant flutter-apk output due disk space. Recovered the complete signed APK from app/outputs/apk/release after CRC check. No build validation bypassed.",
+    "source": "C:\\Clicker\\.cache\\game-test-v40\\build\\flutter\\build\\app\\outputs\\apk\\release\\app-release.apk",
+    "target": "C:\\Clicker\\build\\apk-game-v42\\clicker.apk",
+    "bytes": 182439137,
+    "sha256": "89dfec6e0011e24a6daf9ff930902125fdef7578d64bcaf3300dc4d47678ffc8"
+  },
+  "tests": {
+    "python": {
+      "total": 299,
+      "passed": 289,
+      "optional_postgres_skipped": 10
+    },
+    "native_flutter": {
+      "passed": 389,
+      "concurrency": 1,
+      "case_timeout_seconds": 60,
+      "screen_layout_cases": 173,
+      "all_characters": 32
+    },
+    "native_extension_analyzers": {
+      "flet_rive": "No issues found",
+      "flet_ads": "No issues found"
+    },
+    "generated_titan_geometry_check": "passed",
+    "native_test_log_sha256": "420535480b171c569769204dee2057b2e7bb7cde307b4b58134fa37bc4de6df2",
+    "python_test_log_sha256": "5cce614959cf5bdf258fb2f138168e2de44e83b63257e55e584374e3c09a71b1"
+  },
+  "volt_same_engine_regression": {
+    "source_commit": "72a1cce81e21196c15577e8772f0361f9a9ccc48",
+    "sdk": "Flutter3.47.9/Dart3.13.7",
+    "only_baseline_migration": "flutter/material.dart -> material_ui/material_ui.dart",
+    "baseline_package_path": ".cache/titan-v40/baseline/extensions/flet_rive",
+    "fixtures": {
+      "volt-protected-v39-flutter347.png": {
+        "bytes": 963036,
+        "sha256": "e20c48b297ef31b7b331d5e932cd5f1eabf3b540275cefc724b64fc0acaf9631"
+      },
+      "volt-other-actions-v39-flutter347.png": {
+        "bytes": 819282,
+        "sha256": "1c32fb560cf80910769ad745a52e9dacf4ceef4841ca066a0f051281f1d2bd16"
+      }
+    }
+  },
+  "actual_main_game_music": {
+    "status": "passed",
+    "real_main_game": true,
+    "isolated_player_state": true,
+    "first_victory_uninterrupted_seconds": 3.99,
+    "second_victory_resumed_at_seconds": 1.16,
+    "victory_completion_events": 2,
+    "max_simultaneous_backgrounds": 1,
+    "fade_gain_steps": [
+      0,
+      0.00852,
+      0.02981,
+      0.0575,
+      0.08519,
+      0.10648,
+      0.115
+    ],
+    "robot": "titan",
+    "strike_file": "titan_quake.wav",
+    "storm_starts_at_seconds": 0.031,
+    "physical_android_tested": false,
+    "speaker_auditioned": false,
+    "events_file": "C:\\Clicker\\.cache\\rework-review\\titan-v42-music-live-01\\audio-events.json"
+  },
+  "actual_main_game_pointer": {
+    "build": 42,
+    "main_packaged_game": false,
+    "main_game_source": true,
+    "robot": "titan",
+    "client": "Current main-game worker and compiled Flutter client, Chrome headless",
+    "floor_awards": 0,
+    "long_press_awards": 0,
+    "rapid_robot_taps": 5,
+    "robot_tap_screen_x": 110.0,
+    "recorded_taps": 5,
+    "coins_from_taps": 5,
+    "passive_coins_preserved": 0,
+    "automatic_feeding_preserved": true,
+    "isolated_data": "C:\\Clicker\\.cache\\interaction-v27\\packaged-input-v42\\data",
+    "real_player_save_opened": false,
+    "android_device": false
+  },
+  "packaged_python_imports_and_server": "{\"python\": \"3.14.10\", \"apk_module_imports\": 18, \"save_load\": \"passed\", \"physical_android\": false, \"arena_url\": \"https://robo-workshop-arena.onrender.com\", \"public_https_checked\": true}",
+  "performance": {
+    "method": "Old v39 Titan Rive vs new native Titan, both migrated to the same Flet1.1.2 / Flutter3.47.9; identical scenario cadence and font assets. Not an old-APK vs new-APK measurement.",
+    "scenarios": {
+      "before-workshop": {
+        "platform": "Windows Chrome headless / Flutter profile",
+        "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+        "samples_after_warmup": 26,
+        "median_unique_vsync_fps": 119.09533467117367,
+        "minimum_unique_vsync_fps": 88.72651356993737,
+        "median_raw_fps": 119.09533467117367,
+        "maximum_ui_p95_ms": 6.601,
+        "maximum_raster_p95_ms": 2.5,
+        "viewport": [
+          390,
+          844
+        ],
+        "flutter_errors": [],
+        "physical_android_tested": false,
+        "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+        "first_render": {
+          "python_first_render_ms": 98.69959999923594
+        },
+        "python_import": {
+          "import_ms": 382.8146000014385,
+          "flet": "1.1.2",
+          "flet_module": "C:\\Clicker\\.venv\\Lib\\site-packages\\flet\\__init__.py",
+          "main_source": "C:\\Clicker\\.cache\\titan-v40\\baseline\\src\\main.py",
+          "robot": "titan"
+        },
+        "first_native_paint": {
+          "robot": "titan",
+          "enemy": "",
+          "renderer": "rive",
+          "model_renderer": "rive-artboard",
+          "rig_load_ms": 744.6,
+          "since_session_ms": 1223.4693000063999
+        },
+        "dpr": 3,
+        "capture": "titan-final-v42-before-workshop",
+        "memory": {
+          "measurement": "Windows Chrome process-tree working/private bytes and CDP JS heap snapshots; includes browser/renderer overhead, not Android or Dart-only memory",
+          "samples": [
+            {
+              "elapsed_seconds": 10.53,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 1051422720,
+              "chrome_private_bytes": 878387200,
+              "js_heap_used_bytes": 75065820
+            },
+            {
+              "elapsed_seconds": 21.06,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 1115893760,
+              "chrome_private_bytes": 945184768,
+              "js_heap_used_bytes": 83487852
+            },
+            {
+              "elapsed_seconds": 31.59,
+              "chrome_processes": 8,
+              "chrome_rss_bytes": 1020571648,
+              "chrome_private_bytes": 899944448,
+              "js_heap_used_bytes": 75558564
+            }
+          ],
+          "max_chrome_rss_bytes": 1115893760,
+          "max_chrome_private_bytes": 945184768
+        }
+      },
+      "after-workshop": {
+        "platform": "Windows Chrome headless / Flutter profile",
+        "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+        "samples_after_warmup": 36,
+        "median_unique_vsync_fps": 116.43923016873836,
+        "minimum_unique_vsync_fps": 82.21638800607987,
+        "median_raw_fps": 116.43923016873836,
+        "maximum_ui_p95_ms": 5.799,
+        "maximum_raster_p95_ms": 4.8,
+        "viewport": [
+          762,
+          484
+        ],
+        "flutter_errors": [],
+        "physical_android_tested": false,
+        "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+        "first_render": {
+          "python_first_render_ms": 89.27339999354444
+        },
+        "python_import": {
+          "import_ms": 333.6245999962557,
+          "flet": "1.1.2",
+          "flet_module": "C:\\Clicker\\.venv\\Lib\\site-packages\\flet\\__init__.py",
+          "main_source": "C:\\Clicker\\src\\main.py",
+          "robot": "titan"
+        },
+        "first_native_paint": {
+          "robot": "titan",
+          "enemy": "",
+          "renderer": "flutter",
+          "model_renderer": "flutter-canvas-articulated",
+          "rig_load_ms": 0,
+          "model_warm_ms": 317.601,
+          "since_session_ms": 589.135999995051
+        },
+        "dpr": 3,
+        "capture": "titan-final-v42-after-workshop",
+        "memory": {
+          "measurement": "Windows Chrome process-tree working/private bytes and CDP JS heap snapshots; includes browser/renderer overhead, not Android or Dart-only memory",
+          "samples": [
+            {
+              "elapsed_seconds": 10.53,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 954089472,
+              "chrome_private_bytes": 743813120,
+              "js_heap_used_bytes": 54167892
+            },
+            {
+              "elapsed_seconds": 21.07,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 975241216,
+              "chrome_private_bytes": 773394432,
+              "js_heap_used_bytes": 80697540
+            },
+            {
+              "elapsed_seconds": 31.62,
+              "chrome_processes": 8,
+              "chrome_rss_bytes": 900567040,
+              "chrome_private_bytes": 744202240,
+              "js_heap_used_bytes": 63509500
+            }
+          ],
+          "max_chrome_rss_bytes": 975241216,
+          "max_chrome_private_bytes": 773394432
+        }
+      },
+      "before-combat": {
+        "platform": "Windows Chrome headless / Flutter profile",
+        "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+        "samples_after_warmup": 25,
+        "median_unique_vsync_fps": 101.293923471164,
+        "minimum_unique_vsync_fps": 67.51773049645391,
+        "median_raw_fps": 101.293923471164,
+        "maximum_ui_p95_ms": 9.2,
+        "maximum_raster_p95_ms": 13,
+        "viewport": [
+          844,
+          390
+        ],
+        "flutter_errors": [],
+        "physical_android_tested": false,
+        "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+        "first_render": {
+          "python_first_render_ms": 234.55480000120588
+        },
+        "python_import": {
+          "import_ms": 320.4008999891812,
+          "flet": "1.1.2",
+          "flet_module": "C:\\Clicker\\.venv\\Lib\\site-packages\\flet\\__init__.py",
+          "main_source": "C:\\Clicker\\.cache\\titan-v40\\baseline\\src\\main.py",
+          "robot": "titan"
+        },
+        "first_native_paint": {
+          "robot": "titan",
+          "enemy": "spark",
+          "renderer": "rive",
+          "model_renderer": "rive-artboard",
+          "rig_load_ms": 552.3,
+          "since_session_ms": 1078.0153999949107
+        },
+        "dpr": 2,
+        "capture": "titan-final-v42-before-combat",
+        "memory": {
+          "measurement": "Windows Chrome process-tree working/private bytes and CDP JS heap snapshots; includes browser/renderer overhead, not Android or Dart-only memory",
+          "samples": [
+            {
+              "elapsed_seconds": 10.22,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 908972032,
+              "chrome_private_bytes": 786669568,
+              "js_heap_used_bytes": 57335628
+            },
+            {
+              "elapsed_seconds": 20.46,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 1022210048,
+              "chrome_private_bytes": 988884992,
+              "js_heap_used_bytes": 95662956
+            },
+            {
+              "elapsed_seconds": 30.67,
+              "chrome_processes": 8,
+              "chrome_rss_bytes": 892424192,
+              "chrome_private_bytes": 899018752,
+              "js_heap_used_bytes": 68025516
+            }
+          ],
+          "max_chrome_rss_bytes": 1022210048,
+          "max_chrome_private_bytes": 988884992
+        }
+      },
+      "after-combat": {
+        "platform": "Windows Chrome headless / Flutter profile",
+        "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+        "samples_after_warmup": 25,
+        "median_unique_vsync_fps": 87.0009599349613,
+        "minimum_unique_vsync_fps": 72.53439440790295,
+        "median_raw_fps": 87.0009599349613,
+        "maximum_ui_p95_ms": 7.901,
+        "maximum_raster_p95_ms": 8.3,
+        "viewport": [
+          844,
+          390
+        ],
+        "flutter_errors": [],
+        "physical_android_tested": false,
+        "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+        "first_render": {
+          "python_first_render_ms": 197.94689999253023
+        },
+        "python_import": {
+          "import_ms": 328.0648999934783,
+          "flet": "1.1.2",
+          "flet_module": "C:\\Clicker\\.venv\\Lib\\site-packages\\flet\\__init__.py",
+          "main_source": "C:\\Clicker\\src\\main.py",
+          "robot": "titan"
+        },
+        "first_native_paint": {
+          "robot": "titan",
+          "enemy": "spark",
+          "renderer": "rive",
+          "model_renderer": "flutter-canvas-articulated",
+          "rig_load_ms": 558.601,
+          "since_session_ms": 1288.6495999991894
+        },
+        "dpr": 2,
+        "capture": "titan-final-v42-after-combat",
+        "memory": {
+          "measurement": "Windows Chrome process-tree working/private bytes and CDP JS heap snapshots; includes browser/renderer overhead, not Android or Dart-only memory",
+          "samples": [
+            {
+              "elapsed_seconds": 10.25,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 960860160,
+              "chrome_private_bytes": 920432640,
+              "js_heap_used_bytes": 70075880
+            },
+            {
+              "elapsed_seconds": 20.47,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 1140047872,
+              "chrome_private_bytes": 1095671808,
+              "js_heap_used_bytes": 62710076
+            },
+            {
+              "elapsed_seconds": 30.71,
+              "chrome_processes": 8,
+              "chrome_rss_bytes": 1003548672,
+              "chrome_private_bytes": 1017548800,
+              "js_heap_used_bytes": 96601816
+            }
+          ],
+          "max_chrome_rss_bytes": 1140047872,
+          "max_chrome_private_bytes": 1095671808
+        }
+      },
+      "before-ultimate": {
+        "platform": "Windows Chrome headless / Flutter profile",
+        "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+        "samples_after_warmup": 26,
+        "median_unique_vsync_fps": 99.32477670323846,
+        "minimum_unique_vsync_fps": 76.08695652173913,
+        "median_raw_fps": 99.32477670323846,
+        "maximum_ui_p95_ms": 8.2,
+        "maximum_raster_p95_ms": 2.5,
+        "viewport": [
+          390,
+          844
+        ],
+        "flutter_errors": [],
+        "physical_android_tested": false,
+        "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+        "first_render": {
+          "python_first_render_ms": 126.93779999972321
+        },
+        "python_import": {
+          "import_ms": 330.21840000583325,
+          "flet": "1.1.2",
+          "flet_module": "C:\\Clicker\\.venv\\Lib\\site-packages\\flet\\__init__.py",
+          "main_source": "C:\\Clicker\\.cache\\titan-v40\\baseline\\src\\main.py",
+          "robot": "titan"
+        },
+        "first_native_paint": {
+          "robot": "titan",
+          "enemy": "",
+          "renderer": "rive",
+          "model_renderer": "rive-artboard",
+          "rig_load_ms": 850.299,
+          "since_session_ms": 1389.2270000069402
+        },
+        "dpr": 3,
+        "capture": "titan-final-v42-before-ultimate",
+        "memory": {
+          "measurement": "Windows Chrome process-tree working/private bytes and CDP JS heap snapshots; includes browser/renderer overhead, not Android or Dart-only memory",
+          "samples": [
+            {
+              "elapsed_seconds": 10.5,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 1055313920,
+              "chrome_private_bytes": 912388096,
+              "js_heap_used_bytes": 73086236
+            },
+            {
+              "elapsed_seconds": 21.01,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 1099395072,
+              "chrome_private_bytes": 958697472,
+              "js_heap_used_bytes": 72429812
+            },
+            {
+              "elapsed_seconds": 31.53,
+              "chrome_processes": 8,
+              "chrome_rss_bytes": 1020895232,
+              "chrome_private_bytes": 904220672,
+              "js_heap_used_bytes": 98481288
+            }
+          ],
+          "max_chrome_rss_bytes": 1099395072,
+          "max_chrome_private_bytes": 958697472
+        }
+      },
+      "after-ultimate": {
+        "platform": "Windows Chrome headless / Flutter profile",
+        "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+        "samples_after_warmup": 26,
+        "median_unique_vsync_fps": 89.36957553692673,
+        "minimum_unique_vsync_fps": 73.42506324427717,
+        "median_raw_fps": 89.36957553692673,
+        "maximum_ui_p95_ms": 8.401,
+        "maximum_raster_p95_ms": 4.3,
+        "viewport": [
+          390,
+          844
+        ],
+        "flutter_errors": [],
+        "physical_android_tested": false,
+        "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+        "first_render": {
+          "python_first_render_ms": 118.02090000128374
+        },
+        "python_import": {
+          "import_ms": 357.4413999886019,
+          "flet": "1.1.2",
+          "flet_module": "C:\\Clicker\\.venv\\Lib\\site-packages\\flet\\__init__.py",
+          "main_source": "C:\\Clicker\\src\\main.py",
+          "robot": "titan"
+        },
+        "first_native_paint": {
+          "robot": "titan",
+          "enemy": "",
+          "renderer": "flutter",
+          "model_renderer": "flutter-canvas-articulated",
+          "rig_load_ms": 0,
+          "model_warm_ms": 327.4,
+          "since_session_ms": 729.0218999987701
+        },
+        "dpr": 3,
+        "capture": "titan-final-v42-after-ultimate",
+        "memory": {
+          "measurement": "Windows Chrome process-tree working/private bytes and CDP JS heap snapshots; includes browser/renderer overhead, not Android or Dart-only memory",
+          "samples": [
+            {
+              "elapsed_seconds": 10.49,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 1072459776,
+              "chrome_private_bytes": 990126080,
+              "js_heap_used_bytes": 60498224
+            },
+            {
+              "elapsed_seconds": 20.99,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 1280647168,
+              "chrome_private_bytes": 1200754688,
+              "js_heap_used_bytes": 67405104
+            },
+            {
+              "elapsed_seconds": 31.52,
+              "chrome_processes": 8,
+              "chrome_rss_bytes": 1184280576,
+              "chrome_private_bytes": 1132027904,
+              "js_heap_used_bytes": 74662260
+            }
+          ],
+          "max_chrome_rss_bytes": 1280647168,
+          "max_chrome_private_bytes": 1200754688
+        }
+      }
+    },
+    "physical_android_tested": false,
+    "initial_vector_only_profiles": {
+      "before-workshop": {
+        "platform": "Windows Chrome headless / Flutter profile",
+        "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+        "samples_after_warmup": 26,
+        "median_unique_vsync_fps": 118.79838548933625,
+        "minimum_unique_vsync_fps": 81.58502565129189,
+        "median_raw_fps": 118.79838548933625,
+        "maximum_ui_p95_ms": 12.7,
+        "maximum_raster_p95_ms": 5.5,
+        "viewport": [
+          390,
+          844
+        ],
+        "flutter_errors": [],
+        "physical_android_tested": false,
+        "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+        "first_render": {
+          "python_first_render_ms": 88.09150000161026
+        },
+        "first_native_paint": {
+          "robot": "titan",
+          "enemy": "",
+          "renderer": "rive",
+          "model_renderer": "rive-artboard",
+          "rig_load_ms": 722.4,
+          "since_session_ms": 1188.8407999940682
+        },
+        "dpr": 3,
+        "capture": "titan-v40-before-workshop",
+        "memory": {
+          "measurement": "Windows Chrome process-tree working/private bytes and CDP JS heap snapshots; includes browser/renderer overhead, not Android or Dart-only memory",
+          "samples": [
+            {
+              "elapsed_seconds": 10.57,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 1041022976,
+              "chrome_private_bytes": 872521728,
+              "js_heap_used_bytes": 68239808
+            },
+            {
+              "elapsed_seconds": 21.09,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 1073405952,
+              "chrome_private_bytes": 920829952,
+              "js_heap_used_bytes": 57318224
+            },
+            {
+              "elapsed_seconds": 31.61,
+              "chrome_processes": 8,
+              "chrome_rss_bytes": 1008427008,
+              "chrome_private_bytes": 887422976,
+              "js_heap_used_bytes": 86215512
+            }
+          ],
+          "max_chrome_rss_bytes": 1073405952,
+          "max_chrome_private_bytes": 920829952
+        }
+      },
+      "after-workshop": {
+        "platform": "Windows Chrome headless / Flutter profile",
+        "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+        "samples_after_warmup": 26,
+        "median_unique_vsync_fps": 87.54457301130071,
+        "minimum_unique_vsync_fps": 39.59276018099548,
+        "median_raw_fps": 87.54457301130071,
+        "maximum_ui_p95_ms": 16,
+        "maximum_raster_p95_ms": 19.9,
+        "viewport": [
+          390,
+          844
+        ],
+        "flutter_errors": [],
+        "physical_android_tested": false,
+        "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+        "first_render": {
+          "python_first_render_ms": 90.61140000994783
+        },
+        "first_native_paint": {
+          "robot": "titan",
+          "enemy": "",
+          "renderer": "flutter",
+          "model_renderer": "flutter-canvas-articulated",
+          "rig_load_ms": 0,
+          "model_warm_ms": 12.1,
+          "since_session_ms": 289.83639999933075
+        },
+        "dpr": 3,
+        "capture": "titan-v40-after-workshop",
+        "memory": {
+          "measurement": "Windows Chrome process-tree working/private bytes and CDP JS heap snapshots; includes browser/renderer overhead, not Android or Dart-only memory",
+          "samples": [
+            {
+              "elapsed_seconds": 10.52,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 1022533632,
+              "chrome_private_bytes": 889126912,
+              "js_heap_used_bytes": 56381616
+            },
+            {
+              "elapsed_seconds": 21.05,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 1170812928,
+              "chrome_private_bytes": 1065893888,
+              "js_heap_used_bytes": 75007376
+            },
+            {
+              "elapsed_seconds": 31.69,
+              "chrome_processes": 8,
+              "chrome_rss_bytes": 1070813184,
+              "chrome_private_bytes": 1025609728,
+              "js_heap_used_bytes": 68461156
+            }
+          ],
+          "max_chrome_rss_bytes": 1170812928,
+          "max_chrome_private_bytes": 1065893888
+        }
+      },
+      "before-combat": {
+        "platform": "Windows Chrome headless / Flutter profile",
+        "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+        "samples_after_warmup": 25,
+        "median_unique_vsync_fps": 90.73579870377431,
+        "minimum_unique_vsync_fps": 50.19614459864175,
+        "median_raw_fps": 90.73579870377431,
+        "maximum_ui_p95_ms": 18.7,
+        "maximum_raster_p95_ms": 15.5,
+        "viewport": [
+          844,
+          390
+        ],
+        "flutter_errors": [],
+        "physical_android_tested": false,
+        "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+        "first_render": {
+          "python_first_render_ms": 360.9147000097437
+        },
+        "first_native_paint": {
+          "robot": "titan",
+          "enemy": "spark",
+          "renderer": "rive",
+          "model_renderer": "rive-artboard",
+          "rig_load_ms": 703.7,
+          "since_session_ms": 1420.3632999997353
+        },
+        "dpr": 2,
+        "capture": "titan-v40-before-combat",
+        "memory": {
+          "measurement": "Windows Chrome process-tree working/private bytes and CDP JS heap snapshots; includes browser/renderer overhead, not Android or Dart-only memory",
+          "samples": [
+            {
+              "elapsed_seconds": 10.29,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 898748416,
+              "chrome_private_bytes": 771461120,
+              "js_heap_used_bytes": 64409276
+            },
+            {
+              "elapsed_seconds": 20.55,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 979038208,
+              "chrome_private_bytes": 957526016,
+              "js_heap_used_bytes": 73367576
+            },
+            {
+              "elapsed_seconds": 30.79,
+              "chrome_processes": 8,
+              "chrome_rss_bytes": 863137792,
+              "chrome_private_bytes": 879489024,
+              "js_heap_used_bytes": 94711352
+            }
+          ],
+          "max_chrome_rss_bytes": 979038208,
+          "max_chrome_private_bytes": 957526016
+        }
+      },
+      "after-combat": {
+        "platform": "Windows Chrome headless / Flutter profile",
+        "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+        "samples_after_warmup": 25,
+        "median_unique_vsync_fps": 66.18096880040042,
+        "minimum_unique_vsync_fps": 52.19298245614035,
+        "median_raw_fps": 66.18096880040042,
+        "maximum_ui_p95_ms": 14.5,
+        "maximum_raster_p95_ms": 15.4,
+        "viewport": [
+          844,
+          390
+        ],
+        "flutter_errors": [],
+        "physical_android_tested": false,
+        "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+        "first_render": {
+          "python_first_render_ms": 303.03779999667313
+        },
+        "first_native_paint": {
+          "robot": "titan",
+          "enemy": "spark",
+          "renderer": "rive",
+          "model_renderer": "flutter-canvas-articulated",
+          "rig_load_ms": 732.3,
+          "since_session_ms": 1367.6161000039428
+        },
+        "dpr": 2,
+        "capture": "titan-v40-after-combat",
+        "memory": {
+          "measurement": "Windows Chrome process-tree working/private bytes and CDP JS heap snapshots; includes browser/renderer overhead, not Android or Dart-only memory",
+          "samples": [
+            {
+              "elapsed_seconds": 10.28,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 902471680,
+              "chrome_private_bytes": 849264640,
+              "js_heap_used_bytes": 61447788
+            },
+            {
+              "elapsed_seconds": 20.55,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 1011900416,
+              "chrome_private_bytes": 971661312,
+              "js_heap_used_bytes": 83743536
+            },
+            {
+              "elapsed_seconds": 30.8,
+              "chrome_processes": 8,
+              "chrome_rss_bytes": 946229248,
+              "chrome_private_bytes": 950906880,
+              "js_heap_used_bytes": 110582480
+            }
+          ],
+          "max_chrome_rss_bytes": 1011900416,
+          "max_chrome_private_bytes": 971661312
+        }
+      },
+      "before-ultimate": {
+        "platform": "Windows Chrome headless / Flutter profile",
+        "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+        "samples_after_warmup": 26,
+        "median_unique_vsync_fps": 71.08388714109721,
+        "minimum_unique_vsync_fps": 33.35201793721973,
+        "median_raw_fps": 71.08388714109721,
+        "maximum_ui_p95_ms": 76.5,
+        "maximum_raster_p95_ms": 23.3,
+        "viewport": [
+          390,
+          844
+        ],
+        "flutter_errors": [],
+        "physical_android_tested": false,
+        "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+        "first_render": {
+          "python_first_render_ms": 151.68909999192692
+        },
+        "first_native_paint": {
+          "robot": "titan",
+          "enemy": "",
+          "renderer": "rive",
+          "model_renderer": "rive-artboard",
+          "rig_load_ms": 1130,
+          "since_session_ms": 1696.4466999925207
+        },
+        "dpr": 3,
+        "capture": "titan-v40-before-ultimate",
+        "memory": {
+          "measurement": "Windows Chrome process-tree working/private bytes and CDP JS heap snapshots; includes browser/renderer overhead, not Android or Dart-only memory",
+          "samples": [
+            {
+              "elapsed_seconds": 10.55,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 1044045824,
+              "chrome_private_bytes": 905551872,
+              "js_heap_used_bytes": 86022280
+            },
+            {
+              "elapsed_seconds": 21.14,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 1060872192,
+              "chrome_private_bytes": 918360064,
+              "js_heap_used_bytes": 84316436
+            },
+            {
+              "elapsed_seconds": 31.67,
+              "chrome_processes": 8,
+              "chrome_rss_bytes": 959365120,
+              "chrome_private_bytes": 857358336,
+              "js_heap_used_bytes": 102683376
+            }
+          ],
+          "max_chrome_rss_bytes": 1060872192,
+          "max_chrome_private_bytes": 918360064
+        }
+      },
+      "after-ultimate": {
+        "platform": "Windows Chrome headless / Flutter profile",
+        "measurement": "Flutter FrameTiming, rolling 120 records; four initial reports excluded; duplicate vsync records removed from FPS",
+        "samples_after_warmup": 26,
+        "median_unique_vsync_fps": 79.24127995071251,
+        "minimum_unique_vsync_fps": 64.71259992386753,
+        "median_raw_fps": 79.24127995071251,
+        "maximum_ui_p95_ms": 11.1,
+        "maximum_raster_p95_ms": 6.2,
+        "viewport": [
+          390,
+          844
+        ],
+        "flutter_errors": [],
+        "physical_android_tested": false,
+        "limitations": "One desktop run, overlapping rolling windows. Does not establish Android FPS, thermal stability or long-session performance.",
+        "first_render": {
+          "python_first_render_ms": 115.43049999454524
+        },
+        "first_native_paint": {
+          "robot": "titan",
+          "enemy": "",
+          "renderer": "flutter",
+          "model_renderer": "flutter-canvas-articulated",
+          "rig_load_ms": 0,
+          "model_warm_ms": 13.9,
+          "since_session_ms": 429.1047000006074
+        },
+        "dpr": 3,
+        "capture": "titan-v40-after-ultimate",
+        "memory": {
+          "measurement": "Windows Chrome process-tree working/private bytes and CDP JS heap snapshots; includes browser/renderer overhead, not Android or Dart-only memory",
+          "samples": [
+            {
+              "elapsed_seconds": 10.51,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 1263157248,
+              "chrome_private_bytes": 1143590912,
+              "js_heap_used_bytes": 64285144
+            },
+            {
+              "elapsed_seconds": 21.02,
+              "chrome_processes": 11,
+              "chrome_rss_bytes": 1431175168,
+              "chrome_private_bytes": 1293807616,
+              "js_heap_used_bytes": 70952392
+            },
+            {
+              "elapsed_seconds": 31.55,
+              "chrome_processes": 8,
+              "chrome_rss_bytes": 1332936704,
+              "chrome_private_bytes": 1229082624,
+              "js_heap_used_bytes": 68610496
+            }
+          ],
+          "max_chrome_rss_bytes": 1431175168,
+          "max_chrome_private_bytes": 1293807616
+        }
+      }
+    },
+    "texture_quality_mean_rgba_error_0_to_255": {
+      "inspect": 0.31689912172191986,
+      "attack": 0.3193597483767056,
+      "guard": 0.33467632845116146,
+      "ultimate": 0.3255634936606963,
+      "defeat": 0.2598072048997176
+    },
+    "part_texture_budget_bytes": 16777216,
+    "limitations": "Windows/Chrome headless profile, one pair per scenario, overlapping rolling windows. Does not establish Android 60FPS or thermal stability."
+  },
+  "runtime_freeze": {
+    "local_snapshot_files": 148,
+    "all_hashes_unchanged": true,
+    "local_ide_temporary_file_excluded_from_package_and_source_commit": "src/tempCodeRunnerFile.py"
+  },
+  "source_worker_environment": {
+    "worker_flet": "1.1.2",
+    "module": "C:\\Clicker\\.venv\\Lib\\site-packages\\flet\\__init__.py",
+    "project_environment_first": true
+  },
+  "physical_android": {
+    "tested": false,
+    "adb_devices": "List of devices attached",
+    "speaker_auditioned": false,
+    "android_60fps_confirmed": false
+  },
+  "release": {
+    "tag": "titan-v0.2.0-42",
+    "prerelease": true,
+    "publication_receipt": "Saved separately after publication to build/titan-verification-v42/github-public-download.json"
+  }
+}

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flet_rive/src/game_scene.dart';
 import 'package:flet_rive/src/robot/robot_audio.dart';
@@ -27,6 +27,7 @@ void main() {
       'enemyCombatAction': 'attack',
       'weapon': 'laser',
       'enemyWeapon': 'rocket',
+      'enemyEquipped': ['rocket'],
       'event': 'battle:1:0:idle',
       'result': 'active',
       'prepareSeconds': .4,
@@ -56,7 +57,13 @@ void main() {
         scene.showcase('dance');
         run(scene, 2.3);
         expect(
-          cues.where((c) => c.name.startsWith('robot_dance_')).length,
+          cues
+              .where(
+                (c) =>
+                    c.name.startsWith('robot_dance_') ||
+                    id == 'titan' && c.name == 'titan_step',
+              )
+              .length,
           greaterThanOrEqualTo(3),
           reason: '$id dance',
         );
@@ -64,8 +71,10 @@ void main() {
     },
   );
 
-  test('all 31 unchanged rigs play a shot at the preview release, once', () {
-    for (final id in robotVoices.keys.where((id) => id != 'volt')) {
+  test('all 30 unchanged rigs play a shot at the preview release, once', () {
+    for (final id in robotVoices.keys.where(
+      (id) => !{'volt', 'titan'}.contains(id),
+    )) {
       final cues = <RobotAudioCue>[];
       final scene = create(id, cues);
       scene.showcase('attack');
@@ -78,6 +87,67 @@ void main() {
       expect(cues.where((c) => c.name == 'laser').length, 1, reason: id);
     }
   });
+  test(
+    'Titan authored release uses the equipped sound once and respects mute history',
+    () {
+      final cues = <RobotAudioCue>[];
+      final scene = create('titan', cues);
+      scene.update({
+        ...scene.data,
+        'equipped': ['laser'],
+      });
+      scene.showcase('attack');
+      run(scene, 1.1);
+      expect(cues.where((c) => c.name == 'laser'), isEmpty);
+      run(scene, .05);
+      expect(cues.where((c) => c.name == 'laser').length, 1);
+      scene.update({...scene.data});
+      run(scene, 1);
+      expect(cues.where((c) => c.name == 'laser').length, 1);
+      cues.clear();
+      scene.audio.muted = true;
+      scene.showcase('ultimate');
+      run(scene, 3.4);
+      expect(cues, isEmpty);
+      scene.audio.muted = false;
+      run(scene, .2);
+      expect(cues, isEmpty);
+    },
+  );
+
+  test(
+    'Titan quick combo sounds each alternating contact and fires mounted gear on its arm',
+    () {
+      for (final equipped in [false, true]) {
+        final cues = <RobotAudioCue>[];
+        final scene = create('titan', cues);
+        scene.update({
+          ...scene.data,
+          'equipped': equipped ? ['laser'] : [],
+        });
+        scene.showcase('quick');
+        run(scene, 1.1);
+        final contacts = cues.where(
+          (c) => {'titan_ram', 'impact', 'laser'}.contains(c.name),
+        );
+        expect(contacts.map((c) => c.name), [
+          equipped ? 'laser' : 'titan_ram',
+          'impact',
+          equipped ? 'laser' : 'titan_ram',
+          'impact',
+        ]);
+        expect(contacts.every((c) => c.channel == 'player:action'), true);
+        scene.update({...scene.data});
+        run(scene, .3);
+        expect(
+          cues
+              .where((c) => {'titan_ram', 'impact', 'laser'}.contains(c.name))
+              .length,
+          4,
+        );
+      }
+    },
+  );
 
   test(
     'battle phases keep one timeline through Flet updates and a new turn repeats it',

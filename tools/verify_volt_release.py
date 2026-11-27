@@ -2,7 +2,8 @@
 
 These are static source/package checks, not Android execution or FPS tests.
 Builds before v35 use the snapshot taken before the Volt task; v35 uses the
-v34 snapshot and v36 uses v35. --baseline selects another snapshot.
+v34 snapshot, v36 uses v35, v37 uses v36, v38 uses v37 and v39 uses v38.
+--baseline selects another snapshot. Animation-only builds preserve Volt's art.
 Existing audio and the other 31 robot visuals remain byte/structure checked.
 """
 
@@ -22,6 +23,9 @@ ROOT = Path(__file__).resolve().parents[1]
 BASELINE = ROOT / ".cache/volt-refinement/before"
 POLISH_BASELINE = ROOT / ".cache/volt-polish-v35/baseline"
 MOTION_BASELINE = ROOT / ".cache/volt-motion-v36/baseline"
+READABILITY_BASELINE = ROOT / ".cache/volt-readability-v37/baseline"
+STORM_BASELINE = ROOT / ".cache/volt-super-v38/baseline"
+SKILL_SHIELD_BASELINE = ROOT / ".cache/volt-skill-shield-v39/baseline"
 MUSIC_SOUNDS = ('music_workshop.ogg','music_arena.ogg','music_victory.ogg')
 ABIS = ("arm64-v8a", "armeabi-v7a", "x86_64")
 MARKERS = ("flutter-canvas-articulated", "voltPower", "volt_pulse", "volt_charge", "volt_storm", "volt_shutdown")
@@ -115,7 +119,7 @@ def sound_report(audio, names):
     return report
 
 
-def verify_scope(root=ROOT, baseline=BASELINE, *, character_audio=False, application_music=False):
+def verify_scope(root=ROOT, baseline=BASELINE, *, character_audio=False, application_music=False, animation_only=False):
     root, baseline = Path(root), Path(baseline)
     current_src, before_src = root / "src", baseline / "src"
     rows, before_rows = ability_rows(current_src / "robot_abilities.py"), ability_rows(before_src / "robot_abilities.py")
@@ -136,6 +140,15 @@ def verify_scope(root=ROOT, baseline=BASELINE, *, character_audio=False, applica
         report["other_portraits"][identity] = unchanged_file(current_src / relative, before_src / relative, str(relative))
     current_rml = root / "animation/rive/game_robot/scene.rml"
     before_rml = baseline / "animation/rive/game_robot/scene.rml"
+    if animation_only:
+        for kind, name in [('Artboard', 'volt'), ('ViewModel', 'Motion_volt')]:
+            require(xml_digest(named_nodes(current_rml, kind)[name]) ==
+                    xml_digest(named_nodes(before_rml, kind)[name]),
+                    f'Animation-only update changed Volt {kind}')
+    volt_board = named_nodes(current_rml, 'Artboard')['volt']
+    report['volt_focusing_emitters'] = all(
+        any(n.get('name') == 'Volt focusing carriage ' + side for n in volt_board.iter('Node'))
+        for side in ('L', 'R'))
     for kind, excluded, key in [("Artboard", "volt", "rml_other_artboards"), ("ViewModel", "Motion_volt", "rml_other_view_models")]:
         current_nodes, old_nodes = named_nodes(current_rml, kind), named_nodes(before_rml, kind)
         require(current_nodes.keys() == old_nodes.keys(), f"RML {kind} names changed")
@@ -171,7 +184,11 @@ def verify_scope(root=ROOT, baseline=BASELINE, *, character_audio=False, applica
     old_portrait = before_src / "assets/art/portraits/volt.svg"
     report["volt_portrait"] = {"sha256": file_hash(portrait), "bytes": portrait.stat().st_size,
                                "changed": portrait.read_bytes() != old_portrait.read_bytes()}
-    require(report["volt_portrait"]["changed"], "The new Volt portrait was not installed")
+    if animation_only:
+        require(not report['volt_portrait']['changed'], 'Animation-only update changed the Volt portrait')
+    else:
+        require(report["volt_portrait"]["changed"], "The new Volt portrait was not installed")
+    report['animation_only'] = animation_only
     report["counts"] = {"other_robot_portraits": len(report["other_portraits"]),
                         "other_ability_rows": len(others), "other_artboards": len(report["rml_other_artboards"]),
                         "other_view_models": len(report["rml_other_view_models"]),
@@ -190,6 +207,8 @@ def verify_package(apk, scope, root=ROOT):
     markers = MARKERS + (ROBOT_MARKERS if scope.get("robot_audio") else ())
     if scope.get('music_audio'):
         markers += ('GameMusic','music_workshop','music_victory','voltLegLY')
+    if scope.get('volt_focusing_emitters'):
+        markers += ('voltEmitterTravel', 'voltEmitterAimR')
     with zipfile.ZipFile(apk) as package:
         native_abis = {name.split("/")[1] for name in package.namelist()
                        if name.startswith("lib/") and name.endswith("/libapp.so")}
@@ -231,8 +250,8 @@ def main():
     try:
         apk = ROOT / f"build/apk-game-v{args.build_number}/clicker.apk"
         require(apk.is_file(), "Final APK is not ready")
-        baseline = args.baseline or (MOTION_BASELINE if args.build_number >= 36 else POLISH_BASELINE if args.build_number >= 35 else BASELINE)
-        report["scope"] = verify_scope(baseline=baseline, character_audio=args.build_number >= 35, application_music=args.build_number >= 36)
+        baseline = args.baseline or (SKILL_SHIELD_BASELINE if args.build_number >= 39 else STORM_BASELINE if args.build_number >= 38 else READABILITY_BASELINE if args.build_number >= 37 else MOTION_BASELINE if args.build_number >= 36 else POLISH_BASELINE if args.build_number >= 35 else BASELINE)
+        report["scope"] = verify_scope(baseline=baseline, character_audio=args.build_number >= 35, application_music=args.build_number >= 36, animation_only=args.build_number >= 38)
         report["package"] = verify_package(apk, report["scope"])
         report["status"] = "passed"
     except Exception as error:

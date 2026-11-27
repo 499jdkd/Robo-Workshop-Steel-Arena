@@ -28,8 +28,10 @@ def free_port():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-number", type=int, required=True)
-    parser.add_argument("--robot", default="spark", choices=("spark", "volt"))
+    parser.add_argument("--robot", default="spark", choices=("spark", "volt", "titan"))
     parser.add_argument("--source", action="store_true", help="Use the current game source and its compiled Flutter client")
+    parser.add_argument("--tap-x", type=float, default=195,
+                        help="Screen X of the visible robot after the floor movement")
     args = parser.parse_args()
     game = ROOT / f"build/windows-motion-v{args.build_number}/Clicker"
     client = ROOT / "tools/game_client/build/web" if args.source else game / "_internal/client"
@@ -52,7 +54,7 @@ def main():
                HTTP_PROXY="http://127.0.0.1:9", HTTPS_PROXY="http://127.0.0.1:9", NO_PROXY="127.0.0.1,localhost")
     log = (out / "server.log").open("w", encoding="utf-8")
     command = [sys._base_executable, "-c",
-        "import site,sys,runpy;site.addsitedir(sys.argv[1]);p=sys.argv[2];sys.argv=sys.argv[2:];runpy.run_path(p,run_name='__main__')",
+        "import site,sys,runpy;site.addsitedir(sys.argv[1]);sys.path.insert(0,sys.argv[1]);p=sys.argv[2];sys.argv=sys.argv[2:];runpy.run_path(p,run_name='__main__')",
         str(Path(sys.prefix) / "Lib/site-packages"), str(ROOT / "tools/windows_game.py")] if args.source else [str(game / "Clicker.exe")]
     worker = subprocess.Popen([*command, "--serve", str(port)], env=env,
                               stdout=log, stderr=log, creationflags=subprocess.CREATE_NO_WINDOW)
@@ -119,12 +121,12 @@ def main():
             time.sleep(1.6)
             assert state()["manual_taps"] == baseline["manual_taps"], "Floor tap awarded resources"
             screenshot("moved")
-            click(195,405,hold=.9)
+            click(args.tap_x,405,hold=.9)
             time.sleep(.3)
             assert state()["manual_taps"] == baseline["manual_taps"], "Long press awarded resources"
             time.sleep(1.8)
             for _ in range(5):
-                click(195,405)
+                click(args.tap_x,405)
             for _ in range(60):
                 if state()["manual_taps"] == baseline["manual_taps"] + 5:
                     break
@@ -143,6 +145,7 @@ def main():
             report = {"build":args.build_number,"main_packaged_game":not args.source,"main_game_source":args.source,"robot":args.robot,
                 "client":"Current main-game worker and compiled Flutter client, Chrome headless" if args.source else "Windows EXE worker and bundled Flutter/Rive client, Chrome headless",
                 "floor_awards":0,"long_press_awards":0,"rapid_robot_taps":5,
+                "robot_tap_screen_x":args.tap_x,
                 "recorded_taps":after["manual_taps"]-baseline["manual_taps"],
                 "coins_from_taps":manual_coins,"passive_coins_preserved":passive_coins,"automatic_feeding_preserved":True,
                 "isolated_data":str(data),"real_player_save_opened":False,"android_device":False}

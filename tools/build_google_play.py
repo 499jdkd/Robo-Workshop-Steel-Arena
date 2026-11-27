@@ -50,6 +50,7 @@ def prepare_stage(root, stage, *, number, version, ads_mode):
         for path in (root / "src").rglob("*")
         if path.is_file()
         and "__pycache__" not in path.parts
+        and ".flet" not in path.relative_to(root / "src").parts
         and path.suffix not in {".pyc", ".pyo"}
     }
     expected = {
@@ -78,7 +79,7 @@ def prepare_stage(root, stage, *, number, version, ads_mode):
     shutil.copytree(
         root / "src",
         stage / "src",
-        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
+        ignore=shutil.ignore_patterns(".flet", "__pycache__", "*.pyc", "*.pyo"),
     )
     project = (root / "pyproject.toml").read_text(encoding="utf-8")
     settings = tomllib.loads(project)
@@ -141,7 +142,7 @@ def build_environment():
         }
     )
     env["PATH"] = (
-        str(Path.home() / "flutter/3.44.8/bin")
+        str(Path.home() / "flutter/3.47.9/bin")
         + os.pathsep
         + str(Path(env["JAVA_HOME"]) / "bin")
         + os.pathsep

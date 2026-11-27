@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flet_rive/src/robot/game_motion.dart';
 import 'package:flet_rive/src/robot/volt_geometry.dart';
@@ -52,7 +52,7 @@ Future<ui.Image> render(
 }
 
 Future<void> save(ui.Image image, String name) async {
-  final out = Directory('../../.cache/volt-refinement/canvas')
+  final out = Directory('../../.cache/volt-readability-v37/canvas')
     ..createSync(recursive: true);
   final png = (await image.toByteData(format: ui.ImageByteFormat.png))!;
   File('${out.path}/$name.png').writeAsBytesSync(png.buffer.asUint8List());
@@ -64,9 +64,9 @@ void main() {
   test(
     'authored Volt geometry preserves the articulated suspension and mechanisms',
     () {
-      expect(voltGeometryShapeCount, 385);
-      expect(voltGeometryNodes.length, 522);
-      expect(voltGeometryPaths.length, 199);
+      expect(voltGeometryShapeCount, 409);
+      expect(voltGeometryNodes.length, 554);
+      expect(voltGeometryPaths.length, 206);
       expect(voltGeometrySourceSha256.length, 64);
       for (final joint in [
         'joint0',
@@ -103,7 +103,7 @@ void main() {
   test('Canvas rest pose matches the authored native Rive silhouette', () async {
     final image = await render(restPose());
     await save(image, 'volt-rest');
-    final native = File('../../docs/volt-v36/volt-authored-native.png');
+    final native = File('../../docs/volt-v37/volt-authored-native.png');
     expect(native.existsSync(), isTrue);
     final codec = await ui.instantiateImageCodec(native.readAsBytesSync());
     final reference = (await codec.getNextFrame()).image;

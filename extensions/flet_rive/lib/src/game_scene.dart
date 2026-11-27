@@ -4,7 +4,7 @@ import 'dart:math' as math;
 import 'package:flet/flet.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:rive/rive.dart' as rive;
 
@@ -18,6 +18,9 @@ import 'robot/signature_motion.dart';
 import 'robot/scene_loading.dart';
 import 'robot/volt_motion.dart';
 import 'robot/volt_model.dart';
+import 'robot/titan_model.dart';
+import 'robot/titan_motion.dart';
+import 'robot/titan_effects.dart';
 
 /// Semantic Flet events drive native timelines, without Python frame updates.
 class GameRiveControl extends StatefulWidget {
@@ -104,13 +107,18 @@ class _GameRiveControlState extends State<GameRiveControl>
   }
 
   Widget nativeVolt(BuildContext context, Map<String, dynamic> data) {
-    if (!nativeSelected) {
+    if (!nativeSelected || nativeVoltScene?.data['robot'] != data['robot']) {
+      if (nativeSelected) dropNativeVolt();
       dropRive();
       reportedScene = '';
       nativeSelected = true;
       nativeVoltScene = GameSceneClock();
       final watch = Stopwatch()..start();
-      warmVoltModel();
+      if (data['robot'] == 'titan') {
+        warmTitanModel();
+      } else {
+        warmVoltModel();
+      }
       modelWarmMs = watch.elapsedMicroseconds / 1000;
     }
     final scene = nativeVoltScene!;
@@ -123,7 +131,8 @@ class _GameRiveControlState extends State<GameRiveControl>
     scene.suspended = !appActive;
     if (data['sound'] != false) scene.audio.configure(widget.control.backend);
     syncNativeTicker();
-    final sceneKey = 'native-volt|${data['expanded']}|${data['demonstration']}';
+    final sceneKey =
+        'native-${data['robot']}|${data['expanded']}|${data['demonstration']}';
     return LayoutControl(
       control: widget.control,
       child: LayoutBuilder(
@@ -157,7 +166,7 @@ class _GameRiveControlState extends State<GameRiveControl>
               reportedScene = sceneKey;
               widget.control.triggerEvent('ready', {
                 'data': {
-                  'robot': 'volt',
+                  'robot': data['robot'],
                   'enemy': '',
                   'renderer': 'flutter',
                   'model_renderer': 'flutter-canvas-articulated',
@@ -236,6 +245,7 @@ class _GameRiveControlState extends State<GameRiveControl>
   void didHaveMemoryPressure() {
     clearIdleRigCache();
     clearVoltModelCaches();
+    clearTitanModelCaches();
   }
 
   @override
@@ -243,7 +253,7 @@ class _GameRiveControlState extends State<GameRiveControl>
     final data =
         jsonDecode(widget.control.getString('payload', '{}')!)
             as Map<String, dynamic>;
-    if (data['robot'] == 'volt' && data['arena'] != true)
+    if ({'volt', 'titan'}.contains(data['robot']) && data['arena'] != true)
       return nativeVolt(context, data);
     if (nativeSelected) {
       dropNativeVolt();
@@ -290,7 +300,7 @@ class _GameRiveControlState extends State<GameRiveControl>
                   'robot': data['robot'],
                   'enemy': data['arena'] == true ? data['enemy'] : '',
                   'renderer': renderer,
-                  'model_renderer': data['robot'] == 'volt'
+                  'model_renderer': {'volt', 'titan'}.contains(data['robot'])
                       ? 'flutter-canvas-articulated'
                       : 'rive-artboard',
                   'rig_load_ms': loadWatch.elapsedMicroseconds / 1000,
@@ -376,6 +386,10 @@ class GameSceneClock extends ChangeNotifier {
   VoltFrame? get playerVoltFrame => _voltPlayer.frame;
   VoltFrame? get enemyVoltFrame => _voltEnemy.frame;
   bool get isVolt => data['robot'] == 'volt';
+  bool get isTitan => data['robot'] == 'titan';
+  bool get isArticulated => isVolt || isTitan;
+  Map<String, double> get articulatedActionSeconds =>
+      isTitan ? titanActionSeconds : voltActionSeconds;
   double? _voltOutcomeAt;
   Size viewport = const Size(390, 294);
   double clock = 0, age = 0, zoom = 1, zoomTarget = 1, patrol = 0;
@@ -448,7 +462,8 @@ class GameSceneClock extends ChangeNotifier {
             (enemyShot &&
                 {'special', 'ultimate'}.contains(data['enemyCombatAction']))
       : {'special', 'ultimate'}.contains(localAction) &&
-            localAge < (isVolt ? voltActionSeconds[localAction]! : 2.25);
+            localAge <
+                (isArticulated ? articulatedActionSeconds[localAction]! : 2.25);
   bool get ultimate => activeCombatAction == 'ultimate';
   String get signatureId =>
       data[enemyShot ? 'enemy' : 'robot'] as String? ?? 'spark';
@@ -471,9 +486,19 @@ class GameSceneClock extends ChangeNotifier {
       ? Offset.zero
       : Offset(
           math.sin(age * 103) * (ultimate ? 12 : 6) * impact +
-              math.sin(clock * 91) * 3.5 * voltCamera,
+              math.sin(clock * 91) *
+                  (playerVoltFrame?.action == 'ultimate' ||
+                          enemyVoltFrame?.action == 'ultimate'
+                      ? 5.8
+                      : 3.5) *
+                  voltCamera,
           math.cos(age * 137) * (ultimate ? 7 : 3) * impact +
-              math.cos(clock * 113) * 2 * voltCamera,
+              math.cos(clock * 113) *
+                  (playerVoltFrame?.action == 'ultimate' ||
+                          enemyVoltFrame?.action == 'ultimate'
+                      ? 3.5
+                      : 2) *
+                  voltCamera,
         );
 
   void update(Map<String, dynamic> next) {
@@ -529,16 +554,17 @@ class GameSceneClock extends ChangeNotifier {
     previousEnemy = contextChanged ? null : enemy.pose;
     age = 0;
     final tapEcho =
-        isVolt &&
+        isArticulated &&
         !arena &&
         !demonstration &&
         combatAction == 'joy' &&
         localAction.isNotEmpty &&
-        localAge < (voltActionSeconds[localAction] ?? 0);
+        localAge < (articulatedActionSeconds[localAction] ?? 0);
     if (!arena &&
         !tapEcho &&
         ({'attack', 'special', 'ultimate', 'guard'}.contains(combatAction) ||
-            isVolt && voltActionSeconds.containsKey(combatAction))) {
+            isArticulated &&
+                articulatedActionSeconds.containsKey(combatAction))) {
       showcase(combatAction);
     }
     if (arena) {
@@ -601,7 +627,7 @@ class GameSceneClock extends ChangeNotifier {
       final reacting =
           (age < (action == 'feed' ? 1.7 : .95) && action != 'idle') ||
           localAge < 2.25 ||
-          (isVolt && localAction == 'defeat');
+          (isArticulated && localAction == 'defeat');
       final id = data['robot'];
       final role = robotProfiles[id]?['class'];
       final speed = role == 'tank'
@@ -697,12 +723,12 @@ class GameSceneClock extends ChangeNotifier {
           p.x -= 14 * math.sin(age * 32);
           p.foreR += .18 * math.sin(age * 32);
         }
-        if (!isVolt && (weapon == 'fist' || weapon == 'sword'))
+        if (!isArticulated && (weapon == 'fist' || weapon == 'sword'))
           px += math.max(0, ex - px - 185 * s) * smooth(age / .55);
         e.emotion('fear', age);
       }
       if (phase == 'impact') {
-        if (!isVolt && (weapon == 'fist' || weapon == 'sword'))
+        if (!isArticulated && (weapon == 'fist' || weapon == 'sword'))
           px += math.max(0, ex - px - 185 * s) * (1 - smooth(age / .45));
         if ({'attack', 'special'}.contains(action)) p.fire(weapon, .95 + age);
         if ((data['damage'] as num? ?? 0) > 0)
@@ -715,7 +741,7 @@ class GameSceneClock extends ChangeNotifier {
       }
       if (enemyShot) {
         e.fire(enemyWeapon, age);
-        if (data['enemy'] != 'volt' &&
+        if (!{'volt', 'titan'}.contains(data['enemy']) &&
             (enemyWeapon == 'fist' || enemyWeapon == 'sword'))
           ex -= math.max(0, ex - px - 185 * s) * smooth(age / .55);
         if (action == 'guard') {
@@ -743,7 +769,7 @@ class GameSceneClock extends ChangeNotifier {
         e.emotion('anger', age);
       }
       if (phase == 'reply') {
-        if (data['enemy'] != 'volt' &&
+        if (!{'volt', 'titan'}.contains(data['enemy']) &&
             (enemyWeapon == 'fist' || enemyWeapon == 'sword'))
           ex -= math.max(0, ex - px - 185 * s) * (1 - smooth(age / .45));
         if ((data['incoming'] as num? ?? 0) > 0)
@@ -769,9 +795,9 @@ class GameSceneClock extends ChangeNotifier {
         !{'impact', 'reply', 'counter-hit'}.contains(phase) &&
         age < .14) {
       final blend = smooth(age / .14);
-      if (previousPlayer != null && !isVolt)
+      if (previousPlayer != null && !isArticulated)
         p.blendFrom(previousPlayer!, blend);
-      if (previousEnemy != null && data['enemy'] != 'volt')
+      if (previousEnemy != null && !{'volt', 'titan'}.contains(data['enemy']))
         e.blendFrom(previousEnemy!, blend);
     }
     if (!arena) {
@@ -782,10 +808,38 @@ class GameSceneClock extends ChangeNotifier {
         p.armR = -.85;
       }
     }
-    final edge = 210 * s + (arena ? viewport.width * .055 : 8);
-    double inside(double x) => viewport.width > 2 * edge
-        ? x.clamp(edge, viewport.width - edge)
-        : viewport.width / 2;
+    double inside(double x, GameActor actor, bool volt, List gear) {
+      if (!volt) {
+        final edge = 210 * s + (arena ? viewport.width * .055 : 8);
+        return viewport.width > 2 * edge
+            ? x.clamp(edge, viewport.width - edge)
+            : viewport.width / 2;
+      }
+      // Volt's compact built-in emitter does not occupy the generic 420px
+      // weapon envelope. That envelope erased almost the entire dodge on a
+      // portrait phone. Reserve extra space only in front of mounted gear.
+      final front = gear.isEmpty ? 140.0 : 210.0;
+      final titan =
+          data[identical(actor, player) ? 'robot' : 'enemy'] == 'titan';
+      if (titan) {
+        final fist = titanFist(actor.pose, Offset.zero, 1, actor.facing, false);
+        final frontExtent = math.max(
+          166.0,
+          math.max(front, fist.dx * actor.facing + 25),
+        );
+        final leftExtent = (actor.facing < 0 ? frontExtent : 166.0) * s + 8;
+        final rightExtent = (actor.facing < 0 ? 166.0 : frontExtent) * s + 8;
+        return viewport.width > leftExtent + rightExtent
+            ? x.clamp(leftExtent, viewport.width - rightExtent)
+            : viewport.width / 2;
+      }
+      final left = (actor.facing < 0 ? front : 140.0) * s + 8;
+      final right = (actor.facing < 0 ? 140.0 : front) * s + 8;
+      return viewport.width > left + right
+          ? x.clamp(left, viewport.width - right)
+          : viewport.width / 2;
+    }
+
     void style(GameActor actor, String id) {
       final pose = actor.pose, f = pose.extra;
       final profile = robotProfiles[id] ?? robotProfiles['spark']!;
@@ -892,7 +946,7 @@ class GameSceneClock extends ChangeNotifier {
 
     style(player, data['robot'] as String? ?? 'spark');
     if (arena) style(enemy, data['enemy'] as String? ?? 'flora');
-    if (signatureVisible && signatureId != 'volt') {
+    if (signatureVisible && !{'volt', 'titan'}.contains(signatureId)) {
       signaturePose(
         enemyShot ? e : p,
         signatureId,
@@ -900,12 +954,32 @@ class GameSceneClock extends ChangeNotifier {
         ultimate: ultimate,
       );
     }
-    if (isVolt)
+    if (isArticulated)
       _animateVolt(player, lastPlayer, _voltPlayer, dt, opponent: false);
-    if (arena && data['enemy'] == 'volt')
+    if (arena && {'volt', 'titan'}.contains(data['enemy']))
       _animateVolt(enemy, lastEnemy, _voltEnemy, dt, opponent: true);
-    player.travel(inside(px + p.x * s * player.facing), s, dt);
-    if (arena) enemy.travel(inside(ex - e.x * s), s, dt);
+    player.travel(
+      inside(
+        px + p.x * s * player.facing,
+        player,
+        isArticulated,
+        data['equipped'] as List? ?? const [],
+      ),
+      s,
+      dt,
+    );
+    if (arena) {
+      enemy.travel(
+        inside(
+          ex - e.x * s,
+          enemy,
+          {'volt', 'titan'}.contains(data['enemy']),
+          data['enemyEquipped'] as List? ?? const [],
+        ),
+        s,
+        dt,
+      );
+    }
     final modules = (data['modules'] as List? ?? const []).cast<String>();
     final equipment = (data['equipped'] as List? ?? const []).cast<String>();
     final second = equipment.length > 1 ? equipment[1] : '';
@@ -967,7 +1041,7 @@ class GameSceneClock extends ChangeNotifier {
 
   ({String action, double t, String token}) _localAudioPresentation() {
     final localToken = 'local:$_localSoundSerial';
-    if (isVolt) {
+    if (isArticulated) {
       final frame = playerVoltFrame;
       return (
         action: frame?.action ?? 'idle',
@@ -1068,8 +1142,15 @@ class GameSceneClock extends ChangeNotifier {
       // Volt has his own attack/charge timeline. His previously silent social
       // reactions share this director; feeding already has its saved-game cue.
       final ownedByDirector =
-          !isVolt ||
-          {'joy', 'anger', 'dance', 'inspect', 'move'}.contains(sample.action);
+          !isArticulated ||
+          !isTitan &&
+              {
+                'joy',
+                'anger',
+                'dance',
+                'inspect',
+                'move',
+              }.contains(sample.action);
       characterSounds.sample(
         slot: 'player',
         robot: data['robot'] as String? ?? 'spark',
@@ -1088,7 +1169,7 @@ class GameSceneClock extends ChangeNotifier {
       );
     for (final opponent in [false, true]) {
       final id = data[opponent ? 'enemy' : 'robot'] as String? ?? 'spark';
-      if (id == 'volt') continue;
+      if ({'volt', 'titan'}.contains(id)) continue;
       final sample = _battleAudioPresentation(opponent);
       characterSounds.sample(
         slot: opponent ? 'enemy' : 'player',
@@ -1103,10 +1184,15 @@ class GameSceneClock extends ChangeNotifier {
   }
 
   ({String action, double t}) _voltPresentation(bool opponent) {
+    final titan = data[opponent ? 'enemy' : 'robot'] == 'titan';
+    final actorSeconds = data[opponent ? 'enemy' : 'robot'] == 'titan'
+        ? titanActionSeconds
+        : voltActionSeconds;
     if (!arena) {
-      if (localAction == 'defeat' && localAge >= voltActionSeconds['defeat']!)
+      if (localAction == 'defeat' &&
+          localAge >= articulatedActionSeconds['defeat']!)
         return (action: 'defeat', t: 1.0);
-      final duration = voltActionSeconds[localAction] ?? 1.1;
+      final duration = articulatedActionSeconds[localAction] ?? 1.1;
       if (localAge < duration && localAction.isNotEmpty)
         return (action: localAction, t: unit(localAge / duration));
       if (action == 'feed' && age < 1.7)
@@ -1127,18 +1213,21 @@ class GameSceneClock extends ChangeNotifier {
       final name = (opponent ? !won : won) ? 'victory' : 'defeat';
       return (
         action: name,
-        t: unit((clock - _voltOutcomeAt!) / voltActionSeconds[name]!),
+        t: unit((clock - _voltOutcomeAt!) / actorSeconds[name]!),
       );
     }
     if (opponent) {
       final name = data['enemyCombatAction'] as String? ?? 'attack';
+      final hit = titan && {'special', 'emp'}.contains(name)
+          ? titanSkillImpact
+          : .9;
       if (phase == 'enemy-flight' && data['stunned'] != true)
         return (
           action: data['intent'] == 'windup' ? 'charge' : name,
-          t: unit(age / .72) * .9,
+          t: unit(age / .72) * hit,
         );
       if (phase == 'reply' && data['stunned'] != true)
-        return (action: name, t: .9 + .1 * unit(age / .25));
+        return (action: name, t: hit + (1 - hit) * unit(age / .25));
       return (action: 'idle', t: 0.0);
     }
     final name = phase.startsWith('counter-') ? 'attack' : combatAction;
@@ -1152,6 +1241,9 @@ class GameSceneClock extends ChangeNotifier {
       'emp': .46,
     };
     final release = releases[name];
+    final hit = titan && {'special', 'emp'}.contains(name)
+        ? titanSkillImpact
+        : .9;
     final prepare =
         (data['prepareSeconds'] as num? ??
                 (name == 'ultimate'
@@ -1167,9 +1259,9 @@ class GameSceneClock extends ChangeNotifier {
       if (phase == 'approach')
         return (action: name, t: release * unit(age / prepare));
       if (phase == 'flight' || phase == 'counter-flight')
-        return (action: name, t: release + (.9 - release) * progress);
+        return (action: name, t: release + (hit - release) * progress);
       if (phase == 'impact' || phase == 'counter-hit')
-        return (action: name, t: .9 + .1 * unit(age / impactSeconds));
+        return (action: name, t: hit + (1 - hit) * unit(age / impactSeconds));
     } else if ({'guard', 'dodge', 'charge'}.contains(name)) {
       if (phase == 'approach')
         return (action: name, t: .3 * unit(age / prepare));
@@ -1189,6 +1281,7 @@ class GameSceneClock extends ChangeNotifier {
     double dt, {
     required bool opponent,
   }) {
+    final titan = data[opponent ? 'enemy' : 'robot'] == 'titan';
     final sample = _voltPresentation(opponent);
     final name = switch (sample.action) {
       'emp' => 'special',
@@ -1224,7 +1317,7 @@ class GameSceneClock extends ChangeNotifier {
     rest.y -= (10 + 7 * math.sin(clock * 3 + (opponent ? 1 : 0))) * suspension;
     pose.blendFrom(rest, 0);
     pose.mode = 0;
-    final rawFrame = applyVoltPose(
+    final rawFrame = (titan ? applyTitanPose : applyVoltPose)(
       pose,
       name,
       sample.t,
@@ -1243,15 +1336,23 @@ class GameSceneClock extends ChangeNotifier {
                 math.exp(-age * 12)
           : 0,
     );
-    final blendSeconds = voltBlendSeconds(name);
+    final blendSeconds = titan
+        ? (name == 'ultimate'
+              ? .24
+              : name == 'quick'
+              ? .08
+              : .14)
+        : voltBlendSeconds(name);
     final blendWeight = reduced
         ? 1.0
         : unit((clock - playback.blendAt) / blendSeconds);
     final frame = blendVoltFrame(rawFrame, playback.fromFrame, blendWeight);
     if (mounted.isNotEmpty &&
         {'attack', 'quick', 'pierce', 'burst'}.contains(sample.action)) {
-      pose.armR = -1.48 + .12 * math.sin(sample.t * math.pi * 6);
-      pose.foreR = -.08;
+      if (!titan) {
+        pose.armR = -1.48 + .12 * math.sin(sample.t * math.pi * 6);
+        pose.foreR = -.08;
+      }
       pose.deploy = smooth(sample.t / .15);
       pose.barrel = 18 - 9 * math.sin(sample.t * math.pi).abs();
     }
@@ -1263,19 +1364,44 @@ class GameSceneClock extends ChangeNotifier {
     pose.extra['joint8'] = pose.extra['joint8']! + travel;
     pose.extra['joint9'] = pose.extra['joint9']! - travel;
     if (!reduced && playback.from != null && blendWeight < 1)
-      blendVoltPose(pose, playback.from!, blendWeight);
+      (titan ? blendTitanPose : blendVoltPose)(
+        pose,
+        playback.from!,
+        blendWeight,
+      );
     if (!arena) voltTrackGaze(pose, gaze, weight: frame.power);
-    for (final cue in voltCuesCrossed(name, playback.cueT, sample.t)) {
+    for (final cue in (titan ? titanCuesCrossed : voltCuesCrossed)(
+      name,
+      playback.cueT,
+      sample.t,
+    )) {
       if (data['sampleOnly'] == true) continue;
       final mountedShot =
-          cue == 'volt_pulse' &&
+          {'volt_pulse', 'titan_ram'}.contains(cue) &&
           mounted.isNotEmpty &&
           {'attack', 'quick', 'pierce', 'burst'}.contains(sample.action) &&
           SceneAudio.cueSeconds.containsKey(mounted);
-      audio.play(
-        mountedShot ? mounted : cue,
-        channel: opponent ? 'enemy:action' : 'player:action',
-      );
+      if (titan) {
+        if (audio.enabled && !audio.muted) {
+          final slot = opponent ? 'enemy' : 'player';
+          final channel = {'victory', 'defeat'}.contains(name)
+              ? 'reaction'
+              : 'action';
+          characterSounds.emit(
+            RobotAudioCue(
+              sample.t,
+              mountedShot ? mounted : cue,
+              channel: '$slot:$channel',
+            ),
+          );
+        }
+      } else {
+        audio.play(
+          mountedShot ? mounted : cue,
+          channel: opponent ? 'enemy:action' : 'player:action',
+          rate: name == 'ultimate' && cue == 'volt_storm' ? .82 : 1,
+        );
+      }
     }
     playback.cueT = sample.t;
     playback.frame = frame;
@@ -1292,9 +1418,10 @@ class GameSceneClock extends ChangeNotifier {
         : type == 'fist'
         ? 89.0
         : 125.0;
+    final titan = data[identical(a, player) ? 'robot' : 'enemy'] == 'titan';
     var point =
-        const Offset(89, -48) +
-        rotate(const Offset(0, 40), pose.armR) +
+        (titan ? const Offset(99, -55) : const Offset(89, -48)) +
+        rotate(Offset(0, titan ? 48 : 40), pose.armR) +
         rotate(Offset(0, length), pose.armR + pose.foreR);
     point = rotate(point, pose.rotation);
     return Offset(
@@ -1348,7 +1475,7 @@ class GameSceneClock extends ChangeNotifier {
 
   bool robotAt(Offset point) => Rect.fromCenter(
     center: target(player),
-    width: 240 * scale,
+    width: (isTitan ? 330 : 240) * scale,
     height: 330 * scale,
   ).contains(worldPoint(point));
 
@@ -1359,12 +1486,12 @@ class GameSceneClock extends ChangeNotifier {
     final reactions =
         data['reactions'] as List? ?? ['joy', 'surprise', 'inspect'];
     final role = robotProfiles[data['robot']]?['class'];
-    localAction = isVolt
+    localAction = isArticulated
         ? (tapBurst >= 3 ? 'anger' : _nextVoltReaction())
         : tapBurst >= 3
         ? (role == 'tank' || role == 'striker' ? 'anger' : 'dance')
         : reactions[reactionIndex++ % reactions.length] as String;
-    if (isVolt) {
+    if (isArticulated) {
       _voltPlayer.from = player.pose;
       _voltPlayer.fromFrame = _voltPlayer.frame;
       _voltPlayer.action = localAction;
@@ -1398,7 +1525,12 @@ class GameSceneClock extends ChangeNotifier {
   void moveTo(Offset point) {
     if (arena) return;
     _localSoundSerial++;
-    final edge = 210 * scale + 8;
+    final edge =
+        (isArticulated && (data['equipped'] as List? ?? const []).isEmpty
+                ? (isTitan ? 166 : 140)
+                : 210) *
+            scale +
+        8;
     final width = viewport.width;
     final x = worldPoint(point).dx.clamp(edge, math.max(edge, width - edge));
     walkFrom = player.center / width;
@@ -1419,7 +1551,7 @@ class GameSceneClock extends ChangeNotifier {
     localAction = name;
     localAge = 0;
     player.facing = 1;
-    if (isVolt) {
+    if (isArticulated) {
       _voltPlayer.from = player.pose;
       _voltPlayer.fromFrame = _voltPlayer.frame;
       _voltPlayer.action = name;
@@ -1547,7 +1679,7 @@ base class GameScenePainter extends rive.ArtboardPainter
       );
     }
     scene.advance(dt);
-    if (!scene.isVolt)
+    if (!scene.isArticulated)
       player?.advance(
         scene.player,
         dt,
@@ -1567,7 +1699,7 @@ base class GameScenePainter extends rive.ArtboardPainter
                   0]
             : robotColor(scene.data['accent']),
       );
-    if (scene.arena && scene.data['enemy'] != 'volt')
+    if (scene.arena && !{'volt', 'titan'}.contains(scene.data['enemy']))
       enemy?.advance(
         scene.enemy,
         dt,
@@ -1635,13 +1767,13 @@ base class GameScenePainter extends rive.ArtboardPainter
         scene.ultimate &&
         scene.signatureT > .3 &&
         scene.signatureT < .68;
-    if (!scene.isVolt)
+    if (!scene.isArticulated)
       draw(
         player,
         scene.player,
         opacity: disappearing && !scene.enemyShot ? .13 : 1,
       );
-    if (scene.arena && scene.data['enemy'] != 'volt')
+    if (scene.arena && !{'volt', 'titan'}.contains(scene.data['enemy']))
       draw(
         enemy,
         scene.enemy,
@@ -2027,6 +2159,25 @@ class GameEffectsPainter extends CustomPainter {
         actor.center,
         scene.floor + (actor.pose.y - 126) * s,
       );
+      if ((opponent ? scene.data['enemy'] : scene.data['robot']) == 'titan') {
+        drawTitanModel(
+          canvas,
+          actor.pose,
+          origin,
+          s,
+          actor.facing,
+          gaze: opponent ? Offset.zero : scene.gaze,
+        );
+        return;
+      }
+      paintVoltMotionEchoes(
+        canvas,
+        frame,
+        origin,
+        s,
+        facing: actor.facing,
+        reduced: scene.reduced,
+      );
       drawVoltModel(
         canvas,
         actor.pose,
@@ -2046,12 +2197,38 @@ class GameEffectsPainter extends CustomPainter {
         s,
         reduced: scene.reduced,
         facing: actor.facing,
+        preview: !scene.arena,
+        viewport: Offset.zero & size,
       );
     }
 
-    if (scene.isVolt) drawVolt(scene.player, scene.playerVoltFrame, false);
-    if (scene.arena && scene.data['enemy'] == 'volt')
+    if (scene.isArticulated)
+      drawVolt(scene.player, scene.playerVoltFrame, false);
+    if (scene.arena && {'volt', 'titan'}.contains(scene.data['enemy']))
       drawVolt(scene.enemy, scene.enemyVoltFrame, true);
+    // Titan's travelling fists must remain visible when they contact a native
+    // defender. Draw both bodies first, then these foreground mechanisms.
+    void titanEffects(GameActor actor, VoltFrame? frame, bool opponent) {
+      if (frame == null || scene.data[opponent ? 'enemy' : 'robot'] != 'titan')
+        return;
+      paintTitanEffects(
+        canvas,
+        frame,
+        actor.pose,
+        Offset(actor.center, scene.floor + (actor.pose.y - 126) * s),
+        scene.arena
+            ? scene.target(opponent ? scene.player : scene.enemy)
+            : Offset(size.width * .87, scene.floor - 130 * s),
+        scene.floor,
+        s,
+        facing: actor.facing,
+        reduced: scene.reduced,
+        viewport: Offset.zero & size,
+      );
+    }
+
+    titanEffects(scene.player, scene.playerVoltFrame, false);
+    if (scene.arena) titanEffects(scene.enemy, scene.enemyVoltFrame, true);
     shield(scene.player);
     if (scene.arena) shield(scene.enemy);
     final dummy = Offset(size.width * .87, scene.floor - 130 * s);
@@ -2091,7 +2268,8 @@ class GameEffectsPainter extends CustomPainter {
           ..style = PaintingStyle.fill,
       );
     }
-    if (scene.signatureVisible && scene.signatureId != 'volt') {
+    if (scene.signatureVisible &&
+        !{'volt', 'titan'}.contains(scene.signatureId)) {
       final actor = scene.enemyShot ? scene.enemy : scene.player;
       final defender = scene.enemyShot ? scene.player : scene.enemy;
       final origin =
@@ -2145,7 +2323,10 @@ class GameEffectsPainter extends CustomPainter {
       );
     }
     final voltBuiltin =
-        scene.data[scene.enemyShot ? 'enemy' : 'robot'] == 'volt' &&
+        {
+          'volt',
+          'titan',
+        }.contains(scene.data[scene.enemyShot ? 'enemy' : 'robot']) &&
         ((scene.data[scene.enemyShot ? 'enemyEquipped' : 'equipped'] as List? ??
                     const [])
                 .isEmpty ||

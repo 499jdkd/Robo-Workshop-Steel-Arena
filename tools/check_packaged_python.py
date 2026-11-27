@@ -14,6 +14,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-number", type=int, default=22)
     parser.add_argument("--check-server", action="store_true")
+    parser.add_argument("--cache-number", type=int, help="Build cache supplying the exact packaging CPython host")
     args = parser.parse_args()
     output = ROOT / f"build/apk-game-v{args.build_number}/validation"
     output.mkdir(exist_ok=True)
@@ -46,7 +47,12 @@ if '--check-server' in sys.argv[3:]:
  server_checked=True
 print(json.dumps({'python':sys.version.split()[0],'apk_module_imports':18,'save_load':'passed','physical_android':False,'arena_url':url,'public_https_checked':server_checked}))
 """
-    runtime = ROOT / ".cache/game-test-v20/build/flutter/build/build_python_3.14.7/python/python.exe"
+    cache_number = args.cache_number if args.cache_number is not None else args.build_number
+    hosts = sorted((ROOT / f".cache/game-test-v{cache_number}/build/flutter/build").glob(
+        "build_python_*/python/python.exe"))
+    if args.cache_number is not None and not hosts:
+        raise FileNotFoundError(f"No packaging CPython host in build cache v{cache_number}")
+    runtime = hosts[-1] if hosts else ROOT / ".cache/game-test-v20/build/flutter/build/build_python_3.14.7/python/python.exe"
     env = environment()
     env.pop("CLICKER_ARENA_URL", None)
     result = subprocess.run([str(runtime), "-S", "-c", code, str(app_dir), str(target / "sitepackages.zip"), *(["--check-server"] if args.check_server else [])],

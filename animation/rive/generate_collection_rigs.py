@@ -233,6 +233,9 @@ class CollectionRig:
             self.oval(self.robot, f"Rotor shroud {i}", x, y, 76, 26, DARK)
 
     def face(self):
+        if self.d["id"] == "titan":
+            from titan_art import face
+            return face(self)
         if self.d["id"] == "volt":
             from volt_art import face
             return face(self)
@@ -457,6 +460,9 @@ class CollectionRig:
                 )
         elif k == "tesla":
             from volt_art import chassis
+            chassis(self)
+        elif k == "juggernaut":
+            from titan_art import chassis
             chassis(self)
         elif k == "bioreactor":
             self.head_y = -120
@@ -887,6 +893,9 @@ class CollectionRig:
         self.arms(template)
         if self.d["id"] == "volt":
             from volt_art import finish_arms
+            finish_arms(self)
+        if self.d["id"] == "titan":
+            from titan_art import finish_arms
             finish_arms(self)
         for field, x, y in [
             ("modArmor", -44, -9),

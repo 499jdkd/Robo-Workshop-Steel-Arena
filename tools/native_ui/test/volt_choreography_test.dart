@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:ui' as ui;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flet_rive/src/game_scene.dart';
@@ -64,7 +64,11 @@ void main() {
         final previous = <String, double>{};
         for (var i = 0; i <= 120; i++) {
           final p = poseAt(action, i / 120).pose;
-          expect(p.x.abs(), lessThan(80), reason: action);
+          expect(
+            p.x.abs(),
+            lessThan({'quick', 'dodge'}.contains(action) ? 130 : 80),
+            reason: action,
+          );
           expect(p.y.abs(), lessThan(100), reason: action);
           expect(p.extra.values.every((n) => n.isFinite), isTrue);
           for (final key in voltMechanismDefaults.keys) {
@@ -109,7 +113,8 @@ void main() {
         (dash.pose.extra['voltLegLY']! - dash.pose.extra['voltLegRY']!).abs(),
         greaterThan(10),
       );
-      expect(skill.pose.armL, greaterThan(1.5));
+      expect(skill.pose.armL, lessThan(-2.2));
+      expect(skill.pose.armR, greaterThan(2.2));
       expect(guard.pose.foreR, greaterThan(1));
       expect(storm.pose.armL, greaterThan(2));
       expect(storm.pose.y, lessThan(-65));
@@ -352,7 +357,7 @@ void main() {
   test(
     'native review sheets show preparation, release and recovery for all actions',
     () async {
-      final out = Directory('../../.cache/volt-motion-v36/renders')
+      final out = Directory('../../.cache/volt-readability-v37/renders')
         ..createSync(recursive: true);
       const phases = [0.0, .15, .32, .5, .68, .9, 1.0];
       for (var sheet = 0; sheet < 2; sheet++) {

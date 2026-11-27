@@ -413,7 +413,7 @@ class GameSession:
         from robot_abilities import ABILITIES
 
         actions = {"attack", "special", "ultimate", "guard", "joy", "idle"}
-        if identity == "volt":
+        if identity in {"volt", "titan"}:
             actions |= {"quick", "dodge", "charge", "jump", "surprise", "anger", "dance", "inspect", "victory", "defeat"}
         if identity not in ABILITIES or action not in actions:
             return False

@@ -2,7 +2,7 @@ import 'dart:io' as io;
 import 'dart:ui' as ui;
 import 'package:flet_rive/flet_rive.dart';
 import 'package:flet_rive/src/robot/robot_profiles.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rive/rive.dart' as rive;
@@ -42,7 +42,8 @@ void main() {
         io.File('${out.path}/$id${ultimate ? '' : '-skill'}.png').writeAsBytesSync(bytes!.buffer.asUint8List());
         frame.dispose();
       });
-      for (var i = 0; i < 110; i++) await tester.pump(const Duration(milliseconds:16));
+      final recoveryFrames = id == 'titan' && ultimate ? 170 : 110;
+      for (var i = 0; i < recoveryFrames; i++) await tester.pump(const Duration(milliseconds:16));
       expect(scene.signatureVisible, isFalse);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
